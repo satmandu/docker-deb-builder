@@ -5,13 +5,13 @@
 # mounted as docker volumes to allow files to be exchanged between the host and 
 # the container.
 
-kernel_branch=rpi-4.19.y
-kernelgitrepo="https://github.com/raspberrypi/linux.git"
+#kernel_branch=rpi-4.19.y
+#kernelgitrepo="https://github.com/raspberrypi/linux.git"
 #branch=bcm2711-initial-v5.2
 #kernelgitrepo="https://github.com/lategoodbye/rpi-zero.git"
 # This should be the image we want to modify.
-base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
-base_image="eoan-preinstalled-server-arm64+raspi3.img.xz"
+#base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
+#base_image="eoan-preinstalled-server-arm64+raspi3.img.xz"
 base_image_url="${base_url}/${base_image}"
 # This is the base name of the image we are creating.
 new_image="eoan-preinstalled-server-arm64+raspi4"
@@ -67,9 +67,8 @@ ccache -s
 
 
 # Create work directory.
-mkdir -p /build/source
 workdir=/build/source
-#mkdir -p $workdir
+mkdir -p $workdir
 #cp -a /source-ro/ $workdir
 
 # Source cache is on the cache volume.
@@ -360,7 +359,7 @@ startfunc
     echo $size
     size="620M"
     echo "pv -cfpterb -s ${size} -N "xzcat:${base_image}" $workdir/$base_image"
-    pv -cfpterb -s ${size} -N "xzcat:${base_image}" $workdir/$base_image | xzcat > $workdir/$new_image.img
+    pv -cfpterb -N "xzcat:${base_image}" $workdir/$base_image | xzcat > $workdir/$new_image.img
     #xzcat_pid=$(pgrep ^xzcat)
     #while true; do
     #    pgrep ^xzcat > /dev/null

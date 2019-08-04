@@ -52,6 +52,10 @@ base_image="eoan-preinstalled-server-arm64+raspi3.img.xz"
 base_image_url="${base_url}/${base_image}"
 cache_volume=rpi4-imagebuilder-cache
 
+# This is the linux version we want to use:
+kernel_branch=rpi-4.19.y
+kernelgitrepo="https://github.com/raspberrypi/linux.git"
+
 srcdir=$1
 #docker_args="-it "
 # The bash script & copy log if failure setup doesn't work without the "-dt" docker argument.
@@ -168,6 +172,18 @@ docker_args+="-e src_cache=/cache/src_cache "
 
 # Store remote src cache on ccache volume too
 docker_args+="-e apt_cache=/cache/apt_cache "
+
+# Set workdir. This is useful if we need to shell in to debug.
+docker_args+="-e workdir=/build/source "
+
+# Send in base image environment variables:
+docker_args+="-e base_url=${base_url} -e base_image=${base_image} "
+
+#Send in linux repo environment variables:
+docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo} "
+
+
+
 
 # Let XZ be disabled.
 [[ -v NOXZ ]] && docker_args+="-e NOXZ=${NOXZ} "
