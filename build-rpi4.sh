@@ -375,7 +375,9 @@ startfunc
     #echo $size
     #size="620M"
     #echo "pv -cfpterb -s ${size} -N "xzcat:${base_image}" $workdir/$base_image"
-    pv -s ${size} -pcf -N "xzcat:${base_image}" $workdir/$base_image | xzcat > $workdir/$new_image.img
+    pvcmd="pv -s ${size} -cfperb -N "xzcat:${base_image}" $workdir/$base_image"
+    echo $pvcmd
+    $pvcmd | xzcat > $workdir/$new_image.img
     #xzcat_pid=$(pgrep ^xzcat)
     #while true; do
     #    pgrep ^xzcat > /dev/null
@@ -813,7 +815,8 @@ startfunc
     #echo "PKGVER: $PKGVER"
     kernelrev=`git -C $src_cache/rpi-linux rev-parse --short HEAD` > /dev/null
     KERNEL_VERS="$PKGVER-$kernelrev"
-    echo "KERNEL_VERS: $KERNEL_VERS" > /tmp/KERNEL_VERS
+    echo "KERNEL_VERS: $KERNEL_VERS" 
+    echo $KERNEL_VERS > /tmp/KERNEL_VERS
     #kernelrev=`git -C $src_cache/rpi-linux rev-parse --short HEAD`
     #echo $kernelrev
    # Don't remake debs if they already exist in output.
@@ -869,7 +872,7 @@ startfunc
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" &>> /tmp/${FUNCNAME[0]}.install.log
     cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
-    cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz &>> /tmp/${FUNCNAME[0]}.install.log
+    cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz  || mv /mnt/boot/firmware/kernel8.img.nouboot.gz /mnt/boot/firmware/kernel8.img.nouboot &>> /tmp/${FUNCNAME[0]}.install.log
     #gunzip -c -f /mnt/boot/firmware/vmlinuz > /mnt/boot/firmware/kernel8.img.nouboot &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "update-initramfs -c -k all" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "flash-kernel" &> /output/initramfs.log
