@@ -500,10 +500,7 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
 
     mkdir -p /mnt/build
     mount -o bind /build /mnt/build
-    echo "* ARM64 chroot setup is complete." 
-    image_apt_download
-    image_apt_upgrade
-    image_apt_install 
+    echo "* ARM64 chroot setup is complete."  
 endfunc
 }
 
@@ -570,6 +567,7 @@ startfunc
     echo "* Image apt upgrade done."
 endfunc
 }
+
 image_apt_install () {
 startfunc
   echo "* Installing wifi & networking tools to image."
@@ -1509,15 +1507,19 @@ kernel_deb_install &
 waitforstart "kernelbuild_setup" && kernel_debs &
 arm64_chroot_setup & arm64_chroot_setup_job=$!
 echo $arm64_chroot_setup_job > /tmp/arm64_chroot_setup_job.pid
-waitforstart "arm64_chroot_setup"
-while kill -0 $arm64_chroot_setup_job 2>/dev/null
+#kernel_module_install
+#kernel_install_dtbs &
+image_apt_download
+image_apt_upgrade
+image_apt_install & image_apt_install_job=$!
+#waitforstart "image_apt_install"
+#image_apt_install_job=`cat /flag/start.image_apt_install`
+while kill -0 $image_apt_install_job 2>/dev/null
         do for s in / - \\ \|
             do printf "Setting up image software installs.\r$s"
             sleep .1
             done
-        done
-#kernel_module_install
-#kernel_install_dtbs &
+done
 image_and_chroot_cleanup
 image_unmount
 compressed_image_export &
