@@ -829,24 +829,27 @@ startfunc
         chown $USER:$GROUP /output/*.deb
     fi
     
+
+
+ endfunc
+}   
+
+kernel_deb_install () {
+    waitfor "kernel_debs"
     waitfor "image_extract_and_mount"
+startfunc
     # Try installing the generated debs in chroot before we do anything else.
     cp $workdir/*.deb /mnt/tmp/
-    
     waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
     echo "* Installing $KERNEL_VERS debs to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" &>> /tmp/${FUNCNAME[0]}.install.log
-    
-    #arbitrary_wait
-    
+
 endfunc
 }
 
-
-
 kernel_install () {
-    waitfor "kernel_debs"
+    waitfor "kernel_deb_install"
     waitfor "image_extract_and_mount"
 startfunc    
     #echo "* Copying compiled `cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'` kernel to image."
@@ -1399,6 +1402,7 @@ touch /flag/done.ok_to_exit_container_after_build
 inotify_touch_events &
 
 base_image_check
+image_extract_and_mount &
 rpi_firmware &
 armstub8-gic &
 non-free_firmware & 
@@ -1406,16 +1410,19 @@ rpi_userland &
 andrei_gherzan_uboot_fork &
 # KERNEL_VERSION is set here:
 kernelbuild_setup &
-kernel_debs
+
 #kernel_build &
-image_extract_and_mount
+
 rpi_config_txt_configuration &
 rpi_cmdline_txt_configuration &
 wifi_firmware_modification &
 first_boot_scripts_setup &
 added_scripts &
+kernel_deb_install &
 kernel_install &
-arm64_chroot_setup
+kernel_debs
+arm64_chroot_setup &
+
 #kernel_module_install
 #kernel_install_dtbs &
 image_and_chroot_cleanup
