@@ -538,7 +538,7 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
     #echo "* There may be some errors here due to" 
     #echo "* installation happening in a chroot."
     #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y" &>> /tmp/${FUNCNAME[0]}.install.log
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -y)" || true &>> /tmp/${FUNCNAME[0]}.install.log
     echo "* Image apt upgrade done."
     echo "* Installing wifi & networking tools to image."
     #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
