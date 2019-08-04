@@ -479,12 +479,12 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
     
     echo "* Starting apt update."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
-    update 2>/dev/null | grep packages | cut -d '.' -f 1 
+    update &>> /tmp/${FUNCNAME[0]}.install.log | grep packages | cut -d '.' -f 1 
     echo "* Apt update done."
     echo "* Downloading software for apt upgrade."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives=$apt_cache \
-    upgrade -d -qq 2>/dev/null
+    upgrade -d -qq &>> /tmp/${FUNCNAME[0]}.install.log
     echo "* Apt upgrade download done."
     #echo "* Starting chroot apt update."
     #chroot /mnt /bin/bash -c "/usr/bin/apt update 2>/dev/null \
@@ -494,7 +494,7 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives=$apt_cache \
     -d install wireless-tools wireless-regdb crda \
-    net-tools network-manager -qq 2>/dev/null
+    net-tools network-manager -qq &>> /tmp/${FUNCNAME[0]}.install.log
     
     # This setup is to see if we can get around the issues with kernel
     # module support binaries built in amd64 instead of arm64.
@@ -504,7 +504,7 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives=$apt_cache \
     -d install  \
-    qemu-user qemu libc6-amd64-cross -qq 2>/dev/null
+    qemu-user qemu libc6-amd64-cross -qq &>> /tmp/${FUNCNAME[0]}.install.log
     # Now we have qemu-static & arm64 binaries installed, so we copy libraries over
     # from image to build container in case they are needed during this install.
     #mkdir -p /mnt/lib64/
@@ -513,19 +513,26 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
     #cp /lib/x86_64-linux-gnu/libc.so.6 /mnt/lib/x86_64-linux-gnu/
     #cp /mnt/usr/lib/aarch64-linux-gnu/libc.so.6 /lib64/
     #cp /mnt/lib/ld-linux-aarch64.so.1 /lib/
+    #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -y \
+    #--no-install-recommends \
+    #qemu-user qemu libc6-amd64-cross $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -y \
     --no-install-recommends \
-    qemu-user qemu libc6-amd64-cross $silence_apt_flags"
-               
+    qemu-user qemu libc6-amd64-cross" &>> /tmp/${FUNCNAME[0]}.install.log
+                          
     echo "* Apt upgrading image in chroot."
     #echo "* There may be some errors here due to" 
     #echo "* installation happening in a chroot."
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
+    #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y" &>> /tmp/${FUNCNAME[0]}.install.log
     echo "* Image apt upgrade done."
     echo "* Installing wifi & networking tools to image."
+    #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
+    #install wireless-tools wireless-regdb crda \
+    #net-tools network-manager -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
     install wireless-tools wireless-regdb crda \
-    net-tools network-manager -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
+    net-tools network-manager -qq " &>> /tmp/${FUNCNAME[0]}.install.log
     echo "* Wifi & networking tools installed." 
 endfunc
 }
@@ -684,11 +691,11 @@ startfunc
         debcmd="make \
         ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
         -j $(($(nproc) + 1)) O=$workdir/kernel-build \
-        bindeb-pkg & job=$! &>> /tmp/${FUNCNAME[0]}.compile.log"
+        bindeb-pkg & job=$!"
         
     
         echo $debcmd
-        $debcmd &
+        $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
         while kill -0 $job 2>/dev/null
         do for s in / - \\ \|
             do printf "Compiling Kernel Debs.\r$s"
@@ -1422,8 +1429,13 @@ added_scripts &
 kernel_deb_install &
 kernel_install &
 kernel_debs &
-arm64_chroot_setup &
-
+arm64_chroot_setup & arm64_chroot_setup_job=$!
+        while kill -0 $arm64_chroot_setup_job 2>/dev/null
+        do for s in / - \\ \|
+            do printf "Setting up image software installs.\r$s"
+            sleep .1
+            done
+        done
 #kernel_module_install
 #kernel_install_dtbs &
 image_and_chroot_cleanup
