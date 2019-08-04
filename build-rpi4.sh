@@ -515,7 +515,7 @@ startfunc
     echo "* Downloading software for apt upgrade."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives=$apt_cache \
-    upgrade -d -qq &>> /tmp/${FUNCNAME[0]}.install.log
+    upgrade -d -y &>> /tmp/${FUNCNAME[0]}.install.log
     echo "* Apt upgrade download done."
     #echo "* Starting chroot apt update."
     #chroot /mnt /bin/bash -c "/usr/bin/apt update 2>/dev/null \
@@ -1375,7 +1375,7 @@ startfunc
     
     kpartx -dv $workdir/${new_image}.img
     losetup -d /dev/$loop_device
-    dmsetup remove_all
+    dmsetup remove -f /dev/$loop_device
     dmsetup info
     # To stop here "rm /flag/done.ok_to_exit_container_after_build".
     if [ ! -f /flag/done.ok_to_exit_container_after_build ]; then
