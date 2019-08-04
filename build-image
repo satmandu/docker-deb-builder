@@ -154,7 +154,10 @@ check_for_current_image () {
         else
             echo "* Base image file is current."
         fi
-     [[ ! -f "$(abspath "$srcdir")/${base_image%xz}" ]] && (cd $(abspath "$srcdir") ; xz -dk $(abspath "$srcdir")/${base_image})
+     if [[ ! -f "$(abspath "$srcdir")/${base_image%xz}" ]] 
+     then 
+        cd $(abspath "$srcdir") ; xz -dk $(abspath "$srcdir")/${base_image})
+        fi
 }
 
 
