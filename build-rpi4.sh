@@ -368,11 +368,11 @@ endfunc
 image_extract_and_mount () {
     waitfor "base_image_check"
 startfunc 
-    if [[ -f "/${base_image%xz}" ]] 
-    then cp "/${base_image%xz}" $workdir/$new_image.img
+    if [[ -f "/${base_image%.xz}" ]] 
+    then
+    cp "/${base_image%.xz}" $workdir/$new_image.img
+    [[ $DELTA ]] && (cp "/${base_image%.xz}" $workdir/old_image.img &)
     else
-    echo "local uncompressed copy exists"
-    cp "${workdir}/${base_image%xz}" 
     local size
     local filename   
     echo "* Extracting: ${base_image} to ${new_image}.img"
