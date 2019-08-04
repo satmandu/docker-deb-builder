@@ -1406,7 +1406,7 @@ rpi_userland &
 andrei_gherzan_uboot_fork &
 # KERNEL_VERSION is set here:
 kernelbuild_setup &
-kernel_debs &
+kernel_debs
 #kernel_build &
 image_extract_and_mount
 rpi_config_txt_configuration &
