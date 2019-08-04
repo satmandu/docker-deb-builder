@@ -548,7 +548,7 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
     install wireless-tools wireless-regdb crda \
     net-tools network-manager -qq " &>> /tmp/${FUNCNAME[0]}.install.log
     echo "* Wifi & networking tools installed." 
-    chroot /mnt /bin/bash -c "lsinitramfs /boot/initrd.img" &>> /output/initramfs.log
+    chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &>> /output/initramfs.log
 endfunc
 }
 
@@ -859,13 +859,16 @@ startfunc
 kernel_deb_install () {
     waitfor "kernel_debs"
     waitfor "image_extract_and_mount"
+    waitfor "added_scripts"
 startfunc
     # Try installing the generated debs in chroot before we do anything else.
     cp $workdir/*.deb /mnt/tmp/
     waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
     echo "* Installing $KERNEL_VERS debs to image."
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" &>> /tmp/${FUNCNAME[0]}.install.log
+    chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &>> /output/initramfs.log
 
 endfunc
 }
