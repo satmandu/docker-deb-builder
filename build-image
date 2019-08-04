@@ -115,6 +115,8 @@ download_base_image () {
         echo "* Downloading ${base_image} ."
         if [ -e "$(abspath "$srcdir")/$base_image" ] && \
         [ -e "$(abspath "$srcdir")/${base_image}.shasum" ] ; then
+            [[ -e "$(abspath "$srcdir")/${base_image%xz}" ]] && rm \
+            "$(abspath "$srcdir")/${base_image%xz}"
             cp $(abspath "$srcdir")/$base_image \
             $(abspath "$srcdir")/${base_image}.bak 2>/dev/null
         fi
@@ -152,6 +154,7 @@ check_for_current_image () {
         else
             echo "* Base image file is current."
         fi
+     cd $(abspath "$srcdir") ; xz -dk $(abspath "$srcdir")/${base_image}
 }
 
 

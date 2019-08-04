@@ -368,7 +368,11 @@ endfunc
 image_extract_and_mount () {
     waitfor "base_image_check"
 startfunc 
-    [[ -f "${workdir}/${base_image%xz}" ]] && echo "local uncompressed copy exists"
+    if [[ -f "/${base_image%xz}" ]] 
+    then cp "/${base_image%xz}" $workdir/$new_image.img
+    else
+    echo "local uncompressed copy exists"
+    cp "${workdir}/${base_image%xz}" 
     local size
     local filename   
     echo "* Extracting: ${base_image} to ${new_image}.img"
@@ -387,6 +391,8 @@ startfunc
     #done
     #wait ${xzcat_pid}
     [[ $DELTA ]] && (cp $workdir/$new_image.img $workdir/old_image.img &)
+    fi
+    
     #echo "* Increasing image size by 200M"
     #dd if=/dev/zero bs=1M count=200 >> $workdir/$new_image.img
     echo "* Clearing existing loopback mounts."
