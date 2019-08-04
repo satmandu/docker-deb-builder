@@ -548,6 +548,7 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
     install wireless-tools wireless-regdb crda \
     net-tools network-manager -qq " &>> /tmp/${FUNCNAME[0]}.install.log
     echo "* Wifi & networking tools installed." 
+    chroot /mnt /bin/bash -c "lsinitramfs /boot/initrd.img" &>> /output/initramfs.log
 endfunc
 }
 
