@@ -923,6 +923,16 @@ startfunc
     chroot /mnt /bin/bash -c "flash-kernel --force $KERNEL_VERS" &> /output/initramfs.log
     chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &> /output/initramfs.log
     cp /mnt/boot/initrd.img-$KERNEL_VERS /mnt/boot/firmware/initrd.img
+    cp /mnt/boot/vmlinuz-$KERNEL_VERS /mnt/boot/firmware/vmlinuz
+    vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
+    if [ "$vmlinuz_type" == "MS-DOS executable" ]
+    	then
+    		cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
+    	else
+    	    cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
+    	    cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz \
+    	    &>> /tmp/${FUNCNAME[0]}.install.log
+    fi
     
 
 endfunc
@@ -1503,7 +1513,7 @@ rpi_cmdline_txt_configuration &
 wifi_firmware_modification &
 first_boot_scripts_setup &
 added_scripts &
-kernel_deb_install &
+#kernel_deb_install &
 #kernel_install &
 waitforstart "kernelbuild_setup" && kernel_debs &
 arm64_chroot_setup & arm64_chroot_setup_job=$!
@@ -1522,6 +1532,7 @@ while kill -0 $image_apt_install_job 2>/dev/null
             sleep .1
             done
 done
+kernel_deb_install 
 arbitrary_wait
 image_and_chroot_cleanup
 image_unmount
