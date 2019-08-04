@@ -509,6 +509,11 @@ endfunc
 
 image_apt_download () {
 startfunc    
+    echo "* Remove man-db."
+    #Otherwise this wreaks havoc later. Something with qemu maybe?
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
+     remove -qq --purge man-db" " &>> /tmp/${FUNCNAME[0]}.install.log
+     
     echo "* Starting apt update."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     update &>> /tmp/${FUNCNAME[0]}.install.log | grep packages | cut -d '.' -f 1 
@@ -1211,7 +1216,7 @@ EOF
 	/usr/bin/dpkg -i /var/cache/apt/archives/*.deb
 	/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge
 	/usr/local/bin/chroot-apt-wrapper update && /usr/local/bin/chroot-apt-wrapper upgrade -y
-	/usr/local/bin/chroot-apt-wrapper install qemu-user-binfmt -qq
+	/usr/local/bin/chroot-apt-wrapper install qemu-user-binfmt man-db -qq
 	/usr/sbin/update-initramfs -c -k all
 	sed -i 's/\/etc\/rc.local.temp\ \&//' /etc/rc.local 
 	rm -- "$0"
