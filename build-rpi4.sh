@@ -882,7 +882,7 @@ startfunc
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" &>> /tmp/${FUNCNAME[0]}.install.log
     vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
-    if [ $vmlinuz_type == "MS-DOS executable" ]
+    if [ "$vmlinuz_type" == "MS-DOS executable" ]
     	then
     		cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
     	else
