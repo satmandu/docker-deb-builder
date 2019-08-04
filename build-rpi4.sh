@@ -355,7 +355,7 @@ startfunc
 	local size
 	local filename   
     echo "* Extracting: ${base_image} to ${new_image}.img"
-    read size filename < <(cd ${workdir}; ls -shH ${base_image})
+    read size filename < <(ls -sH ${workdir}/${base_image})
     echo $size
     #size="620M"
     echo "pv -cfpterb -s ${size} -N "xzcat:${base_image}" $workdir/$base_image"
