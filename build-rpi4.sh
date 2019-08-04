@@ -189,7 +189,7 @@ waitfor () {
     fi; 
     done \
    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
-    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [\]" && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
+    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [X]" && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
 }
 
 waitforstart () {
