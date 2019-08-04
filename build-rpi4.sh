@@ -643,19 +643,26 @@ endfunc
 
 kernelbuild_setup () {
     git_get "$kernelgitrepo" "rpi-linux" "$kernel_branch"
-startfunc    
-    #majorversion=`grep VERSION $src_cache/rpi-linux/Makefile | head -1 | awk -F ' = ' '{print $2}'`
-    #patchlevel=`grep PATCHLEVEL $src_cache/rpi-linux/Makefile | head -1 | awk -F ' = ' '{print $2}'`
-    #sublevel=`grep SUBLEVEL $src_cache/rpi-linux/Makefile | head -1 | awk -F ' = ' '{print $2}'`
-    #extraversion=`grep EXTRAVERSION $src_cache/rpi-linux/Makefile | head -1 | awk -F ' = ' '{print $2}'`
-    #extraversion_nohyphen="${extraversion//-}"
-    #PKGVER="$majorversion.$patchlevel.$sublevel"
-    #echo "PKGVER: $PKGVER"
-    kernelrev=$(git -C $src_cache/rpi-linux rev-parse --short HEAD)
-    #KERNEL_VERS="$PKGVER-$kernelrev"
-    #echo "KERNEL_VERS: $KERNEL_VERS"
-    #echo $kernelrev
+    majorversion=`grep VERSION $src_cache/rpi-linux/Makefile | \
+    head -1 | awk -F ' = ' '{print $2}'`
+    patchlevel=`grep PATCHLEVEL $src_cache/rpi-linux/Makefile | \
+    head -1 | awk -F ' = ' '{print $2}'`
+    sublevel=`grep SUBLEVEL $src_cache/rpi-linux/Makefile | \
+    head -1 | awk -F ' = ' '{print $2}'`
+    extraversion=`grep EXTRAVERSION $src_cache/rpi-linux/Makefile | \
+    head -1 | awk -F ' = ' '{print $2}'`
+    extraversion_nohyphen="${extraversion//-}"
+    CONFIG_LOCALVERSION=`grep CONFIG_LOCALVERSION \
+    $src_cache/rpi-linux/arch/arm64/configs/bcm2711_defconfig | \
+    head -1 | awk -F '=' '{print $2}' | sed 's/"//g'`
+    PKGVER="$majorversion.$patchlevel.$sublevel"
     
+    #echo "PKGVER: $PKGVER"
+    kernelrev=`git -C $src_cache/rpi-linux rev-parse --short HEAD` > /dev/null
+    KERNEL_VERS="$PKGVER-$CONFIG_LOCALVERSION-$kernelrev"
+    echo "KERNEL_VERS: $KERNEL_VERS" 
+    echo $KERNEL_VERS > /tmp/KERNEL_VERS
+startfunc    
     cd $workdir/rpi-linux
         # Get rid of dirty localversion as per https://stackoverflow.com/questions/25090803/linux-kernel-kernel-version-string-appended-with-either-or-dirty
     #touch $workdir/rpi-linux/.scmversion
@@ -802,21 +809,21 @@ startfunc
 kernel_debs () {
     waitfor "kernelbuild_setup"
 startfunc
-    majorversion=`grep VERSION $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'`
-    patchlevel=`grep PATCHLEVEL $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'`
-    sublevel=`grep SUBLEVEL $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'`
-    extraversion=`grep EXTRAVERSION $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'`
-    extraversion_nohyphen="${extraversion//-}"
-    PKGVER="$majorversion.$patchlevel.$sublevel"
-    #echo "PKGVER: $PKGVER"
-    kernelrev=`git -C $src_cache/rpi-linux rev-parse --short HEAD` > /dev/null
-    KERNEL_VERS="$PKGVER-$kernelrev"
-    echo "KERNEL_VERS: $KERNEL_VERS" 
-    echo $KERNEL_VERS > /tmp/KERNEL_VERS
+#     majorversion=`grep VERSION $src_cache/rpi-linux/Makefile | \
+#     head -1 | awk -F ' = ' '{print $2}'`
+#     patchlevel=`grep PATCHLEVEL $src_cache/rpi-linux/Makefile | \
+#     head -1 | awk -F ' = ' '{print $2}'`
+#     sublevel=`grep SUBLEVEL $src_cache/rpi-linux/Makefile | \
+#     head -1 | awk -F ' = ' '{print $2}'`
+#     extraversion=`grep EXTRAVERSION $src_cache/rpi-linux/Makefile | \
+#     head -1 | awk -F ' = ' '{print $2}'`
+#     extraversion_nohyphen="${extraversion//-}"
+#     PKGVER="$majorversion.$patchlevel.$sublevel"
+#     #echo "PKGVER: $PKGVER"
+#     kernelrev=`git -C $src_cache/rpi-linux rev-parse --short HEAD` > /dev/null
+#     KERNEL_VERS="$PKGVER-$kernelrev"
+#     echo "KERNEL_VERS: $KERNEL_VERS" 
+#     echo $KERNEL_VERS > /tmp/KERNEL_VERS
     #kernelrev=`git -C $src_cache/rpi-linux rev-parse --short HEAD`
     #echo $kernelrev
    # Don't remake debs if they already exist in output.
@@ -1456,7 +1463,7 @@ first_boot_scripts_setup &
 added_scripts &
 kernel_deb_install &
 kernel_install &
-kernel_debs &
+waitforstart "kernelbuild_setup" && kernel_debs &
 arm64_chroot_setup & arm64_chroot_setup_job=$!
 echo $arm64_chroot_setup_job > /tmp/arm64_chroot_setup_job.pid
 waitforstart "arm64_chroot_setup"
