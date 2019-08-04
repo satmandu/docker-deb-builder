@@ -375,7 +375,7 @@ startfunc
     #echo $size
     #size="620M"
     #echo "pv -cfpterb -s ${size} -N "xzcat:${base_image}" $workdir/$base_image"
-    pv -s ${size} -N "xzcat:${base_image}" $workdir/$base_image | xzcat > $workdir/$new_image.img
+    pv -s ${size} -p -N "xzcat:${base_image}" $workdir/$base_image | xzcat > $workdir/$new_image.img
     #xzcat_pid=$(pgrep ^xzcat)
     #while true; do
     #    pgrep ^xzcat > /dev/null
