@@ -868,7 +868,9 @@ startfunc
     echo "* Installing $KERNEL_VERS debs to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" &>> /tmp/${FUNCNAME[0]}.install.log
-    gunzip -c -f /mnt/boot/firmware/vmlinuz > /mnt/boot/firmware/kernel8.img.nouboot &>> /tmp/${FUNCNAME[0]}.install.log
+    cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
+    cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz &>> /tmp/${FUNCNAME[0]}.install.log
+    #gunzip -c -f /mnt/boot/firmware/vmlinuz > /mnt/boot/firmware/kernel8.img.nouboot &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "update-initramfs -c -k all" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "flash-kernel" &> /output/initramfs.log
     chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &> /output/initramfs.log
