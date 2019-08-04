@@ -1381,8 +1381,8 @@ startfunc
 
     
     kpartx -dv $workdir/${new_image}.img
-    losetup -d /dev/$loop_device
-    dmsetup remove -f /dev/$loop_device
+    losetup -d /dev/$loop_device || true
+    dmsetup remove -f /dev/$loop_device || true
     dmsetup info
     # To stop here "rm /flag/done.ok_to_exit_container_after_build".
     if [ ! -f /flag/done.ok_to_exit_container_after_build ]; then
