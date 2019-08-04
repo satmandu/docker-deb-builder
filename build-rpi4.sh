@@ -392,7 +392,7 @@ startfunc
     #wait ${xzcat_pid}
     [[ $DELTA ]] && (cp $workdir/$new_image.img $workdir/old_image.img &)
     fi
-    
+    [[ -f "/output/loop_device" ]] && ( old_loop_device=`cat /output/loop_device` ; dmsetup remove -f /dev/mapper/${old_loop_device} || true)
     #echo "* Increasing image size by 200M"
     #dd if=/dev/zero bs=1M count=200 >> $workdir/$new_image.img
     echo "* Clearing existing loopback mounts."
@@ -407,6 +407,7 @@ startfunc
     loop_device=$(kpartx -avs ${new_image}.img \
     | sed -n 's/\(^.*map\ \)// ; s/p1\ (.*//p')
     echo $loop_device >> /tmp/loop_device
+    echo $loop_device > /output/loop_device
     #e2fsck -f /dev/loop0p2
     #resize2fs /dev/loop0p2
     
