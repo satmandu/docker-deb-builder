@@ -65,9 +65,11 @@ ccache -F 0 > /dev/null
 echo "Build ccache stats:"
 ccache -s
 
+
 # Create work directory.
+mkdir -p /build/source
 workdir=/build/source
-mkdir -p $workdir
+#mkdir -p $workdir
 #cp -a /source-ro/ $workdir
 
 # Source cache is on the cache volume.
@@ -356,7 +358,7 @@ startfunc
     echo "* Extracting: ${base_image} to ${new_image}.img"
     read size filename < <(cd ${workdir}; ls -sh ${base_image})
     echo $size
-    size="615M"
+    size="620M"
     echo "pv -cfpterb -s ${size} -N "xzcat:${base_image}" $workdir/$base_image"
     pv -cfpterb -s ${size} -N "xzcat:${base_image}" $workdir/$base_image | xzcat > $workdir/$new_image.img
     #xzcat_pid=$(pgrep ^xzcat)
