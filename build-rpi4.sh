@@ -512,7 +512,7 @@ startfunc
     echo "* Remove man-db."
     #Otherwise this wreaks havoc later. Something with qemu maybe?
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
-     remove -qq --purge man-db" " &>> /tmp/${FUNCNAME[0]}.install.log
+     remove -qq --purge man-db" &>> /tmp/${FUNCNAME[0]}.install.log
      
     echo "* Starting apt update."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
@@ -552,12 +552,13 @@ startfunc
     #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -y \
     #--no-install-recommends \
     #qemu-user qemu libc6-amd64-cross $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
+    
 endfunc
 }
 
 image_apt_upgrade () {
 startfunc 
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -y \
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -qq \
     --no-install-recommends \
     qemu-user qemu libc6-amd64-cross" &>> /tmp/${FUNCNAME[0]}.install.log
                           
@@ -565,7 +566,7 @@ startfunc
     #echo "* There may be some errors here due to" 
     #echo "* installation happening in a chroot."
     #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -y)" || true &>> /tmp/${FUNCNAME[0]}.install.log
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -qq || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -qq)" || true &>> /tmp/${FUNCNAME[0]}.install.log
     echo "* Image apt upgrade done."
 endfunc
 }
