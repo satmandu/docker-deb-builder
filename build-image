@@ -218,7 +218,7 @@ docker_args+="--cidfile=$cidfile "
 # If the build script fails, the log is still copied out.
 #[ -e "/tmp/build.log" ] && cat /tmp/build.log > /output/build_fail.log || exit 0
 #startcmd='/build-rpi4.sh ; ls -crGg /flag > /output/build_fail_status.log ; [ -e "/tmp/build.log" ] && (mv /tmp/build.log /tmp/build_fail.log; cp /tmp/*.log /output/ ; chown $USER:$GROUP /output/*.log )  || exit 0'
-startcmd='/build-rpi4.sh ;  [ -e "/tmp/build.log" ] && (ls -crGg /flag > /tmp/build_fail_status.log ; mv /tmp/build.log /tmp/build_fail.log; cp /tmp/*.log /output/ ; chown $USER:$GROUP /output/*.log )  || exit 0'
+startcmd='/build-rpi4.sh ;  [ -e "/tmp/build.log" ] && (ls -crGg /flag > /tmp/build_fail_status.log ; grep "" /flag/* >> /tmp/build_fail_status.log ; mv /tmp/build.log /tmp/build_fail.log; cp /tmp/*.log /output/ ; chown $USER:$GROUP /output/*.log;  )  || exit 0'
 # Clear old build failure log file.
 rm -f $outdir/build_fail.log
 rm -rf $outdir/build_fail_status.log
