@@ -368,10 +368,10 @@ endfunc
 image_extract_and_mount () {
     waitfor "base_image_check"
 startfunc 
-    if [[ -f "/${base_image%.xz}" ]] 
+    if [[ -f "/source-ro/${base_image%.xz}" ]] 
     then
-    cp "/${base_image%.xz}" $workdir/$new_image.img
-    [[ $DELTA ]] && (ln -s "/${base_image%.xz}" $workdir/old_image.img &)
+    cp "/source-ro/${base_image%.xz}" $workdir/$new_image.img
+    [[ $DELTA ]] && (ln -s "/source-ro/${base_image%.xz}" $workdir/old_image.img &)
     else
     local size
     local filename   
