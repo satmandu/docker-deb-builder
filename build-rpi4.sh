@@ -348,9 +348,12 @@ endfunc
 
 image_extract_and_mount () {
     waitfor "base_image_check"
-startfunc    
+startfunc 
+	local size
+	local filename   
     echo "* Extracting: ${base_image} to ${new_image}.img"
-    pv -cfpterb -N "xzcat:${base_image}" $workdir/$base_image | xzcat > $workdir/$new_image.img
+    read size filename < <(ls -sh ${base_image})
+    pv -cfpterb -s $size -N "xzcat:${base_image}" $workdir/$base_image | xzcat > $workdir/$new_image.img
     #xzcat_pid=$(pgrep ^xzcat)
     #while true; do
     #    pgrep ^xzcat > /dev/null
