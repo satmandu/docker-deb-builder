@@ -1421,7 +1421,7 @@ first_boot_scripts_setup &
 added_scripts &
 kernel_deb_install &
 kernel_install &
-kernel_debs
+kernel_debs &
 arm64_chroot_setup &
 
 #kernel_module_install
