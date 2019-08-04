@@ -205,8 +205,8 @@ startfunc () {
 }
 
 endfunc () {
-    rm /tmp/${FUNCNAME[1]}.compile.log
-    rm /tmp/${FUNCNAME[1]}.install.log
+    [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.compile.log || true
+    [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
     mv /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
     #for i in {0..15}
     #    do
