@@ -399,6 +399,7 @@ startfunc
     # This is dangerous as this may not be the relevant loop device.
     #losetup -d /dev/loop0 &>/dev/null || true
     #dmsetup remove_all
+    dmsetup info
     losetup -a
     cd $workdir
     echo "* Mounting: ${new_image}.img"
