@@ -1512,6 +1512,7 @@ echo $arm64_chroot_setup_job > /tmp/arm64_chroot_setup_job.pid
 waitfor "arm64_chroot_setup" && image_apt_download
 image_apt_upgrade
 image_apt_install & image_apt_install_job=$!
+
 #waitforstart "image_apt_install"
 #image_apt_install_job=`cat /flag/start.image_apt_install`
 while kill -0 $image_apt_install_job 2>/dev/null
@@ -1520,6 +1521,7 @@ while kill -0 $image_apt_install_job 2>/dev/null
             sleep .1
             done
 done
+arbitrary_wait
 image_and_chroot_cleanup
 image_unmount
 compressed_image_export &
