@@ -565,6 +565,7 @@ startfunc
     #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -qq || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -qq)" || true &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Image apt upgrade done."
+    
 endfunc
 }
 
@@ -579,6 +580,7 @@ startfunc
     net-tools network-manager -qq " &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Wifi & networking tools installed." 
     #chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &>> /output/initramfs.log
+
 endfunc
 }
 
@@ -1081,7 +1083,7 @@ EOF
      sed -i 's/total_mem=*$/total_mem=3072/' /mnt/boot/firmware/config.txt || \
      echo "total_mem=3072" >> /mnt/boot/firmware/config.txt
 
-    cat /mnt/boot/firmware/config.txt 
+    #cat /mnt/boot/firmware/config.txt 
 endfunc
 }
 
