@@ -405,7 +405,7 @@ startfunc
     
     loop_device=$(kpartx -avs ${new_image}.img \
     | sed -n 's/\(^.*map\ \)// ; s/p1\ (.*//p')
-    
+    echo $loop_device >> /tmp/loop_device
     #e2fsck -f /dev/loop0p2
     #resize2fs /dev/loop0p2
     
@@ -499,7 +499,14 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
     mkdir -p /mnt/build
     mount -o bind /build /mnt/build
     echo "* ARM64 chroot setup is complete." 
-    
+    image_apt_download
+    image_apt_upgrade
+    image_apt_install 
+endfunc
+}
+
+image_apt_download () {
+startfunc    
     echo "* Starting apt update."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     update &>> /tmp/${FUNCNAME[0]}.install.log | grep packages | cut -d '.' -f 1 
@@ -518,7 +525,6 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
     -o dir::cache::archives=$apt_cache \
     -d install wireless-tools wireless-regdb crda \
     net-tools network-manager -qq &>> /tmp/${FUNCNAME[0]}.install.log
-    
     # This setup is to see if we can get around the issues with kernel
     # module support binaries built in amd64 instead of arm64.
     #echo "* Downloading qemu-user-static"
@@ -539,6 +545,11 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
     #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -y \
     #--no-install-recommends \
     #qemu-user qemu libc6-amd64-cross $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
+endfunc
+}
+
+image_apt_upgrade () {
+startfunc 
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -y \
     --no-install-recommends \
     qemu-user qemu libc6-amd64-cross" &>> /tmp/${FUNCNAME[0]}.install.log
@@ -549,7 +560,11 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
     #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -y)" || true &>> /tmp/${FUNCNAME[0]}.install.log
     echo "* Image apt upgrade done."
-    echo "* Installing wifi & networking tools to image."
+endfunc
+}
+image_apt_install () {
+startfunc
+  echo "* Installing wifi & networking tools to image."
     #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
     #install wireless-tools wireless-regdb crda \
     #net-tools network-manager -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
@@ -557,7 +572,7 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
     install wireless-tools wireless-regdb crda \
     net-tools network-manager -qq " &>> /tmp/${FUNCNAME[0]}.install.log
     echo "* Wifi & networking tools installed." 
-    chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &>> /output/initramfs.log
+    #chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &>> /output/initramfs.log
 endfunc
 }
 
@@ -1348,6 +1363,7 @@ endfunc
 image_unmount () {
 startfunc
     echo "* Unmounting modified ${new_image}.img"
+    loop_device=`cat /tmp/loop_device`
     sync
     umount /mnt/boot/firmware || (lsof +f -- /mnt/boot/firmware ; sleep 60 ; umount /mnt/boot/firmware)
     #umount /mnt || (mount | grep /mnt)
@@ -1357,9 +1373,9 @@ startfunc
 
     
     kpartx -dv $workdir/${new_image}.img
-    #losetup -d /dev/loop0
+    losetup -d /dev/$loop_device
     dmsetup remove_all
-    
+    dmsetup info
     # To stop here "rm /flag/done.ok_to_exit_container_after_build".
     if [ ! -f /flag/done.ok_to_exit_container_after_build ]; then
         echo "** Image unmounted & container paused. **"
