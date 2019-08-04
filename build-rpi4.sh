@@ -392,7 +392,7 @@ startfunc
     #wait ${xzcat_pid}
     [[ $DELTA ]] && (cp $workdir/$new_image.img $workdir/old_image.img &)
     fi
-    [[ -f "/output/loop_device" ]] && ( old_loop_device=`cat /output/loop_device` ; dmsetup remove -f /dev/mapper/${old_loop_device} || true)
+    [[ -f "/output/loop_device" ]] && ( old_loop_device=`cat /output/loop_device` ; dmsetup remove -f /dev/mapper/${old_loop_device}p2 || true; dmsetup remove -f /dev/mapper/${old_loop_device}p1 || true)
     #echo "* Increasing image size by 200M"
     #dd if=/dev/zero bs=1M count=200 >> $workdir/$new_image.img
     echo "* Clearing existing loopback mounts."
