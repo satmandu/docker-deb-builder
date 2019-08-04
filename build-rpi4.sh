@@ -934,8 +934,9 @@ EOF
     if ! grep -qs 'arm_64bit=1' /mnt/boot/firmware/config.txt
         then echo "arm_64bit=1" >> /mnt/boot/firmware/config.txt
     fi
+    
     if ! grep -qs 'kernel8.bin' /mnt/boot/firmware/config.txt
-        then sed -i -r 's/kernel8.bin/kernel8.img/' /mnt/boot/firmware/config.txt
+        then sed -i 's/kernel8.bin/kernel8.img/' /mnt/boot/firmware/config.txt
     fi
     
     if ! grep -qs 'initramfs' /mnt/boot/firmware/config.txt
