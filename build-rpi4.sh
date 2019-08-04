@@ -869,7 +869,7 @@ startfunc
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "update-initramfs -c -k all" &>> /tmp/${FUNCNAME[0]}.install.log
-    chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &>> /output/initramfs.log
+    chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &> /output/initramfs.log
     
 
 endfunc
