@@ -688,6 +688,7 @@ startfunc
 kernel_build () {
     waitfor "kernelbuild_setup"
 startfunc
+    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
     cd $workdir/rpi-linux
     make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
@@ -828,6 +829,7 @@ startfunc
     #echo $kernelrev
    # Don't remake debs if they already exist in output.
    #arbitrary_wait
+   KERNEL_VERS=`cat /tmp/KERNEL_VERS`
    echo -e "Looking for cached $KERNEL_VERS kernel debs ."
     for f in $apt_cache/linux-image-*${kernelrev}*; do
      [ -e "$f" ] && (echo -e "Preexisting linux-image deb on cache volume. 😎\n"\
@@ -871,6 +873,7 @@ kernel_deb_install () {
     waitfor "image_extract_and_mount"
     waitfor "added_scripts"
 startfunc
+    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
     # Try installing the generated debs in chroot before we do anything else.
     cp $workdir/*.deb /mnt/tmp/
     waitfor "added_scripts"
@@ -878,11 +881,18 @@ startfunc
     echo "* Installing $KERNEL_VERS debs to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" &>> /tmp/${FUNCNAME[0]}.install.log
-    cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
-    cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz  || mv /mnt/boot/firmware/kernel8.img.nouboot.gz /mnt/boot/firmware/kernel8.img.nouboot &>> /tmp/${FUNCNAME[0]}.install.log
-    #gunzip -c -f /mnt/boot/firmware/vmlinuz > /mnt/boot/firmware/kernel8.img.nouboot &>> /tmp/${FUNCNAME[0]}.install.log
+    vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
+    if [ $vmlinuz_type == "MS-DOS executable" ]
+    	then
+    		cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
+    	else
+    	    cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
+    	    cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz \
+    	    &>> /tmp/${FUNCNAME[0]}.install.log
+    fi
+    &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "update-initramfs -c -k all" &>> /tmp/${FUNCNAME[0]}.install.log
-    chroot /mnt /bin/bash -c "flash-kernel" &> /output/initramfs.log
+    chroot /mnt /bin/bash -c "flash-kernel --force $KERNEL_VERS" &> /output/initramfs.log
     chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &> /output/initramfs.log
     
 
