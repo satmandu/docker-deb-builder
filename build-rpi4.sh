@@ -505,6 +505,7 @@ endfunc
 }
 
 image_apt_download () {
+        waitfor "arm64_chroot_setup"
 startfunc    
     echo "* Remove man-db."
     #Otherwise this wreaks havoc later. Something with qemu maybe?
@@ -554,6 +555,7 @@ endfunc
 }
 
 image_apt_upgrade () {
+        waitfor "image_apt_download"
 startfunc 
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -qq \
     --no-install-recommends \
@@ -570,6 +572,7 @@ endfunc
 }
 
 image_apt_install () {
+        waitfor "image_apt_upgrade"
 startfunc
   echo "* Installing wifi & networking tools to image."
     #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
@@ -902,6 +905,7 @@ kernel_deb_install () {
     waitfor "kernel_debs"
     waitfor "image_extract_and_mount"
     waitfor "added_scripts"
+    waitfor "image_apt_install"
 startfunc
     KERNEL_VERS=`cat /tmp/KERNEL_VERS`
     # Try installing the generated debs in chroot before we do anything else.
@@ -1333,6 +1337,7 @@ image_and_chroot_cleanup () {
     waitfor "first_boot_scripts_setup"
     waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
+    waitfor "kernel_deb_install"
 startfunc    
     echo "* Finishing image setup."
     
@@ -1522,8 +1527,9 @@ arm64_chroot_setup & arm64_chroot_setup_job=$!
 echo $arm64_chroot_setup_job > /tmp/arm64_chroot_setup_job.pid
 #kernel_module_install
 #kernel_install_dtbs &
-waitfor "arm64_chroot_setup" && image_apt_download
-image_apt_upgrade
+#waitfor "arm64_chroot_setup" && image_apt_download
+image_apt_download &
+image_apt_upgrade &
 image_apt_install & image_apt_install_job=$!
 
 #waitforstart "image_apt_install"
@@ -1535,7 +1541,7 @@ while kill -0 $image_apt_install_job 2>/dev/null
             done
 done
 arbitrary_wait
-kernel_deb_install 
+kernel_deb_install &
 
 image_and_chroot_cleanup
 image_unmount
