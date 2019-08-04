@@ -1237,6 +1237,7 @@ image_and_chroot_cleanup () {
     waitfor "wifi_firmware_modification"
     waitfor "first_boot_scripts_setup"
     waitfor "added_scripts"
+    waitfor "arm64_chroot_setup"
 startfunc    
     echo "* Finishing image setup."
     
