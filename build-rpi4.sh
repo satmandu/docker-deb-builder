@@ -1287,7 +1287,7 @@ image_and_chroot_cleanup () {
     waitfor "non-free_firmware"
     waitfor "rpi_userland"
     waitfor "andrei_gherzan_uboot_fork"
-    waitfor "kernel_install"
+    #waitfor "kernel_install"
     waitfor "kernel_debs"
     #waitfor "kernel_module_install"
     #waitfor "kernel_install_dtbs"
