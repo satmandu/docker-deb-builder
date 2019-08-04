@@ -353,7 +353,9 @@ startfunc
 	local filename   
     echo "* Extracting: ${base_image} to ${new_image}.img"
     read size filename < <(ls -sh ${base_image})
-    pv -cfpterb -s $size -N "xzcat:${base_image}" $workdir/$base_image | xzcat > $workdir/$new_image.img
+    decompresscmd="pv -cfpterb -s ${size} -N "xzcat:${base_image}" $workdir/$base_image | xzcat > $workdir/$new_image.img"
+    echo $decompresscmd
+    $decompresscmd
     #xzcat_pid=$(pgrep ^xzcat)
     #while true; do
     #    pgrep ^xzcat > /dev/null
