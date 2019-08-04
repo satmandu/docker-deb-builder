@@ -684,11 +684,11 @@ startfunc
         debcmd="make \
         ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
         -j $(($(nproc) + 1)) O=$workdir/kernel-build \
-        bindeb-pkg & job=$!"
+        bindeb-pkg & job=$! &>> /tmp/${FUNCNAME[0]}.compile.log"
         
     
         echo $debcmd
-        $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
+        $debcmd &
         while kill -0 $job 2>/dev/null
         do for s in / - \\ \|
             do printf "Compiling Kernel Debs.\r$s"
