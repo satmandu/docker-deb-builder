@@ -513,12 +513,12 @@ startfunc
      
     echo "* Starting apt update."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
-    update &>> /tmp/${FUNCNAME[0]}.install.log | grep packages | cut -d '.' -f 1 
+    update &>> /tmp/${FUNCNAME[0]}.install.log | grep packages | cut -d '.' -f 1  || true
     echo "* Apt update done."
     echo "* Downloading software for apt upgrade."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives=$apt_cache \
-    upgrade -d -y &>> /tmp/${FUNCNAME[0]}.install.log
+    upgrade -d -y &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Apt upgrade download done."
     #echo "* Starting chroot apt update."
     #chroot /mnt /bin/bash -c "/usr/bin/apt update 2>/dev/null \
@@ -528,7 +528,7 @@ startfunc
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives=$apt_cache \
     -d install wireless-tools wireless-regdb crda \
-    net-tools network-manager -qq &>> /tmp/${FUNCNAME[0]}.install.log
+    net-tools network-manager -qq &>> /tmp/${FUNCNAME[0]}.install.log || true
     # This setup is to see if we can get around the issues with kernel
     # module support binaries built in amd64 instead of arm64.
     #echo "* Downloading qemu-user-static"
@@ -537,7 +537,7 @@ startfunc
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives=$apt_cache \
     -d install  \
-    qemu-user qemu libc6-amd64-cross -qq &>> /tmp/${FUNCNAME[0]}.install.log
+    qemu-user qemu libc6-amd64-cross -qq &>> /tmp/${FUNCNAME[0]}.install.log || true
     # Now we have qemu-static & arm64 binaries installed, so we copy libraries over
     # from image to build container in case they are needed during this install.
     #mkdir -p /mnt/lib64/
@@ -908,7 +908,7 @@ startfunc
     waitfor "arm64_chroot_setup"
     echo "* Installing $KERNEL_VERS debs to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" &>> /tmp/${FUNCNAME[0]}.install.log
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" &>> /tmp/${FUNCNAME[0]}.install.log || true
     vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
     if [ "$vmlinuz_type" == "MS-DOS executable" ]
     	then
