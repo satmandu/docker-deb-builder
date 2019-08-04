@@ -80,7 +80,7 @@ apt_cache=/cache/apt_cache
 # This is needed or apt has issues.
 mkdir -p $apt_cache/partial 
 
-env >> /output/environment
+#env >> /output/environment
 
 # Make sure inotify-tools is installed.
 apt-get -o dir::cache::archives=$apt_cache install inotify-tools lsof xdelta3 vim \
@@ -375,7 +375,7 @@ startfunc
     #echo $size
     #size="620M"
     #echo "pv -cfpterb -s ${size} -N "xzcat:${base_image}" $workdir/$base_image"
-    pv -cfpterb -s ${size} -N "xzcat:${base_image}" $workdir/$base_image | xzcat > $workdir/$new_image.img
+    pv -s ${size} -N "xzcat:${base_image}" $workdir/$base_image | xzcat > $workdir/$new_image.img
     #xzcat_pid=$(pgrep ^xzcat)
     #while true; do
     #    pgrep ^xzcat > /dev/null
