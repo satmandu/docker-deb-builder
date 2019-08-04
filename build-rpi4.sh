@@ -371,7 +371,7 @@ startfunc
     if [[ -f "/${base_image%.xz}" ]] 
     then
     cp "/${base_image%.xz}" $workdir/$new_image.img
-    [[ $DELTA ]] && (cp "/${base_image%.xz}" $workdir/old_image.img &)
+    [[ $DELTA ]] && (ln -s "/${base_image%.xz}" $workdir/old_image.img &)
     else
     local size
     local filename   
@@ -918,7 +918,7 @@ startfunc
     # We replacee uboot with kernel, but we're installing the kernel here as
     # well. If a working uboot is not available copy this over to kernel8.img
     #cp $workdir/kernel-build/arch/arm64/boot/Image /mnt/boot/firmware/kernel8.img.nouboot
-    gunzip -c -f /mnt/boot/firmware/vmlinuz > /mnt/boot/firmware/kernel8.img.nouboot &>> /tmp/${FUNCNAME[0]}.install.log
+    #gunzip -c -f /mnt/boot/firmware/vmlinuz > /mnt/boot/firmware/kernel8.img.nouboot &>> /tmp/${FUNCNAME[0]}.install.log
     #
     # uboot uses uboot & the standard raspberry pi boot script to boot a compressed 
     # kernel on arm64, since linux on arm64 does not support self-decompression of 
@@ -1479,7 +1479,7 @@ wifi_firmware_modification &
 first_boot_scripts_setup &
 added_scripts &
 kernel_deb_install &
-kernel_install &
+#kernel_install &
 waitforstart "kernelbuild_setup" && kernel_debs &
 arm64_chroot_setup & arm64_chroot_setup_job=$!
 echo $arm64_chroot_setup_job > /tmp/arm64_chroot_setup_job.pid
