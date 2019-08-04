@@ -355,7 +355,7 @@ image_extract_and_mount () {
     waitfor "base_image_check"
 startfunc 
     local size
-    lcal filename   
+    local filename   
     echo "* Extracting: ${base_image} to ${new_image}.img"
     read size filename < <(ls -sH ${workdir}/${base_image})
     #echo $size
