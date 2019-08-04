@@ -1166,8 +1166,8 @@ andrei_gherzan_uboot_fork () {
 startfunc
     git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/rpi4"   
     cd $workdir/u-boot
-    curl -O https://github.com/satmandu/u-boot/commit/b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
-    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
+#    curl -O https://github.com/satmandu/u-boot/commit/b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
+#    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
     echo "CONFIG_LZ4=y" >> $workdir/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_GZIP=y" >> $workdir/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_BZIP2=y" >> $workdir/u-boot/configs/rpi_4_defconfig
