@@ -687,7 +687,7 @@ kernelbuild_setup () {
     
     #echo "PKGVER: $PKGVER"
     kernelrev=`git -C $src_cache/rpi-linux rev-parse --short HEAD` > /dev/null
-    KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-${kernelrev}"
+    KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${kernelrev}"
     echo "KERNEL_VERS: $KERNEL_VERS" 
     echo $KERNEL_VERS > /tmp/KERNEL_VERS
 startfunc    
@@ -922,6 +922,7 @@ startfunc
     chroot /mnt /bin/bash -c "update-initramfs -c -k all" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "flash-kernel --force $KERNEL_VERS" &> /output/initramfs.log
     chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &> /output/initramfs.log
+    cp /mnt/boot/initrd.img-$KERNEL_VERS /mnt/boot/firmware/initrd.img
     
 
 endfunc
