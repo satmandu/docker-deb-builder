@@ -557,13 +557,13 @@ image_apt_upgrade () {
 startfunc 
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -qq \
     --no-install-recommends \
-    qemu-user qemu libc6-amd64-cross" &>> /tmp/${FUNCNAME[0]}.install.log
+    qemu-user qemu libc6-amd64-cross" &>> /tmp/${FUNCNAME[0]}.install.log || true
                           
     echo "* Apt upgrading image in chroot."
     #echo "* There may be some errors here due to" 
     #echo "* installation happening in a chroot."
     #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -qq || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -qq)" || true &>> /tmp/${FUNCNAME[0]}.install.log
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -qq || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -qq)" || true &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Image apt upgrade done."
 endfunc
 }
@@ -576,7 +576,7 @@ startfunc
     #net-tools network-manager -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
     install wireless-tools wireless-regdb crda \
-    net-tools network-manager -qq " &>> /tmp/${FUNCNAME[0]}.install.log
+    net-tools network-manager -qq " &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Wifi & networking tools installed." 
     #chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &>> /output/initramfs.log
 endfunc
@@ -907,23 +907,23 @@ startfunc
     waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
     echo "* Installing $KERNEL_VERS debs to image."
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log
-    (chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb"  || true ) &>> /tmp/${FUNCNAME[0]}.install.log 
-    vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
-    if [ "$vmlinuz_type" == "MS-DOS executable" ]
-    	then
-    		cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
-    	else
-    	    cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
-    	    cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz \
-    	    &>> /tmp/${FUNCNAME[0]}.install.log
-    fi
-    &>> /tmp/${FUNCNAME[0]}.install.log
-    (chroot /mnt /bin/bash -c "update-initramfs -c -k all" || true) &>> /tmp/${FUNCNAME[0]}.install.log
-    chroot /mnt /bin/bash -c "flash-kernel --force $KERNEL_VERS"|| true &>> /tmp/${FUNCNAME[0]}.install.log 
-    chroot /mnt /bin/bash -c "lsinitramfs /mnt/boot/firmware/initrd.img" &> /output/initramfs.log
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log || true
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb"  &>> /tmp/${FUNCNAME[0]}.install.log || true
+#     vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
+#     if [ "$vmlinuz_type" == "MS-DOS executable" ]
+#     	then
+#     		cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
+#     	else
+#     	    cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
+#     	    cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz \
+#     	    &>> /tmp/${FUNCNAME[0]}.install.log
+#     fi
+#     &>> /tmp/${FUNCNAME[0]}.install.log
+    #chroot /mnt /bin/bash -c "update-initramfs -c -k all" &>> /tmp/${FUNCNAME[0]}.install.log || true 
+    #chroot /mnt /bin/bash -c "flash-kernel --force $KERNEL_VERS" &>> /tmp/${FUNCNAME[0]}.install.log || true
     cp /mnt/boot/initrd.img-$KERNEL_VERS /mnt/boot/firmware/initrd.img
     cp /mnt/boot/vmlinuz-$KERNEL_VERS /mnt/boot/firmware/vmlinuz
+    chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &> /output/initramfs.log || true
     vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
     if [ "$vmlinuz_type" == "MS-DOS executable" ]
     	then
