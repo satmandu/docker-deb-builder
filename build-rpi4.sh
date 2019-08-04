@@ -868,7 +868,9 @@ startfunc
     echo "* Installing $KERNEL_VERS debs to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" &>> /tmp/${FUNCNAME[0]}.install.log
+    chroot /mnt /bin/bash -c "update-initramfs -c -k all" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &>> /output/initramfs.log
+    
 
 endfunc
 }
@@ -885,7 +887,7 @@ startfunc
     # We replacee uboot with kernel, but we're installing the kernel here as
     # well. If a working uboot is not available copy this over to kernel8.img
     #cp $workdir/kernel-build/arch/arm64/boot/Image /mnt/boot/firmware/kernel8.img.nouboot
-    gunzip -c -f /mnt/boot/vmlinuz > /mnt/boot/firmware/kernel8.img.nouboot
+    gunzip -c -f /mnt/boot/firmware/vmlinuz > /mnt/boot/firmware/kernel8.img.nouboot
     #
     # uboot uses uboot & the standard raspberry pi boot script to boot a compressed 
     # kernel on arm64, since linux on arm64 does not support self-decompression of 
