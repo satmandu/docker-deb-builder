@@ -1509,7 +1509,7 @@ arm64_chroot_setup & arm64_chroot_setup_job=$!
 echo $arm64_chroot_setup_job > /tmp/arm64_chroot_setup_job.pid
 #kernel_module_install
 #kernel_install_dtbs &
-image_apt_download
+waitfor "arm64_chroot_setup" && image_apt_download
 image_apt_upgrade
 image_apt_install & image_apt_install_job=$!
 #waitforstart "image_apt_install"
