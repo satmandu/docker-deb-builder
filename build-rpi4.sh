@@ -1011,7 +1011,8 @@ EOF
      [ `grep -cs "total_mem=" /mnt/boot/firmware/config.txt` -gt 0 ] && \
      sed -i 's/total_mem=*$/total_mem=3072/' /mnt/boot/firmware/config.txt || \
      echo "total_mem=3072" >> /mnt/boot/firmware/config.txt
-     
+
+    cat /mnt/boot/firmware/config.txt 
 endfunc
 }
 
