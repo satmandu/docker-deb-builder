@@ -908,7 +908,7 @@ startfunc
     waitfor "arm64_chroot_setup"
     echo "* Installing $KERNEL_VERS debs to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" &>> /tmp/${FUNCNAME[0]}.install.log || true
+    (chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb"  || true ) &>> /tmp/${FUNCNAME[0]}.install.log 
     vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
     if [ "$vmlinuz_type" == "MS-DOS executable" ]
     	then
@@ -919,8 +919,8 @@ startfunc
     	    &>> /tmp/${FUNCNAME[0]}.install.log
     fi
     &>> /tmp/${FUNCNAME[0]}.install.log
-    chroot /mnt /bin/bash -c "update-initramfs -c -k all" &>> /tmp/${FUNCNAME[0]}.install.log
-    chroot /mnt /bin/bash -c "flash-kernel --force $KERNEL_VERS" &> /output/initramfs.log
+    (chroot /mnt /bin/bash -c "update-initramfs -c -k all" || true) &>> /tmp/${FUNCNAME[0]}.install.log
+    chroot /mnt /bin/bash -c "flash-kernel --force $KERNEL_VERS"|| true &>> /tmp/${FUNCNAME[0]}.install.log 
     chroot /mnt /bin/bash -c "lsinitramfs /mnt/boot/firmware/initrd.img" &> /output/initramfs.log
     cp /mnt/boot/initrd.img-$KERNEL_VERS /mnt/boot/firmware/initrd.img
     cp /mnt/boot/vmlinuz-$KERNEL_VERS /mnt/boot/firmware/vmlinuz
@@ -1532,8 +1532,9 @@ while kill -0 $image_apt_install_job 2>/dev/null
             sleep .1
             done
 done
-kernel_deb_install 
 arbitrary_wait
+kernel_deb_install 
+
 image_and_chroot_cleanup
 image_unmount
 compressed_image_export &
