@@ -970,7 +970,7 @@ EOF
         then echo "arm_64bit=1" >> /mnt/boot/firmware/config.txt
     fi
     
-    if ! grep -qs 'kernel8.bin' /mnt/boot/firmware/config.txt
+    if ! grep -qs 'kernel=kernel8.bin' /mnt/boot/firmware/config.txt
         then sed -i 's/kernel8.bin/kernel8.img/' /mnt/boot/firmware/config.txt
     fi
     
