@@ -192,6 +192,20 @@ waitfor () {
     printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [\]" && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
 }
 
+waitforstart () {
+    local waitforit
+    # waitforit file is written in the function "endfunc"
+    #touch /flag/wait.${FUNCNAME[1]}_for_${1}
+    #printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/]"
+    while read waitforit; do 
+    if [ "$waitforit" = start.${1} ]; 
+        then break; \
+    fi; 
+    done \
+   < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
+    #printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [ ]" && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
+}
+
 
 startfunc () {
     #for i in {0..2}
@@ -200,7 +214,7 @@ startfunc () {
     #        touch /flag/start.${FUNCNAME[1]}
     #        sleep 1
     #done
-    touch /flag/start.${FUNCNAME[1]}
+    echo $BASHPID > /flag/start.${FUNCNAME[1]}
     printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[1]} [ ]"
 }
 
@@ -1430,7 +1444,9 @@ kernel_deb_install &
 kernel_install &
 kernel_debs &
 arm64_chroot_setup & arm64_chroot_setup_job=$!
-        while kill -0 $arm64_chroot_setup_job 2>/dev/null
+echo $arm64_chroot_setup_job > /tmp/arm64_chroot_setup_job.pid
+waitforstart "arm64_chroot_setup"
+while kill -0 $arm64_chroot_setup_job 2>/dev/null
         do for s in / - \\ \|
             do printf "Setting up image software installs.\r$s"
             sleep .1
