@@ -921,7 +921,7 @@ startfunc
     &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "update-initramfs -c -k all" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "flash-kernel --force $KERNEL_VERS" &> /output/initramfs.log
-    chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &> /output/initramfs.log
+    chroot /mnt /bin/bash -c "lsinitramfs /mnt/boot/firmware/initrd.img" &> /output/initramfs.log
     cp /mnt/boot/initrd.img-$KERNEL_VERS /mnt/boot/firmware/initrd.img
     cp /mnt/boot/vmlinuz-$KERNEL_VERS /mnt/boot/firmware/vmlinuz
     vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
