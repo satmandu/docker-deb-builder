@@ -368,6 +368,7 @@ endfunc
 image_extract_and_mount () {
     waitfor "base_image_check"
 startfunc 
+    [[ -f "${workdir}/${base_image%xz}" ]] && echo "local uncompressed copy exists"
     local size
     local filename   
     echo "* Extracting: ${base_image} to ${new_image}.img"
