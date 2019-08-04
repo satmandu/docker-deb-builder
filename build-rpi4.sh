@@ -79,6 +79,8 @@ apt_cache=/cache/apt_cache
 # This is needed or apt has issues.
 mkdir -p $apt_cache/partial 
 
+env >> /etc/environment
+
 # Make sure inotify-tools is installed.
 apt-get -o dir::cache::archives=$apt_cache install inotify-tools lsof xdelta3 vim \
 e2fsprogs qemu-user-static \
