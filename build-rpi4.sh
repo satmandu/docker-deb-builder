@@ -223,6 +223,8 @@ waitfor () {
     # waitforit file is written in the function "endfunc"
     touch /flag/wait.${FUNCNAME[1]}_for_${1}
     printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
+    local start_timeout=10000
+    wait_file "/flag/start.${1}" $start_timeout
     local job_id=`cat /flag/start.${1}`
     while (pgrep -cxP ${job_id} &>/dev/null)
         #do for s in / - \\ \|
