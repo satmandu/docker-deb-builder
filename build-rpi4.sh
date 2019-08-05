@@ -83,7 +83,7 @@ mkdir -p $apt_cache/partial
 #env >> /output/environment
 
 # Make sure inotify-tools is installed.
-apt-get -o dir::cache::archives=$apt_cache install inotify-tools lsof xdelta3 vim \
+apt-get -o dir::cache::archives=$apt_cache install  lsof xdelta3 vim \
 e2fsprogs qemu-user-static \
 libc6-arm64-cross pv -qq 2>/dev/null
 
@@ -142,77 +142,122 @@ function abspath {
     echo $(cd "$1" && pwd)
 }
 
-inotify_touch_events () {
-    # Since inotifywait seems to need help in docker. :/
-    while [ ! -f "/flag/done.export_log" ]
-    do
-        touch /flag/*
-        sleep 1
-    done
+# Via https://superuser.com/a/917073
+wait_file() {
+  local file="$1"; shift
+  local wait_seconds="${1:-10}"; shift # 10 seconds as default timeout
+
+  until test $((wait_seconds--)) -eq 0 -o -f "$file" ; do sleep 1; done
+
+  ((++wait_seconds))
 }
 
-spinnerwaitfor () {
-    local waitforit
-    local i=0
-    tput sc
-    # waitforit file is written in the function "endfunc"
-    touch /flag/wait.${FUNCNAME[1]}_for_${1}
-    #printf "%${COLUMNS}s\n" "${FUNCNAME[1]} waits for: ${1}    "
-    printf "%${COLUMNS}s\r\n\n\r" "${FUNCNAME[1]} waits for: ${1} [$j] "
-    while read waitforit; do 
-    if [ "$waitforit" = done.${1} ]; 
-        then break; \
-    fi; 
-    case $(($i % 4)) in
-        0 ) j="-" ;;
-        1 ) j="\\" ;;
-        2 ) j="|" ;;
-        3 ) j="/" ;;
-    esac
-    tput rc
-    printf "%${COLUMNS}s\r" "${FUNCNAME[1]} waits for: ${1} [$j] "
-    sleep 1
-    ((i=i+1))
-    done \
-   < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
-    printf "%${COLUMNS}s\r" "${FUNCNAME[1]} noticed: ${1} [X] " && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
+
+# inotify_touch_events () {
+#     # Since inotifywait seems to need help in docker. :/
+#     while [ ! -f "/flag/done.export_log" ]
+#     do
+#         touch /flag/*
+#         sleep 1
+#     done
+# }
+
+# spinnerwaitfor () {
+#     local waitforit
+#     local i=0
+#     tput sc
+#     # waitforit file is written in the function "endfunc"
+#     touch /flag/wait.${FUNCNAME[1]}_for_${1}
+#     #printf "%${COLUMNS}s\n" "${FUNCNAME[1]} waits for: ${1}    "
+#     printf "%${COLUMNS}s\r\n\n\r" "${FUNCNAME[1]} waits for: ${1} [$j] "
+#     while read waitforit; do 
+#     if [ "$waitforit" = done.${1} ]; 
+#         then break; \
+#     fi; 
+#     case $(($i % 4)) in
+#         0 ) j="-" ;;
+#         1 ) j="\\" ;;
+#         2 ) j="|" ;;
+#         3 ) j="/" ;;
+#     esac
+#     tput rc
+#     printf "%${COLUMNS}s\r" "${FUNCNAME[1]} waits for: ${1} [$j] "
+#     sleep 1
+#     ((i=i+1))
+#     done \
+#    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
+#     printf "%${COLUMNS}s\r" "${FUNCNAME[1]} noticed: ${1} [X] " && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
+# }
+
+spinnerwait () {
+        local start_timeout=10000
+        if [[ -f "/flag/start.spinnerwait" ]]
+        then
+            echo "${1} waiting" >> /tmp/spinnerwait
+            wait_file "/flag/done.spinnerwait" $start_timeout
+            echo "${1} done waiting" >> /tmp/spinnerwait
+            rm -f "/flag/done.spinnerwait"
+        fi
+startfunc
+        echo "start.${1}" >> /tmp/spinnerwait
+        wait_file "/flag/start.${1}" $start_timeout || \
+        echo "${1} didn't start."
+        echo "Starting ${1}" >> /tmp/spinnerwait
+        local job_id=`cat /flag/start.${1}`
+        echo "Waiting for ${job_id} to end." >> /tmp/spinnerwait
+        tput sc
+        while (pgrep -cxP ${job_id} &>/dev/null)
+        do for s in / - \\ \|
+            do 
+            tput rc
+            printf "%${COLUMNS}s\r" "${1} .$s"
+            sleep .1
+            done
+        done
+        echo "${job_id} done." >> /tmp/spinnerwait
+endfunc
 }
+
 
 waitfor () {
     local waitforit
     # waitforit file is written in the function "endfunc"
     touch /flag/wait.${FUNCNAME[1]}_for_${1}
     printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
-    while read waitforit; do 
-    if [ "$waitforit" = done.${1} ]; 
-        then break; \
-    fi; 
-    done \
-   < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
-    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [X] " && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
+    local start_timeout=10000
+    wait_file "/flag/done.${1}" $start_timeout
+    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [X] " && \
+    rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
 }
 
 waitforstart () {
-    local waitforit
-    while read waitforit; do 
-    if [ "$waitforit" = start.${1} ]; 
-        then break; \
-    fi; 
-    done \
-   < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
+    local start_timeout=10000
+    wait_file "/flag/start.${1}" $start_timeout
+    # local waitforit
+#     while read waitforit; do 
+#     if [ "$waitforit" = start.${1} ]; 
+#         then break; \
+#     fi; 
+#     done \
+#    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
 }
 
 
 startfunc () {
     echo $BASHPID > /flag/start.${FUNCNAME[1]}
-    printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[1]} [ ] "
+    if [ ! "${FUNCNAME[1]}" == "spinnerwait" ] 
+        then printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[1]} [ ] "
+    fi
+    
 }
 
 endfunc () {
     [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.compile.log || true
-    [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
-    mv /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
-    printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X] "
+    [[ -f /tmp/${FUNCNAME[1]}.install.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
+    mv -f /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
+    if [ ! "${FUNCNAME[1]}" == "spinnerwait" ]
+        then printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X] "
+    fi
 }
 
 
@@ -276,7 +321,7 @@ git_get () {
       
     if [ ! "$remote_git" = "$local_git" ]
         then
-            printf "%${COLUMNS}s\n"  "--${FUNCNAME[1]} refreshing cache files from git."
+            printf "%${COLUMNS}s\n"  "${FUNCNAME[1]} refreshing cache files from git."
             # Does the local repo even exist?
             if [ ! -d "$src_cache/$local_path/.git" ] 
                 then
@@ -307,30 +352,10 @@ git_get () {
     --quiet 2> /dev/null`
     echo -e "*${FUNCNAME[1]} Last Commits:\n$last_commit\n"
     rsync -a $src_cache/$local_path $workdir/
-#                     
-#         
-#         cd $src_cache
-#         [ ! -d "$src_cache/$local_path/.git" ] && rm -rf $src_cache/$local_path
-#         
-#         git clone $git_flags $clone_flags $local_path &>> /tmp/${FUNCNAME[1]}.git.log || true
-#         cd $src_cache/$local_path
-#         git fetch --all $git_flags &>> /tmp/${FUNCNAME[1]}.git.log || true
-#         git reset --hard $pull_flags $git_flags 2>> /tmp/${FUNCNAME[1]}.git.log || \
-#         ( rm -rf $src_cache/$local_path ; cd $src_cache ; git clone $git_flags $clone_flags $local_path ) 2>> /tmp/${FUNCNAME[1]}.git.log
-#         else
-#         
-#     fi
-#     
-#     cd $src_cache/$local_path 
-#     last_commit=`git log --graph \
-#     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
-#     %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
-#     --quiet 2> /dev/null`
-#     echo -e "*${FUNCNAME[1]} Last Commits:\n$last_commit\n"
-#     rsync -a $src_cache/$local_path $workdir/
 }
 
 recreate_git () {
+startfunc
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
@@ -341,9 +366,8 @@ recreate_git () {
     cd $src_cache
     git clone $git_flags $clone_flags $local_path \
     &>> /tmp/${FUNCNAME[2]}.git.log || true
+endfunc
 }
-
-
 
 # Main functions
 
@@ -701,8 +725,8 @@ startfunc
     [ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
     wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.2.y/arch/arm64/configs/bcm2711_defconfig \
     -O arch/arm64/configs/bcm2711_defconfig
-    endfunc
-    }
+endfunc
+}
     
 kernel_build () {
     waitfor "kernelbuild_setup"
@@ -713,7 +737,6 @@ startfunc
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build \
     bcm2711_defconfig &>> /tmp/${FUNCNAME[0]}.compile.log
-    #LOCALVERSION=-`git -C $workdir/rpi-linux rev-parse --short HEAD` \
     
     cd $workdir/kernel-build
     # Use kernel config modification script from sakaki- found at 
@@ -726,28 +749,24 @@ startfunc
     O=$workdir/kernel-build/ \
     olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     
+    
     KERNEL_VERS=`cat /tmp/KERNEL_VERS`
-        echo "* Making $KERNEL_VERS kernel debs."
-        # Enable this if we want certain kernel install files compiled in
-        # arm64 chroot
-        #ext_mod_build_infrastructure
-        cd $workdir/rpi-linux
-        debcmd="make \
-        ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-        -j$(($(nproc) + 1)) O=$workdir/kernel-build \
-        bindeb-pkg & job=$!"
-        
+    #make -j$(($(nproc) + 1)) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+    #O=$workdir/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
     
-        echo $debcmd
-        $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
-        while kill -0 $job 2>/dev/null
-        do for s in / - \\ \|
-            do printf "Compiling Kernel Debs.\r$s"
-            sleep .1
-            done
-        done
+    echo "* Making $KERNEL_VERS kernel debs."
+    # Enable this if we want certain kernel install files compiled in
+    # arm64 chroot
+    #ext_mod_build_infrastructure
+    cd $workdir/rpi-linux
+    debcmd="make \
+    ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+    -j$(($(nproc) + 1)) O=$workdir/kernel-build \
+    bindeb-pkg &"
     
-        
+
+    echo $debcmd
+    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
 endfunc
 }
 
@@ -842,19 +861,21 @@ startfunc
     done
     if [[ -e /tmp/nodebs ]]
     then
-    # echo -e "Using existing $KERNEL_VERS debs from cache volume.\nNo \
-    # kernel needs to be built."
-    cp $apt_cache/linux-image-*${kernelrev}*arm64.deb $workdir/
-    cp $apt_cache/linux-headers-*${kernelrev}*arm64.deb $workdir/
+    echo -e "Using existing $KERNEL_VERS debs from cache volume.\nNo \
+    kernel needs to be built."
+    cp $apt_cache/linux-image-*${KERNEL_VERS}*arm64.deb $workdir/
+    cp $apt_cache/linux-headers-*${KERNEL_VERS}*arm64.deb $workdir/
     cp $workdir/*.deb /output/ 
     chown $USER:$GROUP /output/*.deb
     else
-        kernel_build
+        echo "Cached $KERNEL_VERS kernel debs not found. Building."
+        kernel_build &
+        spinnerwait kernel_build
         #waitfor "kernel_build"
         #arbitrary_wait
 
-        echo "* Copying out git *${kernelrev}* kernel debs."
-        rm $workdir/linux-libc-dev*.deb
+        echo "* Copying out git *${KERNEL_VERS}* kernel debs."
+        rm -f $workdir/linux-libc-dev*.deb
         cp $workdir/*.deb $apt_cache/
         cp $workdir/*.deb /output/ 
         chown $USER:$GROUP /output/*.deb
@@ -877,20 +898,23 @@ startfunc
     waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
     echo "* Installing $KERNEL_VERS debs to image."
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log || true
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb"  &>> /tmp/${FUNCNAME[0]}.install.log || true
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
+    linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 -y --purge" \
+    &>> /tmp/${FUNCNAME[0]}.install.log || true
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" \
+    &>> /tmp/${FUNCNAME[0]}.install.log || true
     cp /mnt/boot/initrd.img-$KERNEL_VERS /mnt/boot/firmware/initrd.img
     cp /mnt/boot/vmlinuz-$KERNEL_VERS /mnt/boot/firmware/vmlinuz
    # chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" \
    #&> /output/initramfs.log || true
     vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
     if [ "$vmlinuz_type" == "MS-DOS executable" ]
-    	then
-    		cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
-    	else
-    	    cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
-    	    cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz \
-    	    &>> /tmp/${FUNCNAME[0]}.install.log
+        then
+        cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
+    else
+        cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
+        cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz \
+        &>> /tmp/${FUNCNAME[0]}.install.log
     fi
     # Make booting without uboot the default so we get the default 3Gb ram available.
     cp /mnt/boot/firmware/kernel8.img.nouboot /mnt/boot/firmware/kernel8.img
@@ -1391,7 +1415,7 @@ touch /flag/done.ok_to_exit_container_after_build
 # inotify in docker seems to not recognize that files are being 
 # created unless they are touched. Not sure where this bug is.
 # So we will work around it.
-inotify_touch_events &
+#inotify_touch_events &
 
 base_image_check
 image_extract_and_mount &
@@ -1408,24 +1432,23 @@ first_boot_scripts_setup &
 added_scripts &
 waitforstart "kernelbuild_setup" && kernel_debs &
 arm64_chroot_setup &
-image_apt_installs & image_apt_installs_job=$!
-
-#waitforstart "image_apt_install"
-#image_apt_install_job=`cat /flag/start.image_apt_install`
-while kill -0 $image_apt_installs_job 2>/dev/null
-        do for s in / - \\ \|
-            do printf "%${COLUMNS}s\r" "Setting up image software installs.$s"
-            sleep .1
-            done
-done
+image_apt_installs &
+# image_apt_installs & image_apt_installs_job=$!
+spinnerwait image_apt_installs
+# while kill -0 $image_apt_installs_job 2>/dev/null
+#         do for s in / - \\ \|
+#             do printf "%${COLUMNS}s\r" "Image software installs.$s"
+#             sleep .1
+#             done
+# done
 #arbitrary_wait
-kernel_deb_install & kernel_deb_install_job=$!
-while kill -0 $kernel_deb_install_job 2>/dev/null
-        do for s in / - \\ \|
-            do printf "%${COLUMNS}s\r" "Setting up kernel install to image.$s"
-            sleep .1
-            done
-done
+kernel_deb_install
+# while kill -0 $kernel_deb_install_job 2>/dev/null
+#         do for s in / - \\ \|
+#             do printf "%${COLUMNS}s\r" "Setting up kernel install to image.$s"
+#             sleep .1
+#             done
+# done
 image_and_chroot_cleanup
 image_unmount
 compressed_image_export &
