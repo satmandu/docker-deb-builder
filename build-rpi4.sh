@@ -142,6 +142,16 @@ function abspath {
     echo $(cd "$1" && pwd)
 }
 
+# Via https://superuser.com/a/917073
+wait_file() {
+  local file="$1"; shift
+  local wait_seconds="${1:-10}"; shift # 10 seconds as default timeout
+
+  until test $((wait_seconds--)) -eq 0 -o -f "$file" ; do sleep 1; done
+
+  ((++wait_seconds))
+}
+
 inotify_touch_events () {
     # Since inotifywait seems to need help in docker. :/
     while [ ! -f "/flag/done.export_log" ]
@@ -177,6 +187,20 @@ spinnerwaitfor () {
    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
     printf "%${COLUMNS}s\r" "${FUNCNAME[1]} noticed: ${1} [X] " && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
 }
+
+spinnerwait () {
+        local start_timeout=10000
+        wait_file "/flag/start.${FUNCNAME[1]}" $start_timeout || \
+        echo "${FUNCNAME[1]} didn't start."
+        local job_id=`cat /flag/start.${FUNCNAME[1]}`
+        while kill -0 $job_id 2>/dev/null
+        do for s in / - \\ \|
+            do printf "%${COLUMNS}s\r" "${FUNCNAME[1]} .$s"
+            sleep .1
+            done
+done
+
+
 
 waitfor () {
     local waitforit
@@ -1408,16 +1432,15 @@ first_boot_scripts_setup &
 added_scripts &
 waitforstart "kernelbuild_setup" && kernel_debs &
 arm64_chroot_setup &
-image_apt_installs & image_apt_installs_job=$!
-
-#waitforstart "image_apt_install"
-#image_apt_install_job=`cat /flag/start.image_apt_install`
-while kill -0 $image_apt_installs_job 2>/dev/null
-        do for s in / - \\ \|
-            do printf "%${COLUMNS}s\r" "Setting up image software installs.$s"
-            sleep .1
-            done
-done
+image_apt_installs &
+# image_apt_installs & image_apt_installs_job=$!
+spinnerwait image_apt_installs
+# while kill -0 $image_apt_installs_job 2>/dev/null
+#         do for s in / - \\ \|
+#             do printf "%${COLUMNS}s\r" "Image software installs.$s"
+#             sleep .1
+#             done
+# done
 #arbitrary_wait
 kernel_deb_install & kernel_deb_install_job=$!
 while kill -0 $kernel_deb_install_job 2>/dev/null
