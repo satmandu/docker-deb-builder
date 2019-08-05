@@ -222,7 +222,7 @@ endfunc
 waitfor () {
     local waitforit
     # waitforit file is written in the function "endfunc"
-    cp /flag/start.${FUNCNAME[1]} /flag/wait.${FUNCNAME[1]}_for_${1}
+    touch /flag/wait.${FUNCNAME[1]}_for_${1}
     printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
     local start_timeout=10000
     wait_file "/flag/done.${1}" $start_timeout
@@ -314,7 +314,7 @@ git_get () {
       
     if [ ! "$remote_git" = "$local_git" ]
         then
-            printf "%${COLUMNS}s\n"  "--${FUNCNAME[1]} refreshing cache files from git."
+            printf "%${COLUMNS}s\n"  "${FUNCNAME[1]} refreshing cache files from git."
             # Does the local repo even exist?
             if [ ! -d "$src_cache/$local_path/.git" ] 
                 then
