@@ -287,7 +287,7 @@ startfunc
             local local_branch=`git -C $src_cache/$local_path rev-parse \
             --abbrev-ref HEAD` || local_branch=
             # Set HEAD = master
-            [[ "$local_branch" == "HEAD" ] && local_branch="master"
+            [[ "$local_branch" = "HEAD" ]] && local_branch="master"
             if [[ "$local_branch" != "$git_branch" ]]
                 then 
                     echo "Branch mismatch!"
