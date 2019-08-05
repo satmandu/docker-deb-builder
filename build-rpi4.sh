@@ -819,12 +819,10 @@ startfunc
    # Don't remake debs if they already exist in output.
    #arbitrary_wait
    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
-   echo -e "Looking for cached $KERNEL_VERS kernel debs ."
+   echo -e "Looking for cached $KERNEL_VERS kernel debs."
     for f in "$apt_cache/linux-image-*${KERNEL_VERS}*"; do
-     echo "$f"
      if [ -f "$f" ]
      then
-        echo "$f"
         echo -e "$f on cache volume. 😎\n"
         echo 1 > /tmp/nodebs
      else
@@ -833,10 +831,8 @@ startfunc
     break
     done
     for f in "$apt_cache/linux-headers-*${KERNEL_VERS}*"; do
-     echo "$f"
      if [ -f "$f" ]
      then
-        echo "$f"
         echo -e "$f on cache volume. 😎\n"
         echo 1> /tmp/nodebs
      else
@@ -1411,11 +1407,7 @@ wifi_firmware_modification &
 first_boot_scripts_setup &
 added_scripts &
 waitforstart "kernelbuild_setup" && kernel_debs &
-arm64_chroot_setup & arm64_chroot_setup_job=$!
-echo $arm64_chroot_setup_job > /tmp/arm64_chroot_setup_job.pid
-#waitfor "arm64_chroot_setup" && image_apt_download
-#image_apt_download &
-#image_apt_upgrade &
+arm64_chroot_setup &
 image_apt_installs & image_apt_installs_job=$!
 
 #waitforstart "image_apt_install"
