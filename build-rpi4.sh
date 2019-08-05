@@ -258,7 +258,6 @@ arbitrary_wait () {
 # }
 
 git_get () {
-startfunc
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
@@ -329,11 +328,9 @@ startfunc
 #     --quiet 2> /dev/null`
 #     echo -e "*${FUNCNAME[1]} Last Commits:\n$last_commit\n"
 #     rsync -a $src_cache/$local_path $workdir/
-endfunc
 }
 
 recreate_git () {
-startfunc
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
@@ -344,7 +341,6 @@ startfunc
     cd $src_cache
     git clone $git_flags $clone_flags $local_path \
     &>> /tmp/${FUNCNAME[2]}.git.log || true
-endfunc
 }
 
 
