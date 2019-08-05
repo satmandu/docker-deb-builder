@@ -162,32 +162,32 @@ inotify_touch_events () {
     done
 }
 
-spinnerwaitfor () {
-    local waitforit
-    local i=0
-    tput sc
-    # waitforit file is written in the function "endfunc"
-    touch /flag/wait.${FUNCNAME[1]}_for_${1}
-    #printf "%${COLUMNS}s\n" "${FUNCNAME[1]} waits for: ${1}    "
-    printf "%${COLUMNS}s\r\n\n\r" "${FUNCNAME[1]} waits for: ${1} [$j] "
-    while read waitforit; do 
-    if [ "$waitforit" = done.${1} ]; 
-        then break; \
-    fi; 
-    case $(($i % 4)) in
-        0 ) j="-" ;;
-        1 ) j="\\" ;;
-        2 ) j="|" ;;
-        3 ) j="/" ;;
-    esac
-    tput rc
-    printf "%${COLUMNS}s\r" "${FUNCNAME[1]} waits for: ${1} [$j] "
-    sleep 1
-    ((i=i+1))
-    done \
-   < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
-    printf "%${COLUMNS}s\r" "${FUNCNAME[1]} noticed: ${1} [X] " && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
-}
+# spinnerwaitfor () {
+#     local waitforit
+#     local i=0
+#     tput sc
+#     # waitforit file is written in the function "endfunc"
+#     touch /flag/wait.${FUNCNAME[1]}_for_${1}
+#     #printf "%${COLUMNS}s\n" "${FUNCNAME[1]} waits for: ${1}    "
+#     printf "%${COLUMNS}s\r\n\n\r" "${FUNCNAME[1]} waits for: ${1} [$j] "
+#     while read waitforit; do 
+#     if [ "$waitforit" = done.${1} ]; 
+#         then break; \
+#     fi; 
+#     case $(($i % 4)) in
+#         0 ) j="-" ;;
+#         1 ) j="\\" ;;
+#         2 ) j="|" ;;
+#         3 ) j="/" ;;
+#     esac
+#     tput rc
+#     printf "%${COLUMNS}s\r" "${FUNCNAME[1]} waits for: ${1} [$j] "
+#     sleep 1
+#     ((i=i+1))
+#     done \
+#    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
+#     printf "%${COLUMNS}s\r" "${FUNCNAME[1]} noticed: ${1} [X] " && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
+# }
 
 spinnerwait () {
         local start_timeout=10000
@@ -334,7 +334,7 @@ git_get () {
             # sync to local branch
             cd $src_cache/$local_path
             git fetch --all $git_flags &>> /tmp/${FUNCNAME[1]}.git.log || true
-            git reset --hard $pull_flags $git_flags 2>> /tmp/${FUNCNAME[1]}.git.log
+            git reset --hard $pull_flags --quiet 2>> /tmp/${FUNCNAME[1]}.git.log
         else
             echo -e "${FUNCNAME[1]} getting files from cache volume. 😎\n"
     fi
@@ -369,6 +369,7 @@ git_get () {
 }
 
 recreate_git () {
+startfunc
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
@@ -379,9 +380,8 @@ recreate_git () {
     cd $src_cache
     git clone $git_flags $clone_flags $local_path \
     &>> /tmp/${FUNCNAME[2]}.git.log || true
+endfunc
 }
-
-
 
 # Main functions
 
@@ -883,8 +883,8 @@ startfunc
     done
     if [[ -e /tmp/nodebs ]]
     then
-    # echo -e "Using existing $KERNEL_VERS debs from cache volume.\nNo \
-    # kernel needs to be built."
+    echo -e "Using existing $KERNEL_VERS debs from cache volume.\nNo \
+    kernel needs to be built."
     cp $apt_cache/linux-image-*${KERNEL_VERS}*arm64.deb $workdir/
     cp $apt_cache/linux-headers-*${KERNEL_VERS}*arm64.deb $workdir/
     cp $workdir/*.deb /output/ 
