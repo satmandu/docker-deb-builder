@@ -222,34 +222,10 @@ endfunc
 waitfor () {
     local waitforit
     # waitforit file is written in the function "endfunc"
-    
-#    ls -aFl /flag/done.${1} > /flag/wait.${FUNCNAME[1]}_for_${1}
+
     printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
     local start_timeout=10000
     wait_file "/flag/done.${1}" $start_timeout
-#    wait_flag "${1}" $start_timeout
-#    [[ -f "/flag/done.${1}" ]] && (echo "nowait!" ; exit 0) || (echo "must wait $1" ; ls -aFl /flag/done.${1} )
- #   local job_id=`cat /flag/start.${1}`
- #   while s=`ps -p ${job_id} -o s=` && [[ "$s" && "$s" != 'Z' ]]
- #       do 
- #           printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
- #           sleep 1
- #            [[ -e "/flag/done.${1}" ]] && break
- #       done
-#     while (pgrep -cxP ${job_id} &>/dev/null)
-#         #do for s in / - \\ \|
-#             do 
-#             #tput rc
-#             #printf "%${COLUMNS}s\r" "${1} .$s"
-#             sleep 1
-#             #done
-#         done
-#     while read waitforit; do 
-#     if [ "$waitforit" = done.${1} ]; 
-#         then break; \
-#     fi; 
-#     done \
-#    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
     printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [X] " && \
     rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
 }
