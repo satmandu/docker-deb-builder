@@ -1520,7 +1520,6 @@ while kill -0 $image_apt_installs_job 2>/dev/null
 done
 arbitrary_wait
 kernel_deb_install & kernel_deb_install_job=$!
-kernel_deb_install_job
 while kill -0 $kernel_deb_install_job 2>/dev/null
         do for s in / - \\ \|
             do printf "Setting up kernel install to image.\r$s"
