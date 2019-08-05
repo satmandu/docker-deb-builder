@@ -840,44 +840,12 @@ startfunc
     	    cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz \
     	    &>> /tmp/${FUNCNAME[0]}.install.log
     fi
-    
+    # Make booting without uboot the default so we get the default 3Gb ram available.
+    cp /mnt/boot/firmware/kernel8.img.nouboot /mnt/boot/firmware/kernel8.img
 
 endfunc
 }
 
-
-
-# kernel_module_install () {
-#     waitfor "kernel_install"
-# startfunc    
-#     echo "* Copying compiled `cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'` modules to image."
-#     # Ubuntu has /lib as a symlink to /usr/lib so we don't want to overwrite that!
-#     cp -avr $workdir/kernel-install/lib/* \
-#     /mnt/usr/lib/ &>> /tmp/${FUNCNAME[0]}.install.log
-#     
-#     rm  -rf /mnt/usr/lib/modules/`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`/build 
-# endfunc
-# }
-
-# kernel_install_dtbs () {
-#     waitfor "kernel_install"
-# startfunc    
-#     echo "* Copying compiled `cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'` dtbs & dtbos to image."
-#     cp $workdir/kernel-build/arch/arm64/boot/dts/broadcom/*.dtb /mnt/boot/firmware/ 
-#     cp $workdir/kernel-build/arch/arm64/boot/dts/overlays/*.dtbo \
-#     /mnt/boot/firmware/overlays/
-#     
-#     #Fix DTB install which for some reason doesn't happen properly in 
-#     # the generated deb.
-#     mkdir -p /mnt/lib/firmware/`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`/device-tree/
-#     rsync -arm --include="*/" --include="*.dtbo" --include="*.dtb" --exclude="*" \
-#     $workdir/kernel-build/arch/arm64/boot/dts/ \
-#     /mnt/lib/firmware/`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`/device-tree/
-#     
-#     cp $workdir/kernel-build/arch/arm64/boot/dts/broadcom/*.dtb \
-#     /mnt/etc/flash-kernel/dtbs/    
-# endfunc
-# }
 
 armstub8-gic () {
     git_get "https://github.com/raspberrypi/tools.git" "rpi-tools"
@@ -963,7 +931,6 @@ EOF
      sed -i 's/total_mem=*$/total_mem=3072/' /mnt/boot/firmware/config.txt || \
      echo "total_mem=3072" >> /mnt/boot/firmware/config.txt
 
-    #cat /mnt/boot/firmware/config.txt 
 endfunc
 }
 
@@ -1045,7 +1012,7 @@ wifi_firmware_modification () {
     waitfor "image_extract_and_mount"
     waitfor "non-free_firmware"
 startfunc    
-    #echo "* Modifying wireless firmware."
+    #echo "* Modifying wireless firmware if necessary."
     # as per https://andrei.gherzan.ro/linux/raspbian-rpi4-64/
     if ! grep -qs 'boardflags3=0x44200100' \
     /mnt/usr/lib/firmware/brcm/brcmfmac43455-sdio.txt
@@ -1132,7 +1099,7 @@ startfunc
     cat <<-'EOF' > /mnt/etc/kernel/postinst.d/zzzz_rpi4_kernel
 	#!/bin/sh -eu
 	#
-	# If u-boot is not being used, then uncompresses the arm64 kernel to 
+	# If u-boot is not being used, this uncompresses the arm64 kernel to 
 	# kernel8.img
 	#
 	# First exit if we aren't running an ARM64 kernel.
@@ -1203,10 +1170,7 @@ image_and_chroot_cleanup () {
     waitfor "non-free_firmware"
     waitfor "rpi_userland"
     waitfor "andrei_gherzan_uboot_fork"
-    #waitfor "kernel_install"
     waitfor "kernel_debs"
-    #waitfor "kernel_module_install"
-    #waitfor "kernel_install_dtbs"
     waitfor "rpi_config_txt_configuration"
     waitfor "rpi_cmdline_txt_configuration"
     waitfor "wifi_firmware_modification"
