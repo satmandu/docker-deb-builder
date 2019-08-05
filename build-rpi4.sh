@@ -221,19 +221,21 @@ endfunc
 waitfor () {
     local waitforit
     # waitforit file is written in the function "endfunc"
+    [[ -e "/flag/done.${1}" ]] && exit
     touch /flag/wait.${FUNCNAME[1]}_for_${1}
     printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
     local start_timeout=10000
-    wait_file "/flag/done.${1}" $start_timeout
-    local job_id=`cat /flag/done.${1}`
-    while (pgrep -cxP ${job_id} &>/dev/null)
-        #do for s in / - \\ \|
-            do 
-            #tput rc
-            #printf "%${COLUMNS}s\r" "${1} .$s"
-            sleep 1
-            #done
-        done
+    wait_file "/flag/start.${1}" $start_timeout
+    local job_id=`cat /flag/start.${1}`
+    while s=`ps -p ${job_id} -o s=` && [[ "$s" && "$s" != 'Z' ]]; do sleep 1; done
+#     while (pgrep -cxP ${job_id} &>/dev/null)
+#         #do for s in / - \\ \|
+#             do 
+#             #tput rc
+#             #printf "%${COLUMNS}s\r" "${1} .$s"
+#             sleep 1
+#             #done
+#         done
 #     while read waitforit; do 
 #     if [ "$waitforit" = done.${1} ]; 
 #         then break; \
