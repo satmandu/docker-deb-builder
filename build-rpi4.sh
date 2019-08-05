@@ -1418,7 +1418,7 @@ image_apt_installs & image_apt_installs_job=$!
 #image_apt_install_job=`cat /flag/start.image_apt_install`
 while kill -0 $image_apt_installs_job 2>/dev/null
         do for s in / - \\ \|
-            do printf "%${COLUMNS}s\r" "Setting up image software installs.\r$s"
+            do printf "%${COLUMNS}s\r" "Setting up image software installs.$s"
             sleep .1
             done
 done
@@ -1426,7 +1426,7 @@ done
 kernel_deb_install & kernel_deb_install_job=$!
 while kill -0 $kernel_deb_install_job 2>/dev/null
         do for s in / - \\ \|
-            do printf "%${COLUMNS}s\r" "Setting up kernel install to image.\r$s"
+            do printf "%${COLUMNS}s\r" "Setting up kernel install to image.$s"
             sleep .1
             done
 done
