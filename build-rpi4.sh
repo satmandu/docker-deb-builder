@@ -355,7 +355,7 @@ git_get () {
 }
 
 recreate_git () {
-startfunc
+#startfunc
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
@@ -366,7 +366,7 @@ startfunc
     cd $src_cache
     git clone $git_flags $clone_flags $local_path \
     &>> /tmp/${FUNCNAME[2]}.git.log || true
-endfunc
+#endfunc
 }
 
 # Main functions
