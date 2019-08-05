@@ -194,7 +194,7 @@ startfunc
         echo "/flag/start.${1}" >> /tmp/spinnerwait
         wait_file "/flag/start.${1}" $start_timeout || \
         echo "${1} didn't start."
-        local job_id=`cat /flag/start.${FUNCNAME[1]}`
+        local job_id=`cat /flag/start.${1}`
         while kill -0 $job_id 2>/dev/null
         tput sc
         do for s in / - \\ \|
