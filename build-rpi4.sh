@@ -248,7 +248,7 @@ startfunc () {
 
 endfunc () {
     [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.compile.log || true
-    [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
+    [[ -f /tmp/${FUNCNAME[1]}.install.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
     mv -f /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
     printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X] "
 }
@@ -345,27 +345,6 @@ git_get () {
     --quiet 2> /dev/null`
     echo -e "*${FUNCNAME[1]} Last Commits:\n$last_commit\n"
     rsync -a $src_cache/$local_path $workdir/
-#                     
-#         
-#         cd $src_cache
-#         [ ! -d "$src_cache/$local_path/.git" ] && rm -rf $src_cache/$local_path
-#         
-#         git clone $git_flags $clone_flags $local_path &>> /tmp/${FUNCNAME[1]}.git.log || true
-#         cd $src_cache/$local_path
-#         git fetch --all $git_flags &>> /tmp/${FUNCNAME[1]}.git.log || true
-#         git reset --hard $pull_flags $git_flags 2>> /tmp/${FUNCNAME[1]}.git.log || \
-#         ( rm -rf $src_cache/$local_path ; cd $src_cache ; git clone $git_flags $clone_flags $local_path ) 2>> /tmp/${FUNCNAME[1]}.git.log
-#         else
-#         
-#     fi
-#     
-#     cd $src_cache/$local_path 
-#     last_commit=`git log --graph \
-#     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
-#     %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
-#     --quiet 2> /dev/null`
-#     echo -e "*${FUNCNAME[1]} Last Commits:\n$last_commit\n"
-#     rsync -a $src_cache/$local_path $workdir/
 }
 
 recreate_git () {
@@ -776,19 +755,11 @@ startfunc
     debcmd="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     -j$(($(nproc) + 1)) O=$workdir/kernel-build \
-    bindeb-pkg & job=$!"
+    bindeb-pkg &"
     
 
     echo $debcmd
     $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
-#     while kill -0 $job 2>/dev/null
-#     do for s in / - \\ \|
-#         do printf "Compiling Kernel Debs.\r$s"
-#         sleep .1
-#         done
-#     done
-    
-        
 endfunc
 }
 
