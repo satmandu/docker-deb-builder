@@ -24,7 +24,6 @@ RUN set -ex \
                cpp-aarch64-linux-gnu \
                g++-aarch64-linux-gnu \
                git \
-               inotify-tools \
                kpartx \
                libgpm2 \
                lsof \
