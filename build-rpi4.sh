@@ -189,16 +189,21 @@ spinnerwaitfor () {
 }
 
 spinnerwait () {
+startfunc
         local start_timeout=10000
+        echo "/flag/start.${FUNCNAME[1]}"
         wait_file "/flag/start.${FUNCNAME[1]}" $start_timeout || \
         echo "${FUNCNAME[1]} didn't start."
         local job_id=`cat /flag/start.${FUNCNAME[1]}`
         while kill -0 $job_id 2>/dev/null
+        tput sc
         do for s in / - \\ \|
+            tput rc
             do printf "%${COLUMNS}s\r" "${FUNCNAME[1]} .$s"
             sleep .1
             done
-done
+        done
+endfunc
 }
 
 
