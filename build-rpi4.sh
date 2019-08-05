@@ -243,7 +243,9 @@ waitforstart () {
 
 startfunc () {
     echo $BASHPID > /flag/start.${FUNCNAME[1]}
-    if [ ! "${FUNCNAME[1]}" == "spinnerwait" ] && printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[1]} [ ] "
+    if [ ! "${FUNCNAME[1]}" == "spinnerwait" ] 
+        then printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[1]} [ ] "
+    fi
     
 }
 
@@ -251,7 +253,9 @@ endfunc () {
     [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.compile.log || true
     [[ -f /tmp/${FUNCNAME[1]}.install.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
     mv -f /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
-    if [ ! "${FUNCNAME[1]}" == "spinnerwait" ] && printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X] "
+    if [ ! "${FUNCNAME[1]}" == "spinnerwait" ]
+        then printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X] "
+    fi
 }
 
 
