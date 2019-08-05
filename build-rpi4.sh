@@ -198,8 +198,9 @@ startfunc
         while kill -0 $job_id 2>/dev/null
         tput sc
         do for s in / - \\ \|
+            do 
             tput rc
-            do printf "%${COLUMNS}s\r" "${FUNCNAME[1]} .$s"
+            printf "%${COLUMNS}s\r" "${FUNCNAME[1]} .$s"
             sleep .1
             done
         done
