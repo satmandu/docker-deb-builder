@@ -158,7 +158,7 @@ spinnerwaitfor () {
     # waitforit file is written in the function "endfunc"
     touch /flag/wait.${FUNCNAME[1]}_for_${1}
     #printf "%${COLUMNS}s\n" "${FUNCNAME[1]} waits for: ${1}    "
-    printf "%${COLUMNS}s\r\n\n\r" "${FUNCNAME[1]} waits for: ${1} [$j]"
+    printf "%${COLUMNS}s\r\n\n\r" "${FUNCNAME[1]} waits for: ${1} [$j] "
     while read waitforit; do 
     if [ "$waitforit" = done.${1} ]; 
         then break; \
@@ -170,26 +170,26 @@ spinnerwaitfor () {
         3 ) j="/" ;;
     esac
     tput rc
-    printf "%${COLUMNS}s\r" "${FUNCNAME[1]} waits for: ${1} [$j]"
+    printf "%${COLUMNS}s\r" "${FUNCNAME[1]} waits for: ${1} [$j] "
     sleep 1
     ((i=i+1))
     done \
    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
-    printf "%${COLUMNS}s\r" "${FUNCNAME[1]} noticed: ${1} [X]" && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
+    printf "%${COLUMNS}s\r" "${FUNCNAME[1]} noticed: ${1} [X] " && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
 }
 
 waitfor () {
     local waitforit
     # waitforit file is written in the function "endfunc"
     touch /flag/wait.${FUNCNAME[1]}_for_${1}
-    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/]"
+    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
     while read waitforit; do 
     if [ "$waitforit" = done.${1} ]; 
         then break; \
     fi; 
     done \
    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
-    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [X]" && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
+    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [X] " && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
 }
 
 waitforstart () {
@@ -205,14 +205,14 @@ waitforstart () {
 
 startfunc () {
     echo $BASHPID > /flag/start.${FUNCNAME[1]}
-    printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[1]} [ ]"
+    printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[1]} [ ] "
 }
 
 endfunc () {
     [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.compile.log || true
     [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
     mv /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
-    printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X]"
+    printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X] "
 }
 
 
