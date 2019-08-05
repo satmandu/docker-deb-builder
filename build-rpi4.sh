@@ -793,12 +793,12 @@ startfunc
 
     echo $debcmd
     $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
-    while kill -0 $job 2>/dev/null
-    do for s in / - \\ \|
-        do printf "Compiling Kernel Debs.\r$s"
-        sleep .1
-        done
-    done
+#     while kill -0 $job 2>/dev/null
+#     do for s in / - \\ \|
+#         do printf "Compiling Kernel Debs.\r$s"
+#         sleep .1
+#         done
+#     done
     
         
 endfunc
