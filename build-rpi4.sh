@@ -152,16 +152,6 @@ wait_file() {
   ((++wait_seconds))
 }
 
-# Via https://superuser.com/a/917073
-wait_flag() {
-  local file="$1"; shift
-  local wait_seconds="${1:-10}"; shift # 10 seconds as default timeout
-
-  until test ($((wait_seconds--)) -eq 0 -o -f "start.$file" || $((wait_seconds--)) -eq 0 -o -f "done.$file" ) ; do sleep 1; echo "${file}"; done
-
-  ((++wait_seconds))
-}
-
 
 inotify_touch_events () {
     # Since inotifywait seems to need help in docker. :/
