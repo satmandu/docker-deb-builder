@@ -149,20 +149,13 @@ check_for_current_image () {
         echo $current
         echo "* New base image available."
         echo "* Trying to get current base image."
-        download_base_image
+        download_base_image && rm -rf "$(abspath "$srcdir")/${base_image%.xz}" || true
         [[ "$curl_fail" ]] && "* Download failed. Using existing image." || \
             echo ""
         else
             echo "* Base image file is current."
         fi
         
-        #echo "$(abspath "$srcdir")/${base_image%.xz}"
-        if [[ ! -f "$(abspath "$srcdir")/${base_image%.xz}" ]]
-            then 
-            cd $(abspath "$srcdir")
-            echo "Extracting $(abspath "$srcdir")/${base_image%.xz} ."
-            xz -dk $(abspath "$srcdir")/${base_image}
-        fi
 }
 
 
@@ -170,6 +163,13 @@ if [ ! -f $(abspath "$srcdir")/$base_image ]; then
         download_base_image
     else
         check_for_current_image
+fi
+
+if [[ ! -f "$(abspath "$srcdir")/${base_image%.xz}" ]]
+    then 
+    cd $(abspath "$srcdir")
+    echo "Extracting $(abspath "$srcdir")/${base_image%.xz} ."
+    xz -dk $(abspath "$srcdir")/${base_image}
 fi
 
 docker_args+="-v $(abspath "$srcdir")/$base_image:/$base_image "
