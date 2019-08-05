@@ -213,6 +213,7 @@ startfunc
             sleep .1
             done
         done
+        echo "${job_id} done." >> /tmp/spinnerwait
 endfunc
 }
 
@@ -222,13 +223,23 @@ waitfor () {
     # waitforit file is written in the function "endfunc"
     touch /flag/wait.${FUNCNAME[1]}_for_${1}
     printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
-    while read waitforit; do 
-    if [ "$waitforit" = done.${1} ]; 
-        then break; \
-    fi; 
-    done \
-   < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
-    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [X] " && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
+    local job_id=`cat /flag/start.${1}`
+    while (pgrep -cxP ${job_id} &>/dev/null)
+        #do for s in / - \\ \|
+            do 
+            #tput rc
+            #printf "%${COLUMNS}s\r" "${1} .$s"
+            sleep 1
+            #done
+        done
+#     while read waitforit; do 
+#     if [ "$waitforit" = done.${1} ]; 
+#         then break; \
+#     fi; 
+#     done \
+#    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
+    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [X] " && \
+    rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
 }
 
 waitforstart () {
