@@ -725,8 +725,8 @@ startfunc
     [ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
     wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.2.y/arch/arm64/configs/bcm2711_defconfig \
     -O arch/arm64/configs/bcm2711_defconfig
-    endfunc
-    }
+endfunc
+}
     
 kernel_build () {
     waitfor "kernelbuild_setup"
@@ -737,7 +737,6 @@ startfunc
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build \
     bcm2711_defconfig &>> /tmp/${FUNCNAME[0]}.compile.log
-    #LOCALVERSION=-`git -C $workdir/rpi-linux rev-parse --short HEAD` \
     
     cd $workdir/kernel-build
     # Use kernel config modification script from sakaki- found at 
@@ -747,29 +746,33 @@ startfunc
     # This also enables the BPF syscall for systemd-journald firewalling
     /source-ro/conform_config.sh
     yes "" | make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    O=.$workdir/kernel-build/ \
+    O=$workdir/kernel-build/ \
     olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     
-    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
-        echo "* Making $KERNEL_VERS kernel debs."
-        # Enable this if we want certain kernel install files compiled in
-        # arm64 chroot
-        #ext_mod_build_infrastructure
-        cd $workdir/rpi-linux
-        debcmd="make \
-        ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-        -j$(($(nproc) + 1)) O=$workdir/kernel-build \
-        bindeb-pkg & job=$!"
-        
     
-        echo $debcmd
-        $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
-        while kill -0 $job 2>/dev/null
-        do for s in / - \\ \|
-            do printf "Compiling Kernel Debs.\r$s"
-            sleep .1
-            done
+    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+    #make -j$(($(nproc) + 1)) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+    #O=$workdir/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
+    
+    echo "* Making $KERNEL_VERS kernel debs."
+    # Enable this if we want certain kernel install files compiled in
+    # arm64 chroot
+    #ext_mod_build_infrastructure
+    cd $workdir/rpi-linux
+    debcmd="make \
+    ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+    -j$(($(nproc) + 1)) O=$workdir/kernel-build \
+    bindeb-pkg & job=$!"
+    
+
+    echo $debcmd
+    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
+    while kill -0 $job 2>/dev/null
+    do for s in / - \\ \|
+        do printf "Compiling Kernel Debs.\r$s"
+        sleep .1
         done
+    done
     
         
 endfunc
@@ -878,7 +881,7 @@ startfunc
         #arbitrary_wait
 
         echo "* Copying out git *${kernelrev}* kernel debs."
-        rm $workdir/linux-libc-dev*.deb
+        rm -f $workdir/linux-libc-dev*.deb
         cp $workdir/*.deb $apt_cache/
         cp $workdir/*.deb /output/ 
         chown $USER:$GROUP /output/*.deb
