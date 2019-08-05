@@ -1077,7 +1077,9 @@ EOF
 	/usr/bin/dpkg -i /var/cache/apt/archives/*.deb
 	/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge
 	/usr/local/bin/chroot-apt-wrapper update && /usr/local/bin/chroot-apt-wrapper upgrade -y
-	/usr/local/bin/chroot-apt-wrapper install qemu-user-binfmt man-db -qq
+	/usr/local/bin/chroot-apt-wrapper install qemu-user-binfmt -qq
+	# man-db disabled due to v2.8.6 causing segfaults. v2.8.6.1 has the fix.
+	#/usr/local/bin/chroot-apt-wrapper install man-db -qq
 	/usr/sbin/update-initramfs -c -k all
 	sed -i 's/\/etc\/rc.local.temp\ \&//' /etc/rc.local 
 	rm -- "$0"
