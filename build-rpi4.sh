@@ -258,6 +258,7 @@ arbitrary_wait () {
 # }
 
 git_get () {
+startfunc
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
@@ -274,23 +275,32 @@ git_get () {
     local pull_flags="origin/$git_branch"
     echo -e "${FUNCNAME[1]}\nremote hash: $remote_git\nlocal hash: $local_git"
       
-    if [ ! "$remote_git" = "$local_git" ]; then
-        printf "%${COLUMNS}s\n"  "--${FUNCNAME[1]} refreshing cache files from git."
-        
-        
-        cd $src_cache
-        [ ! -d "$src_cache/$local_path/.git" ] && rm -rf $src_cache/$local_path \
-        && mkdir -p $src_cache/$local_path
-        
-        git clone $git_flags $clone_flags $local_path &>> /tmp/${FUNCNAME[1]}.git.log || true
-        cd $src_cache/$local_path
-        git fetch --all $git_flags &>> /tmp/${FUNCNAME[1]}.git.log || true
-        git reset --hard $pull_flags $git_flags 2>> /tmp/${FUNCNAME[1]}.git.log || \
-        ( rm -rf $src_cache/$local_path ; cd $src_cache ; git clone $git_flags $clone_flags $local_path ) 2>> /tmp/${FUNCNAME[1]}.git.log
+    if [ ! "$remote_git" = "$local_git" ]
+        then
+            printf "%${COLUMNS}s\n"  "--${FUNCNAME[1]} refreshing cache files from git."
+            # Does the local repo even exist?
+            if [ ! -d "$src_cache/$local_path/.git" ] 
+                then
+                    recreate_git $git_repo $local_path $git_branch
+            fi
+            # Is the requested branch the same as the local saved branch?
+            local local_branch=`git -C $src_cache/$local_path rev-parse \
+            --abbrev-ref HEAD` || local_branch=
+            # Set HEAD = master
+            [[ "$local_branch" = "HEAD" ] && local_branch="master"
+            if [[ "$local_branch" != "$git_branch" ]]
+                then 
+                    echo "Branch mismatch!"
+                    # Be safe.
+                    recreate_git $git_repo $local_path $git_branch
+            fi
+            # sync to local branch
+            cd $src_cache/$local_path
+            git fetch --all $git_flags &>> /tmp/${FUNCNAME[1]}.git.log || true
+            git reset --hard $pull_flags $git_flags 2>> /tmp/${FUNCNAME[1]}.git.log
         else
-        echo -e "${FUNCNAME[1]} getting files from cache volume. 😎\n"
+            echo -e "${FUNCNAME[1]} getting files from cache volume. 😎\n"
     fi
-    
     cd $src_cache/$local_path 
     last_commit=`git log --graph \
     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
@@ -298,7 +308,45 @@ git_get () {
     --quiet 2> /dev/null`
     echo -e "*${FUNCNAME[1]} Last Commits:\n$last_commit\n"
     rsync -a $src_cache/$local_path $workdir/
+#                     
+#         
+#         cd $src_cache
+#         [ ! -d "$src_cache/$local_path/.git" ] && rm -rf $src_cache/$local_path
+#         
+#         git clone $git_flags $clone_flags $local_path &>> /tmp/${FUNCNAME[1]}.git.log || true
+#         cd $src_cache/$local_path
+#         git fetch --all $git_flags &>> /tmp/${FUNCNAME[1]}.git.log || true
+#         git reset --hard $pull_flags $git_flags 2>> /tmp/${FUNCNAME[1]}.git.log || \
+#         ( rm -rf $src_cache/$local_path ; cd $src_cache ; git clone $git_flags $clone_flags $local_path ) 2>> /tmp/${FUNCNAME[1]}.git.log
+#         else
+#         
+#     fi
+#     
+#     cd $src_cache/$local_path 
+#     last_commit=`git log --graph \
+#     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
+#     %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
+#     --quiet 2> /dev/null`
+#     echo -e "*${FUNCNAME[1]} Last Commits:\n$last_commit\n"
+#     rsync -a $src_cache/$local_path $workdir/
+endfunc
 }
+
+recreate_git () {
+startfunc
+    local git_repo="$1"
+    local local_path="$2"
+    local git_branch="$3"
+    local git_flags=" --quiet --depth=1 "
+    local git_extra_flags=" -b $git_branch "
+    local clone_flags=" $git_repo $git_extra_flags "
+    rm -rf $src_cache/$local_path
+    cd $src_cache
+    git clone $git_flags $clone_flags $local_path \
+    &>> /tmp/${FUNCNAME[2]}.git.log || true
+endfunc
+}
+
 
 
 # Main functions
