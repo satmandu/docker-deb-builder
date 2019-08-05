@@ -820,7 +820,7 @@ startfunc
    #arbitrary_wait
    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
    echo -e "Looking for cached $KERNEL_VERS kernel debs ."
-    for f in $apt_cache/linux-image-*${KERNEL_VERS}*; do
+    for f in "$apt_cache/linux-image-*${KERNEL_VERS}*"; do
      echo "$f"
      if [ -f "$f" ]
      then
@@ -832,7 +832,7 @@ startfunc
     fi
     break
     done
-    for f in $apt_cache/linux-headers-*${KERNEL_VERS}*; do
+    for f in "$apt_cache/linux-headers-*${KERNEL_VERS}*"; do
      echo "$f"
      if [ -f "$f" ]
      then
