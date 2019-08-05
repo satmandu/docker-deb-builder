@@ -190,8 +190,9 @@ spinnerwaitfor () {
 
 spinnerwait () {
 startfunc
-        [[ -f "/flag/start.spinnerwait" ]] && exit 0
         local start_timeout=10000
+        [[ -f "/flag/start.spinnerwait" ]] && \
+        wait_file "/flag/done.spinnerwait" $start_timeout
         #echo "/flag/start.${1}" >> /tmp/spinnerwait
         wait_file "/flag/start.${1}" $start_timeout || \
         echo "${1} didn't start."
@@ -242,7 +243,7 @@ startfunc () {
 endfunc () {
     [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.compile.log || true
     [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
-    mv /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
+    mv -f /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
     printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X] "
 }
 
@@ -884,7 +885,8 @@ startfunc
     chown $USER:$GROUP /output/*.deb
     else
         echo "Cached $KERNEL_VERS kernel debs not found. Building."
-        kernel_build
+        kernel_build &
+        spinnerwait kernel_build
         #waitfor "kernel_build"
         #arbitrary_wait
 
@@ -1454,12 +1456,12 @@ spinnerwait image_apt_installs
 # done
 #arbitrary_wait
 kernel_deb_install & kernel_deb_install_job=$!
-while kill -0 $kernel_deb_install_job 2>/dev/null
-        do for s in / - \\ \|
-            do printf "%${COLUMNS}s\r" "Setting up kernel install to image.$s"
-            sleep .1
-            done
-done
+# while kill -0 $kernel_deb_install_job 2>/dev/null
+#         do for s in / - \\ \|
+#             do printf "%${COLUMNS}s\r" "Setting up kernel install to image.$s"
+#             sleep .1
+#             done
+# done
 image_and_chroot_cleanup
 image_unmount
 compressed_image_export &
