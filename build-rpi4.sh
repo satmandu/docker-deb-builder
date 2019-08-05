@@ -221,7 +221,7 @@ endfunc
 waitfor () {
     local waitforit
     # waitforit file is written in the function "endfunc"
-    [[ -f "/flag/done.${1}" ]] && (echo "nowait!" ; exit 0) || echo "must wait $1"
+    [[ -f "/flag/done.${1}" ]] && (echo "nowait!" ; exit 0) || (echo "must wait $1" ; ls -aFl /flag/done.${1}" )
     touch /flag/wait.${FUNCNAME[1]}_for_${1}
     printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
     local start_timeout=10000
