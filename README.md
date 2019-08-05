@@ -15,7 +15,7 @@ A new kernel is compiled, and current firmware is copied into the container.
 | --- | --- | --- | --- |
 | u-boot at /boot/firmware/kernel8.img | sudo cp /boot/firmware/uboot.bin /boot/firmware/kernel8.img ; sudo reboot | 1 Gb | **Works** |
 | uncompressed linux kernel at /boot/firmware/kernel8.img | sudo cp /boot/firmware/kernel8.img.nouboot /boot/firmware/kernel8.img ; sudo reboot | **4Gb** | No |
-| uncompressed linux kernel at /boot/firmware/kernel8.img |  sudo cp /boot/firmware/kernel8.img.nouboot /boot/firmware/kernel8.img ; [ \`grep -cs "total_mem=" /boot/firmware/config.txt\` -gt 0 ]  && sudo sed  \'s/total_mem=*$/total_mem=3072/\' /boot/firmware/config.txt \|\| echo "total_mem=3072" \| sudo tee -a /boot/firmware/config.txt | 3Gb | **Works** |
+| uncompressed linux kernel at /boot/firmware/kernel8.img |  sudo cp /boot/firmware/kernel8.img.nouboot /boot/firmware/kernel8.img ; [ \`grep -cs "total_mem=" /boot/firmware/config.txt\` -gt 0 ]  && sudo sed  \'s/total_mem=*$/total_mem=3072/\' /boot/firmware/config.txt \|\| echo "total_mem=3072" \| sudo tee -a /boot/firmware/config.txt; sudo reboot | 3Gb | **Works** |
 
 
 
