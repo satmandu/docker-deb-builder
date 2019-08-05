@@ -670,7 +670,7 @@ startfunc
     cp *.dat /mnt/boot/firmware/
     cp *.dat /mnt/boot/firmware/
     cp *.dtb /mnt/boot/firmware/
-    cp *.dtb /mnt/flash-kernel/dtbs/
+    cp *.dtb /mnt/etc/flash-kernel/dtbs/
     cp overlays/*.dtbo /mnt/boot/firmware/overlays/
 endfunc
 }
