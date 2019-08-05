@@ -53,7 +53,8 @@ base_image_url="${base_url}/${base_image}"
 cache_volume=rpi4-imagebuilder-cache
 
 # This is the linux version we want to use:
-kernel_branch=rpi-4.19.y
+#kernel_branch=rpi-4.19.y
+kernel_branch="${kernel_branch:-rpi-4.19.y}"
 kernelgitrepo="https://github.com/raspberrypi/linux.git"
 
 srcdir=$1
