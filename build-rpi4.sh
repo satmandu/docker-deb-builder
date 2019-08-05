@@ -194,26 +194,16 @@ waitfor () {
 
 waitforstart () {
     local waitforit
-    # waitforit file is written in the function "endfunc"
-    #touch /flag/wait.${FUNCNAME[1]}_for_${1}
-    #printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/]"
     while read waitforit; do 
     if [ "$waitforit" = start.${1} ]; 
         then break; \
     fi; 
     done \
    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
-    #printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [ ]" && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
 }
 
 
 startfunc () {
-    #for i in {0..2}
-    #    do
-    #        [ ! -f "/flag/done.${FUNCNAME[1]}" ] && \
-    #        touch /flag/start.${FUNCNAME[1]}
-    #        sleep 1
-    #done
     echo $BASHPID > /flag/start.${FUNCNAME[1]}
     printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[1]} [ ]"
 }
@@ -222,18 +212,6 @@ endfunc () {
     [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.compile.log || true
     [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
     mv /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
-    #for i in {0..15}
-    #    do
-    #        touch /flag/done.${FUNCNAME[1]}
-    #        sleep 1
-    #done
-    #touch /flag/done.${FUNCNAME[1]}
-    # inotifywait is having issues in docker.
-    # Let's see if this needs to be done.
-    #touch /tmp/*
-    # debugging
-   # [[ $DEBUG ]] && ( [[ -d "/output/$now/" ]] && ( env > /output/$now/${FUNCNAME[1]}.env ; chown $USER:$GROUP /output/$now/${FUNCNAME[1]}.env ))
-   # [[ $DEBUG ]] && chown $USER:$GROUP /output/$now/${FUNCNAME[1]}.env
     printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X]"
 }
 
@@ -290,16 +268,12 @@ git_get () {
     local remote_git=$(git_check "$git_repo" "$git_branch")
     local local_git=$(local_check "$src_cache/$local_path" "$git_branch")
     
-    #[[ $git_branch ]] && git_extra_flags= || git_extra_flags="-b $branch"
     [ -z $git_branch ] && git_extra_flags= || git_extra_flags=" -b $git_branch "
     local git_flags=" --quiet --depth=1 "
     local clone_flags=" $git_repo $git_extra_flags "
     local pull_flags="origin/$git_branch"
     echo -e "${FUNCNAME[1]}\nremote hash: $remote_git\nlocal hash: $local_git"
       
-    #echo $remote_git > /tmp/remote.git
-    #printf "%${COLUMNS}s\n"  "${FUNCNAME[1]}  local hash: $local_git"
-    #echo $local_git > /tmp/local.git
     if [ ! "$remote_git" = "$local_git" ]; then
         printf "%${COLUMNS}s\n"  "--${FUNCNAME[1]} refreshing cache files from git."
         
@@ -313,12 +287,7 @@ git_get () {
         git fetch --all $git_flags &>> /tmp/${FUNCNAME[1]}.git.log || true
         git reset --hard $pull_flags $git_flags 2>> /tmp/${FUNCNAME[1]}.git.log || \
         ( rm -rf $src_cache/$local_path ; cd $src_cache ; git clone $git_flags $clone_flags $local_path ) 2>> /tmp/${FUNCNAME[1]}.git.log
-        
-        #local last_commit=`git log -1 --quiet 2> /dev/null`
-        #printf "%${COLUMNS}s\n"  "*${FUNCNAME[1]} Last Commit:" "${last_commit}"
-        #git log -1 --quiet 2> /dev/null
-        #ls $cache_path/$local_path
-    else
+        else
         echo -e "${FUNCNAME[1]} getting files from cache volume. 😎\n"
     fi
     
@@ -327,13 +296,6 @@ git_get () {
     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
     %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
     --quiet 2> /dev/null`
-    #echo "*${FUNCNAME[1]} Last Commit:" && git log --graph \
-    #--pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
-    #%C(bold blue)<%an>%Creset' --abbrev-commit -2 \
-    #--quiet 2> /dev/null
-    #printf "%${COLUMNS}s\n"  "*${FUNCNAME[1]} Last Commit:" && echo "${last_commit}"
-    #echo "*${FUNCNAME[1]} Last Commit:" 
-    #echo ""
     echo -e "*${FUNCNAME[1]} Last Commits:\n$last_commit\n"
     rsync -a $src_cache/$local_path $workdir/
 }
@@ -383,13 +345,6 @@ startfunc
     pvcmd="pv -s ${size} -cfperb -N "xzcat:${base_image}" $workdir/$base_image"
     echo $pvcmd
     $pvcmd | xzcat > $workdir/$new_image.img
-    #xzcat_pid=$(pgrep ^xzcat)
-    #while true; do
-    #    pgrep ^xzcat > /dev/null
-    #    kill -10 ${xzcat_pid}
-    #    sleep 1
-    #done
-    #wait ${xzcat_pid}
     [[ $DELTA ]] && (cp $workdir/$new_image.img $workdir/old_image.img &)
     fi
     [[ -f "/output/loop_device" ]] && ( old_loop_device=`cat /output/loop_device` ; \
@@ -524,10 +479,6 @@ startfunc
     -o dir::cache::archives=$apt_cache \
     upgrade -d -y &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Apt upgrade download done."
-    #echo "* Starting chroot apt update."
-    #chroot /mnt /bin/bash -c "/usr/bin/apt update 2>/dev/null \
-    #| grep packages | cut -d '.' -f 1"
-    #echo "* Chroot apt update done."
     echo "* Downloading wifi & networking tools."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives=$apt_cache \
@@ -542,17 +493,6 @@ startfunc
     -o dir::cache::archives=$apt_cache \
     -d install  \
     qemu-user qemu libc6-amd64-cross -qq &>> /tmp/${FUNCNAME[0]}.install.log || true
-    # Now we have qemu-static & arm64 binaries installed, so we copy libraries over
-    # from image to build container in case they are needed during this install.
-    #mkdir -p /mnt/lib64/
-    #mkdir -p /mnt/lib/x86_64-linux-gnu/
-    #cp /lib64/ld-linux-x86-64.so.2 /mnt/lib64/
-    #cp /lib/x86_64-linux-gnu/libc.so.6 /mnt/lib/x86_64-linux-gnu/
-    #cp /mnt/usr/lib/aarch64-linux-gnu/libc.so.6 /lib64/
-    #cp /mnt/lib/ld-linux-aarch64.so.1 /lib/
-    #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -y \
-    #--no-install-recommends \
-    #qemu-user qemu libc6-amd64-cross $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
     
 # endfunc
 # }
@@ -566,8 +506,6 @@ startfunc
                           
     echo "* Apt upgrading image in chroot."
     #echo "* There may be some errors here due to" 
-    #echo "* installation happening in a chroot."
-    #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -qq || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -qq)" || true &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Image apt upgrade done."
     
@@ -765,20 +703,6 @@ startfunc
             done
         done
     
-    #LOCALVERSION=-`git -C $workdir/rpi-linux rev-parse --short HEAD` \
-    
-    #cd ..
-
-    #cd $workdir/rpi-linux
-    #make \
-    #ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    #-j $(($(nproc) + 1)) O=$workdir/kernel-build &>> /tmp/${FUNCNAME[0]}.compile.log
-    #LOCALVERSION=-`git -C $workdir/rpi-linux rev-parse --short HEAD` \
-    
-    # Not sure why setting this isn't working globally. :/
-    #export KERNEL_VERSION=`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`
-    ###
-    #echo "* Kernel version is ${KERNEL_VERSION} *"
         
 endfunc
 }
@@ -847,23 +771,7 @@ startfunc
 kernel_debs () {
     waitfor "kernelbuild_setup"
 startfunc
-#     majorversion=`grep VERSION $src_cache/rpi-linux/Makefile | \
-#     head -1 | awk -F ' = ' '{print $2}'`
-#     patchlevel=`grep PATCHLEVEL $src_cache/rpi-linux/Makefile | \
-#     head -1 | awk -F ' = ' '{print $2}'`
-#     sublevel=`grep SUBLEVEL $src_cache/rpi-linux/Makefile | \
-#     head -1 | awk -F ' = ' '{print $2}'`
-#     extraversion=`grep EXTRAVERSION $src_cache/rpi-linux/Makefile | \
-#     head -1 | awk -F ' = ' '{print $2}'`
-#     extraversion_nohyphen="${extraversion//-}"
-#     PKGVER="$majorversion.$patchlevel.$sublevel"
-#     #echo "PKGVER: $PKGVER"
-#     kernelrev=`git -C $src_cache/rpi-linux rev-parse --short HEAD` > /dev/null
-#     KERNEL_VERS="$PKGVER-$kernelrev"
-#     echo "KERNEL_VERS: $KERNEL_VERS" 
-#     echo $KERNEL_VERS > /tmp/KERNEL_VERS
-    #kernelrev=`git -C $src_cache/rpi-linux rev-parse --short HEAD`
-    #echo $kernelrev
+
    # Don't remake debs if they already exist in output.
    #arbitrary_wait
    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
@@ -919,18 +827,6 @@ startfunc
     echo "* Installing $KERNEL_VERS debs to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge" &>> /tmp/${FUNCNAME[0]}.install.log || true
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb"  &>> /tmp/${FUNCNAME[0]}.install.log || true
-#     vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
-#     if [ "$vmlinuz_type" == "MS-DOS executable" ]
-#     	then
-#     		cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
-#     	else
-#     	    cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
-#     	    cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz \
-#     	    &>> /tmp/${FUNCNAME[0]}.install.log
-#     fi
-#     &>> /tmp/${FUNCNAME[0]}.install.log
-    #chroot /mnt /bin/bash -c "update-initramfs -c -k all" &>> /tmp/${FUNCNAME[0]}.install.log || true 
-    #chroot /mnt /bin/bash -c "flash-kernel --force $KERNEL_VERS" &>> /tmp/${FUNCNAME[0]}.install.log || true
     cp /mnt/boot/initrd.img-$KERNEL_VERS /mnt/boot/firmware/initrd.img
     cp /mnt/boot/vmlinuz-$KERNEL_VERS /mnt/boot/firmware/vmlinuz
     chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &> /output/initramfs.log || true
@@ -950,37 +846,37 @@ endfunc
 
 
 
-kernel_module_install () {
-    waitfor "kernel_install"
-startfunc    
-    echo "* Copying compiled `cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'` modules to image."
-    # Ubuntu has /lib as a symlink to /usr/lib so we don't want to overwrite that!
-    cp -avr $workdir/kernel-install/lib/* \
-    /mnt/usr/lib/ &>> /tmp/${FUNCNAME[0]}.install.log
-    
-    rm  -rf /mnt/usr/lib/modules/`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`/build 
-endfunc
-}
+# kernel_module_install () {
+#     waitfor "kernel_install"
+# startfunc    
+#     echo "* Copying compiled `cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'` modules to image."
+#     # Ubuntu has /lib as a symlink to /usr/lib so we don't want to overwrite that!
+#     cp -avr $workdir/kernel-install/lib/* \
+#     /mnt/usr/lib/ &>> /tmp/${FUNCNAME[0]}.install.log
+#     
+#     rm  -rf /mnt/usr/lib/modules/`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`/build 
+# endfunc
+# }
 
-kernel_install_dtbs () {
-    waitfor "kernel_install"
-startfunc    
-    echo "* Copying compiled `cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'` dtbs & dtbos to image."
-    cp $workdir/kernel-build/arch/arm64/boot/dts/broadcom/*.dtb /mnt/boot/firmware/ 
-    cp $workdir/kernel-build/arch/arm64/boot/dts/overlays/*.dtbo \
-    /mnt/boot/firmware/overlays/
-    
-    #Fix DTB install which for some reason doesn't happen properly in 
-    # the generated deb.
-    mkdir -p /mnt/lib/firmware/`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`/device-tree/
-    rsync -arm --include="*/" --include="*.dtbo" --include="*.dtb" --exclude="*" \
-    $workdir/kernel-build/arch/arm64/boot/dts/ \
-    /mnt/lib/firmware/`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`/device-tree/
-    
-    cp $workdir/kernel-build/arch/arm64/boot/dts/broadcom/*.dtb \
-    /mnt/etc/flash-kernel/dtbs/    
-endfunc
-}
+# kernel_install_dtbs () {
+#     waitfor "kernel_install"
+# startfunc    
+#     echo "* Copying compiled `cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'` dtbs & dtbos to image."
+#     cp $workdir/kernel-build/arch/arm64/boot/dts/broadcom/*.dtb /mnt/boot/firmware/ 
+#     cp $workdir/kernel-build/arch/arm64/boot/dts/overlays/*.dtbo \
+#     /mnt/boot/firmware/overlays/
+#     
+#     #Fix DTB install which for some reason doesn't happen properly in 
+#     # the generated deb.
+#     mkdir -p /mnt/lib/firmware/`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`/device-tree/
+#     rsync -arm --include="*/" --include="*.dtbo" --include="*.dtb" --exclude="*" \
+#     $workdir/kernel-build/arch/arm64/boot/dts/ \
+#     /mnt/lib/firmware/`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`/device-tree/
+#     
+#     cp $workdir/kernel-build/arch/arm64/boot/dts/broadcom/*.dtb \
+#     /mnt/etc/flash-kernel/dtbs/    
+# endfunc
+# }
 
 armstub8-gic () {
     git_get "https://github.com/raspberrypi/tools.git" "rpi-tools"
