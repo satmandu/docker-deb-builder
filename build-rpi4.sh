@@ -690,7 +690,7 @@ startfunc
         cd $workdir/rpi-linux
         debcmd="make \
         ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-        -j $(($(nproc) + 1)) O=$workdir/kernel-build \
+        -j$(($(nproc) + 1)) O=$workdir/kernel-build \
         bindeb-pkg & job=$!"
         
     
