@@ -777,15 +777,23 @@ startfunc
    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
    echo -e "Looking for cached $KERNEL_VERS kernel debs ."
     for f in $apt_cache/linux-image-*${kernelrev}*; do
-     [ -e "$f" ] && (echo -e "Preexisting linux-image deb on cache volume. 😎\n"\
-      ; echo 1 > /tmp/nodebs) \
-     || ( rm -f /tmp/nodebs || true)
-     break
+     if [ -e "$f" ]
+     then
+         echo -e "Preexisting linux-image deb on cache volume. 😎\n"
+         echo 1 > /tmp/nodebs
+     else
+         rm -f /tmp/nodebs || true
+    fi
+    break
     done
     for f in $apt_cache/linux-headers-*${kernelrev}*; do
-     [ -e "$f" ] && (echo -e "Preexisting linux-headers deb on cache volume. 😎\n"\
-      ; echo 1> /tmp/nodebs) \
-     || ( rm -f /tmp/nodebs || true)
+     if [ -e "$f" ]
+     then
+        echo -e "Preexisting linux-headers deb on cache volume. 😎\n"
+        echo 1> /tmp/nodebs
+     else
+         rm -f /tmp/nodebs || true
+     fi
      break
     done
     if [[ -e /tmp/nodebs ]]
