@@ -83,7 +83,7 @@ mkdir -p $apt_cache/partial
 #env >> /output/environment
 
 # Make sure inotify-tools is installed.
-apt-get -o dir::cache::archives=$apt_cache install inotify-tools lsof xdelta3 vim \
+apt-get -o dir::cache::archives=$apt_cache install  lsof xdelta3 vim \
 e2fsprogs qemu-user-static \
 libc6-arm64-cross pv -qq 2>/dev/null
 
@@ -153,14 +153,14 @@ wait_file() {
 }
 
 
-inotify_touch_events () {
-    # Since inotifywait seems to need help in docker. :/
-    while [ ! -f "/flag/done.export_log" ]
-    do
-        touch /flag/*
-        sleep 1
-    done
-}
+# inotify_touch_events () {
+#     # Since inotifywait seems to need help in docker. :/
+#     while [ ! -f "/flag/done.export_log" ]
+#     do
+#         touch /flag/*
+#         sleep 1
+#     done
+# }
 
 # spinnerwaitfor () {
 #     local waitforit
@@ -231,13 +231,15 @@ waitfor () {
 }
 
 waitforstart () {
-    local waitforit
-    while read waitforit; do 
-    if [ "$waitforit" = start.${1} ]; 
-        then break; \
-    fi; 
-    done \
-   < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
+    local start_timeout=10000
+    wait_file "/flag/start.${1}" $start_timeout
+    # local waitforit
+#     while read waitforit; do 
+#     if [ "$waitforit" = start.${1} ]; 
+#         then break; \
+#     fi; 
+#     done \
+#    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
 }
 
 
@@ -1413,7 +1415,7 @@ touch /flag/done.ok_to_exit_container_after_build
 # inotify in docker seems to not recognize that files are being 
 # created unless they are touched. Not sure where this bug is.
 # So we will work around it.
-inotify_touch_events &
+#inotify_touch_events &
 
 base_image_check
 image_extract_and_mount &
