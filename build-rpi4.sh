@@ -1137,8 +1137,6 @@ startfunc
 	if [ "$_IP" ]; then
 	    printf "My IP address is %s\n" "$_IP"
 	fi
-	# Disable wifi power saving, which causes wifi instability.
-	iwconfig wlan0 power off
 	#
 	/etc/rc.local.temp &
 	exit 0
