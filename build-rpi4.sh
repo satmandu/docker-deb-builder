@@ -296,7 +296,7 @@ git_get () {
             # sync to local branch
             cd $src_cache/$local_path
             git fetch --all $git_flags &>> /tmp/${FUNCNAME[1]}.git.log || true
-            git reset --hard $pull_flags $git_flags 2>> /tmp/${FUNCNAME[1]}.git.log
+            git reset --hard $pull_flags --quiet 2>> /tmp/${FUNCNAME[1]}.git.log
         else
             echo -e "${FUNCNAME[1]} getting files from cache volume. 😎\n"
     fi
@@ -723,7 +723,7 @@ startfunc
     # This also enables the BPF syscall for systemd-journald firewalling
     /source-ro/conform_config.sh
     yes "" | make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    O=.$workdir/kernel-build/ \
+    O=$workdir/kernel-build/ \
     olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     
     KERNEL_VERS=`cat /tmp/KERNEL_VERS`
