@@ -670,6 +670,7 @@ startfunc
     cp *.dat /mnt/boot/firmware/
     cp *.dat /mnt/boot/firmware/
     cp *.dtb /mnt/boot/firmware/
+    cp .dtb /mnt/flash-kernel/dtbs/
     cp overlays/*.dtbo /mnt/boot/firmware/overlays/
 endfunc
 }
@@ -944,32 +945,7 @@ startfunc
 endfunc
 }
 
-kernel_install () {
-    waitfor "kernel_deb_install"
-    waitfor "image_extract_and_mount"
-startfunc    
-    #echo "* Copying compiled `cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'` kernel to image."
-    
-    # Ubuntu defaults to using uBoot, which now works for RPI4, as of
-    # July 31, 2019, so we copy that into /boot/firmware/kernel8.img later.
-    # 
-    # We replacee uboot with kernel, but we're installing the kernel here as
-    # well. If a working uboot is not available copy this over to kernel8.img
-    #cp $workdir/kernel-build/arch/arm64/boot/Image /mnt/boot/firmware/kernel8.img.nouboot
-    #gunzip -c -f /mnt/boot/firmware/vmlinuz > /mnt/boot/firmware/kernel8.img.nouboot &>> /tmp/${FUNCNAME[0]}.install.log
-    #
-    # uboot uses uboot & the standard raspberry pi boot script to boot a compressed 
-    # kernel on arm64, since linux on arm64 does not support self-decompression of 
-    # the kernel, so we copy this for use with uboot.
-    #cp $workdir/kernel-build/arch/arm64/boot/Image.gz \
-    #/mnt/boot/vmlinuz-`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`
-    
-    #cp $workdir/kernel-build/arch/arm64/boot/Image.gz \
-    #/mnt/boot/firmware/vmlinuz
-    
-    #cp $workdir/kernel-build/.config /mnt/boot/config-`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`
-endfunc
-}
+
 
 kernel_module_install () {
     waitfor "kernel_install"
@@ -1399,8 +1375,8 @@ startfunc
 
     
     kpartx -dv $workdir/${new_image}.img
-    losetup -d /dev/$loop_device || true
-    dmsetup remove -f /dev/$loop_device || true
+    losetup -d /dev/$loop_device &>/dev/null || true
+    dmsetup remove -f /dev/$loop_device &>/dev/null || true
     dmsetup info
     # To stop here "rm /flag/done.ok_to_exit_container_after_build".
     if [ ! -f /flag/done.ok_to_exit_container_after_build ]; then
