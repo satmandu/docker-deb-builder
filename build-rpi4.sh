@@ -204,9 +204,9 @@ startfunc
         echo "Starting ${1}" >> /tmp/spinnerwait
         local job_id=`cat /flag/start.${1}`
         echo "Waiting for ${job_id} to end." >> /tmp/spinnerwait
-        while kill -0 ${job_id} 2>/dev/null
-        tput sc
+        while pgrep -P ${job_id} 2>/dev/null
         do for s in / - \\ \|
+            tput sc
             do 
             tput rc
             printf "%${COLUMNS}s\r" "${1} .$s"
