@@ -190,8 +190,9 @@ spinnerwaitfor () {
 
 spinnerwait () {
 startfunc
+        [[ -f "/flag/start.spinnerwait" ]] && exit 0
         local start_timeout=10000
-        echo "/flag/start.${1}" >> /tmp/spinnerwait
+        #echo "/flag/start.${1}" >> /tmp/spinnerwait
         wait_file "/flag/start.${1}" $start_timeout || \
         echo "${1} didn't start."
         local job_id=`cat /flag/start.${1}`
