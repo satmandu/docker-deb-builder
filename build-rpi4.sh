@@ -227,7 +227,11 @@ waitfor () {
     local start_timeout=10000
     wait_file "/flag/start.${1}" $start_timeout
     local job_id=`cat /flag/start.${1}`
-    while s=`ps -p ${job_id} -o s=` && [[ "$s" && "$s" != 'Z' ]]; do sleep 1; done
+    while s=`ps -p ${job_id} -o s=` && [[ "$s" && "$s" != 'Z' ]]
+        do 
+            sleep 1
+             [[ -e "/flag/done.${1}" ]] && break
+        done
 #     while (pgrep -cxP ${job_id} &>/dev/null)
 #         #do for s in / - \\ \|
 #             do 
