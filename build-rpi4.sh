@@ -829,7 +829,8 @@ startfunc
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb"  &>> /tmp/${FUNCNAME[0]}.install.log || true
     cp /mnt/boot/initrd.img-$KERNEL_VERS /mnt/boot/firmware/initrd.img
     cp /mnt/boot/vmlinuz-$KERNEL_VERS /mnt/boot/firmware/vmlinuz
-    chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &> /output/initramfs.log || true
+   # chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" \
+   #&> /output/initramfs.log || true
     vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
     if [ "$vmlinuz_type" == "MS-DOS executable" ]
     	then
