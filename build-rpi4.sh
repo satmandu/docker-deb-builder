@@ -203,7 +203,8 @@ startfunc
         echo "${1} didn't start."
         echo "Starting ${1}" >> /tmp/spinnerwait
         local job_id=`cat /flag/start.${1}`
-        while kill -0 $job_id 2>/dev/null
+        echo "Waiting for ${job_id} to end." >> /tmp/spinnerwait
+        while kill -0 ${job_id} 2>/dev/null
         tput sc
         do for s in / - \\ \|
             do 
