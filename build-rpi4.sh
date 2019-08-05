@@ -823,10 +823,11 @@ startfunc
     for f in $apt_cache/linux-image-*${KERNEL_VERS}*; do
      if [ -e "$f" ]
      then
-         echo -e "Preexisting linux-image deb on cache volume. 😎\n"
-         echo 1 > /tmp/nodebs
+        echo "$f"
+        echo -e "Preexisting linux-image deb on cache volume. 😎\n"
+        echo 1 > /tmp/nodebs
      else
-         rm -f /tmp/nodebs || true
+        rm -f /tmp/nodebs || true
     fi
     break
     done
