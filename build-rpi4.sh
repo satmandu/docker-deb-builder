@@ -205,7 +205,7 @@ startfunc
         local job_id=`cat /flag/start.${1}`
         echo "Waiting for ${job_id} to end." >> /tmp/spinnerwait
         tput sc
-        while (pgrep -cxP ${job_id}) 2>/dev/null
+        while (pgrep -cxP ${job_id} &>/dev/null)
         do for s in / - \\ \|
             do 
             tput rc
