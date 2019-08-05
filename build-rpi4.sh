@@ -1366,11 +1366,12 @@ image_unmount () {
 startfunc
     echo "* Unmounting modified ${new_image}.img"
     loop_device=`cat /tmp/loop_device`
-    sync
-    umount /mnt/boot/firmware || (lsof +f -- /mnt/boot/firmware ; sleep 60 ; umount /mnt/boot/firmware)
+    #sync
+    umount -l /mnt/boot/firmware || (lsof +f -- /mnt/boot/firmware ; sleep 60 ; \
+    umount -l /mnt/boot/firmware) || true
     #umount /mnt || (mount | grep /mnt)
     e4defrag /mnt >/dev/null
-    umount /mnt || (lsof +f -- /mnt ; sleep 60 ; umount /mnt)
+    umount -l /mnt || (lsof +f -- /mnt ; sleep 60 ; umount /mnt) || true
     #guestunmount /mnt
 
     
@@ -1426,8 +1427,6 @@ startfunc
         for i in "${image_compressors[@]}"
         do
             echo "* Compressing patch.xdelta with $i and exporting."
-            #echo "  out of container to:"
-            #echo "eoan-daily-preinstalled-server_`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`${now}_xdelta3.$i"
             compress_flags=""
             [ "$i" == "lz4" ] && compress_flags="-m"
             xdelta_patchout_compresscmd="$i -k $compress_flags \
