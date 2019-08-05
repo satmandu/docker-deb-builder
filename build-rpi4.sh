@@ -507,7 +507,7 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
 endfunc
 }
 
-image_apt_download () {
+image_apt_installs () {
         waitfor "arm64_chroot_setup"
 startfunc    
     echo "* Remove man-db."
@@ -554,12 +554,12 @@ startfunc
     #--no-install-recommends \
     #qemu-user qemu libc6-amd64-cross $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
     
-endfunc
-}
-
-image_apt_upgrade () {
-        waitfor "image_apt_download"
-startfunc 
+# endfunc
+# }
+# 
+# image_apt_upgrade () {
+#         waitfor "image_apt_download"
+# startfunc 
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -qq \
     --no-install-recommends \
     qemu-user qemu libc6-amd64-cross" &>> /tmp/${FUNCNAME[0]}.install.log || true
@@ -571,12 +571,12 @@ startfunc
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -qq || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -qq)" || true &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Image apt upgrade done."
     
-endfunc
-}
-
-image_apt_install () {
-        waitfor "image_apt_upgrade"
-startfunc
+# endfunc
+# }
+# 
+# image_apt_install () {
+#         waitfor "image_apt_upgrade"
+# startfunc
   echo "* Installing wifi & networking tools to image."
     #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
     #install wireless-tools wireless-regdb crda \
@@ -1506,20 +1506,27 @@ echo $arm64_chroot_setup_job > /tmp/arm64_chroot_setup_job.pid
 #kernel_module_install
 #kernel_install_dtbs &
 #waitfor "arm64_chroot_setup" && image_apt_download
-image_apt_download &
-image_apt_upgrade &
-image_apt_install & image_apt_install_job=$!
+#image_apt_download &
+#image_apt_upgrade &
+image_apt_installs & image_apt_installs_job=$!
 
 #waitforstart "image_apt_install"
 #image_apt_install_job=`cat /flag/start.image_apt_install`
-while kill -0 $image_apt_install_job 2>/dev/null
+while kill -0 $image_apt_installs_job 2>/dev/null
         do for s in / - \\ \|
             do printf "Setting up image software installs.\r$s"
             sleep .1
             done
 done
 arbitrary_wait
-kernel_deb_install &
+kernel_deb_install & kernel_deb_install_job=$!
+kernel_deb_install_job
+while kill -0 $kernel_deb_install_job 2>/dev/null
+        do for s in / - \\ \|
+            do printf "Setting up kernel install to image.\r$s"
+            sleep .1
+            done
+done
 
 image_and_chroot_cleanup
 image_unmount
