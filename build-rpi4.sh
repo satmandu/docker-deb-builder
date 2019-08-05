@@ -193,7 +193,7 @@ startfunc
         local start_timeout=10000
         [[ -f "/flag/start.spinnerwait" ]] && \
         wait_file "/flag/done.spinnerwait" $start_timeout
-        #echo "/flag/start.${1}" >> /tmp/spinnerwait
+        echo "/flag/start.${1}" >> /tmp/spinnerwait
         wait_file "/flag/start.${1}" $start_timeout || \
         echo "${1} didn't start."
         local job_id=`cat /flag/start.${1}`
@@ -1455,7 +1455,7 @@ spinnerwait image_apt_installs
 #             done
 # done
 #arbitrary_wait
-kernel_deb_install & kernel_deb_install_job=$!
+kernel_deb_install &
 # while kill -0 $kernel_deb_install_job 2>/dev/null
 #         do for s in / - \\ \|
 #             do printf "%${COLUMNS}s\r" "Setting up kernel install to image.$s"
