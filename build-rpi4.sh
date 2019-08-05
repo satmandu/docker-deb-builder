@@ -191,7 +191,7 @@ spinnerwaitfor () {
 spinnerwait () {
 startfunc
         local start_timeout=10000
-        echo "/flag/start.${FUNCNAME[1]}"
+        echo "/flag/start.${FUNCNAME[1]}" >> /tmp/spinnerwait
         wait_file "/flag/start.${FUNCNAME[1]}" $start_timeout || \
         echo "${FUNCNAME[1]} didn't start."
         local job_id=`cat /flag/start.${FUNCNAME[1]}`
@@ -877,16 +877,17 @@ startfunc
     then
     # echo -e "Using existing $KERNEL_VERS debs from cache volume.\nNo \
     # kernel needs to be built."
-    cp $apt_cache/linux-image-*${kernelrev}*arm64.deb $workdir/
-    cp $apt_cache/linux-headers-*${kernelrev}*arm64.deb $workdir/
+    cp $apt_cache/linux-image-*${KERNEL_VERS}*arm64.deb $workdir/
+    cp $apt_cache/linux-headers-*${KERNEL_VERS}*arm64.deb $workdir/
     cp $workdir/*.deb /output/ 
     chown $USER:$GROUP /output/*.deb
     else
+        echo "Cached $KERNEL_VERS kernel debs not found. Building."
         kernel_build
         #waitfor "kernel_build"
         #arbitrary_wait
 
-        echo "* Copying out git *${kernelrev}* kernel debs."
+        echo "* Copying out git *${KERNEL_VERS}* kernel debs."
         rm -f $workdir/linux-libc-dev*.deb
         cp $workdir/*.deb $apt_cache/
         cp $workdir/*.deb /output/ 
