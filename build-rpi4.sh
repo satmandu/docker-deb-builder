@@ -147,10 +147,21 @@ wait_file() {
   local file="$1"; shift
   local wait_seconds="${1:-10}"; shift # 10 seconds as default timeout
 
-  until test $((wait_seconds--)) -eq 0 -o -f "$file" ; do sleep 1; echo "${file}"; done
+  until test ($((wait_seconds--)) -eq 0 -o -f "$file" ; do sleep 1; echo "${file}"; done
 
   ((++wait_seconds))
 }
+
+# Via https://superuser.com/a/917073
+wait_flag() {
+  local file="$1"; shift
+  local wait_seconds="${1:-10}"; shift # 10 seconds as default timeout
+
+  until test ($((wait_seconds--)) -eq 0 -o -f "start.$file" || $((wait_seconds--)) -eq 0 -o -f "done.$file" ) ; do sleep 1; echo "${file}"; done
+
+  ((++wait_seconds))
+}
+
 
 inotify_touch_events () {
     # Since inotifywait seems to need help in docker. :/
@@ -221,18 +232,20 @@ endfunc
 waitfor () {
     local waitforit
     # waitforit file is written in the function "endfunc"
-    [[ -f "/flag/done.${1}" ]] && (echo "nowait!" ; exit 0) || (echo "must wait $1" ; ls -aFl /flag/done.${1} )
-    ls -aFl /flag/done.${1} > /flag/wait.${FUNCNAME[1]}_for_${1}
+    
+#    ls -aFl /flag/done.${1} > /flag/wait.${FUNCNAME[1]}_for_${1}
     printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
     local start_timeout=10000
-    wait_file "/flag/start.${1}" $start_timeout
-    local job_id=`cat /flag/start.${1}`
-    while s=`ps -p ${job_id} -o s=` && [[ "$s" && "$s" != 'Z' ]]
-        do 
-            printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
-            sleep 1
-             [[ -e "/flag/done.${1}" ]] && break
-        done
+    wait_file "/flag/done.${1}" $start_timeout
+#    wait_flag "${1}" $start_timeout
+#    [[ -f "/flag/done.${1}" ]] && (echo "nowait!" ; exit 0) || (echo "must wait $1" ; ls -aFl /flag/done.${1} )
+ #   local job_id=`cat /flag/start.${1}`
+ #   while s=`ps -p ${job_id} -o s=` && [[ "$s" && "$s" != 'Z' ]]
+ #       do 
+ #           printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
+ #           sleep 1
+ #            [[ -e "/flag/done.${1}" ]] && break
+ #       done
 #     while (pgrep -cxP ${job_id} &>/dev/null)
 #         #do for s in / - \\ \|
 #             do 
