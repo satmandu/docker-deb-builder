@@ -909,7 +909,7 @@ kernel_deb_install () {
     waitfor "kernel_debs"
     waitfor "image_extract_and_mount"
     waitfor "added_scripts"
-    waitfor "image_apt_install"
+    waitfor "image_apt_installs"
 startfunc
     KERNEL_VERS=`cat /tmp/KERNEL_VERS`
     # Try installing the generated debs in chroot before we do anything else.
@@ -1369,7 +1369,6 @@ image_unmount () {
 startfunc
     echo "* Unmounting modified ${new_image}.img"
     loop_device=`cat /tmp/loop_device`
-    #sync
     umount -l /mnt/boot/firmware || (lsof +f -- /mnt/boot/firmware ; sleep 60 ; \
     umount -l /mnt/boot/firmware) || true
     #umount /mnt || (mount | grep /mnt)
@@ -1402,8 +1401,6 @@ startfunc
     for i in "${image_compressors[@]}"
     do
      echo "* Compressing ${new_image} with $i and exporting."
-     #echo "  out of container to:"
-     #echo "${new_image}-`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`_${now}.img.$i"
      compress_flags=""
      [ "$i" == "lz4" ] && compress_flags="-m"
      compresscmd="$i -v -k $compress_flags ${new_image}.img"
@@ -1488,23 +1485,15 @@ armstub8-gic &
 non-free_firmware & 
 rpi_userland &
 andrei_gherzan_uboot_fork &
-# KERNEL_VERSION is set here:
 kernelbuild_setup &
-
-#kernel_build &
-
 rpi_config_txt_configuration &
 rpi_cmdline_txt_configuration &
 wifi_firmware_modification &
 first_boot_scripts_setup &
 added_scripts &
-#kernel_deb_install &
-#kernel_install &
 waitforstart "kernelbuild_setup" && kernel_debs &
 arm64_chroot_setup & arm64_chroot_setup_job=$!
 echo $arm64_chroot_setup_job > /tmp/arm64_chroot_setup_job.pid
-#kernel_module_install
-#kernel_install_dtbs &
 #waitfor "arm64_chroot_setup" && image_apt_download
 #image_apt_download &
 #image_apt_upgrade &
@@ -1518,7 +1507,7 @@ while kill -0 $image_apt_installs_job 2>/dev/null
             sleep .1
             done
 done
-arbitrary_wait
+#arbitrary_wait
 kernel_deb_install & kernel_deb_install_job=$!
 while kill -0 $kernel_deb_install_job 2>/dev/null
         do for s in / - \\ \|
@@ -1526,7 +1515,6 @@ while kill -0 $kernel_deb_install_job 2>/dev/null
             sleep .1
             done
 done
-
 image_and_chroot_cleanup
 image_unmount
 compressed_image_export &
