@@ -65,8 +65,9 @@ In this example the target is Ubuntu 19.10 but you can create and modify `Docker
 
 
 ## 4.  Build package from inside source directory
-
-    # ./build-image -i docker-rpi4-imagebuilder:19.10 -o output ~/directory_with_the_scripts
+    # Example usage:
+    # ./build-image -i docker-rpi4-imagebuilder:19.10 -o output ~/docker-rpi4-imagebuilder
+    # Another option: (This refreshes the script, turns off XZ compression, and measures how long the build took.)
     git pull ; NOXZ=1 time ./build-image -i docker-rpi4-imagebuilder:19.10 -o output .
     
 A first build takes about 30 min on my Skylake build machine. A second build takes about 10 min due to the use of ccache if I have xz compression disabled and just use lz4 for image compression, or 25 min if I use both.
