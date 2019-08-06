@@ -74,6 +74,9 @@ SYSTEM=`uname`
 [ !    "${srcdir}"        ] && fatal "source directory not given"
 [ !    "$image"         ] && fatal "docker image name not given (-i IMAGE)"
 
+
+
+
 # Needed for loopback to work inside container.
 #docker_args+="--cap-add=CAP_MKNOD --device-cgroup-rule='b 7:* rmw' "
 docker_args+="-v /dev:/dev --privileged "
@@ -97,6 +100,14 @@ docker_args+="-e USER=$(id -u) -e GROUP=$(id -g) "
 # for debugging
 docker_args+="--rm "
 
+maclinux () {
+# extract xz using docker image
+local args="$@"
+local xzdocker_args+="--rm -v $(abspath ${srcdir}):/work "
+docker run $xzdocker_args $image /bin/bash -c "cd /work ; ${args}"
+}
+
+
 check_new_image_hash () {
     echo "* Checking image hash."
     current_output=`curl --silent ${base_url}/SHA1SUMS`
@@ -116,6 +127,9 @@ EOF
     download_base_image
     fi
 }
+
+
+
 
 download_base_image () {
         echo "* Downloading ${base_image} ."
@@ -171,11 +185,13 @@ if [ ! -f $(abspath ${srcdir})/$base_image ]; then
         check_for_current_image
 fi
 
+
 if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ]
     then 
         cd $(abspath ${srcdir})
         echo "* Extracting $(abspath ${srcdir})/${base_image%.xz} ."
-        xz -dk $(abspath ${srcdir})/${base_image}
+        [ "$SYSTEM" == "Linux" ] && xz -dk $(abspath ${srcdir})/${base_image}
+        [ "$SYSTEM" == "Darwin" ] && maclinux xz -dk ${base_image}
     else
     echo "* Base image already extracted."
 fi
