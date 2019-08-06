@@ -657,7 +657,7 @@ kernel_debs () {
 startfunc
 
    # Don't remake debs if they already exist in output.
-   #arbitrary_wait
+   arbitrary_wait
    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
    echo -e "Looking for cached $KERNEL_VERS kernel debs."
     for f in $apt_cache/linux-image-*${KERNEL_VERS}*; do
