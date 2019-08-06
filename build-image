@@ -75,7 +75,7 @@ SYSTEM=`uname`
 [ !    "$image"         ] && fatal "docker image name not given (-i IMAGE)"
 
 # Create Docker Image if it does not exist.
-echo "Creating Docker Image ${image}"
+echo "Creating Docker Image ${image} if it does not exist."
 docker inspect "${image}" > /dev/null 2>&1 || docker build -t \
 ${image} -f Dockerfile-ubuntu-19.10 .
 
