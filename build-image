@@ -86,10 +86,10 @@ docker_args+="-v /dev:/dev --privileged "
 # Check that optional parameters are valid
 if [ "$depdir" ]; then
     [ ! -d "$depdir" ] && fatal "dependency directory given but does not exist: $depdir"
-    docker_args+="-v $(abspath "$depdir"):/dependencies:ro "
+    docker_args+="-v $(abspath ${depdir}):/dependencies:ro "
 fi
 
-docker_args+="-v $(abspath ${srcdir}):/source-ro:ro -v $(abspath "$outdir"):/output -v $(cd $PROG_DIR; pwd)/build-rpi4.sh:/build-rpi4.sh:ro "
+docker_args+="-dt -v $(abspath ${srcdir}):/source-ro:ro -v $(abspath ${outdir}):/output -v $(cd $PROG_DIR; pwd)/build-rpi4.sh:/build-rpi4.sh:ro "
 
 # Pass current UID and GID to container, so that it can change the
 # ownership of output files which are otherwise writen to outdir as
