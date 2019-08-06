@@ -661,20 +661,20 @@ startfunc
    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
    echo -e "Looking for cached $KERNEL_VERS kernel debs."
     for f in $apt_cache/linux-image-*${KERNEL_VERS}*; do
-     if [ -f "$f" ]
+     if [[ -f $f ]]
      then
         echo -e "$f on cache volume. 😎\n"
-        echo 1 > /tmp/nodebs
+        echo "linux-image" >> /tmp/nodebs
      else
         rm -f /tmp/nodebs || true
     fi
     break
     done
     for f in $apt_cache/linux-headers-*${KERNEL_VERS}*; do
-     if [ -f "$f" ]
+     if [[ -f $f ]]
      then
         echo -e "$f on cache volume. 😎\n"
-        echo 1> /tmp/nodebs
+        echo "linux-headers" >> /tmp/nodebs
      else
          rm -f /tmp/nodebs || true
      fi
