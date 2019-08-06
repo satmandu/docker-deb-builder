@@ -27,6 +27,14 @@ image_compressors=("lz4" "xz")
 mkdir /flag
 echo $BASHPID > /flag/main
 
+# Quick build shell exit script
+cat <<-EOF> /usr/bin/killme
+	#!/bin/bash
+	pkill -F /flag/main
+EOF
+chmod +x /usr/bin/killme
+
+
 #DEBUG=1
 GIT_DISCOVERY_ACROSS_FILESYSTEM=1
 
