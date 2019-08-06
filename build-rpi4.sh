@@ -305,7 +305,9 @@ git_get () {
                 then 
                     echo "Branch mismatch!"
                     # Be safe.
-                    recreate_git $git_repo $local_path $git_branch
+                    cd $src_cache/$local_path
+                    git checkout $git_branch || recreate_git $git_repo \
+                    $local_path $git_branch
             fi
             # sync to local branch
             cd $src_cache/$local_path
