@@ -105,7 +105,7 @@ linux_cmd () {
 local linux_cmd_args="$1"
 local linux_cmddocker_args+="-it -e USER=$(id -u) -e GROUP=$(id -g) "
 local linux_cmd__docker_args+="--rm -v $(abspath ${srcdir}):/work "
-LINUX_CMD=$(mktemp $(abspath ${srcdir})/LINUX_CMD.XXXXXXXXXX) || { echo "Failed to create temp file"; exit 1; }
+local LINUX_CMD=$(mktemp $(abspath ${srcdir})/LINUX_CMD.XXXXXXXXXX) || { echo "Failed to create temp file"; exit 1; }
 cat <<-EOF> $LINUX_CMD
 	#!/bin/bash
 	cd /work
@@ -113,7 +113,9 @@ cat <<-EOF> $LINUX_CMD
 	exit 0
 EOF
 chmod +x "$LINUX_CMD"
-docker run $linux_cmd_docker_args $image /bin/bash -c "/work/$(basename $LINUX_CMD)"
+ls -aFl  "$LINUX_CMD"
+local docker_linux_cmd="/work/$(basename $LINUX_CMD)"
+docker run $linux_cmd_docker_args $image $docker_linux_cmd
 rm -f $LINUX_CMD
 }
 
