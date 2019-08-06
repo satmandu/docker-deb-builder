@@ -934,7 +934,7 @@ startfunc
     #/boot/firmware/boot.scr" &>> /tmp/${FUNCNAME[0]}.compile.log
     mkimage -A arm64 -O linux -T script \
     -d /mnt/etc/flash-kernel/bootscript/bootscr.rpi \
-    /mnt/boot/firmware/boot.scr" &>> /tmp/${FUNCNAME[0]}.compile.log
+    /mnt/boot/firmware/boot.scr &>> /tmp/${FUNCNAME[0]}.compile.log
 
 endfunc
 }
