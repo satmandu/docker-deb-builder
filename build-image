@@ -103,8 +103,8 @@ docker_args+="--rm "
 linux_cmd () {
 # extract xz using docker image
 local linux_cmd_args="$1"
-local linux_cmddocker_args+="-it -e USER=$(id -u) -e GROUP=$(id -g) "
-local linux_cmd__docker_args+="--rm -v $(abspath ${srcdir}):/work "
+local linux_cmd_docker_args+="-it -e USER=$(id -u) -e GROUP=$(id -g) "
+local linux_cmd_docker_args+="--rm -v $(abspath ${srcdir}):/work "
 local LINUX_CMD=$(mktemp $(abspath ${srcdir})/LINUX_CMD.XXXXXXXXXX) || { echo "Failed to create temp file"; exit 1; }
 cat <<-EOF> $LINUX_CMD
 	#!/bin/bash
