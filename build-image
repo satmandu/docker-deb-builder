@@ -174,10 +174,10 @@ fi
 if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ]
     then 
         cd $(abspath ${srcdir})
-        echo "Extracting $(abspath ${srcdir})/${base_image%.xz} ."
+        echo "* Extracting $(abspath ${srcdir})/${base_image%.xz} ."
         xz -dk $(abspath ${srcdir})/${base_image}
     else
-    echo "Base image already extracted."
+    echo "* Base image already extracted."
 fi
 
 docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
@@ -201,17 +201,14 @@ docker_args+="-e base_url=${base_url} -e base_image=${base_image} "
 #Send in linux repo environment variables:
 docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo} "
 
-
-
-
 # Let XZ be disabled.
 [ -n "$NOXZ" ] && docker_args+="-e NOXZ=${NOXZ} "
 
 # Is an email local variable set?
-if [ -n "$EMAIL" ] && docker_args+="-e EMAIL=${EMAIL} "
+[ -n "$EMAIL" ] && docker_args+="-e EMAIL=${EMAIL} "
 
 # Is a XDELTA local variable set? (Can not use XDELTA since XDELTA uses that itself.)
-if [ -n "$DELTA" ] && docker_args+="-e DELTA=${DELTA} "
+[ -n "$DELTA" ] && docker_args+="-e DELTA=${DELTA} "
 
 # Send in columns for display.
 shopt -s checkwinsize 
