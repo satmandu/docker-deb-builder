@@ -84,7 +84,7 @@ mkdir -p $apt_cache/partial
 
 apt-get -o dir::cache::archives=$apt_cache install lsof xdelta3 vim \
 e2fsprogs qemu-user-static \
-libc6-arm64-cross pv -qq 2>/dev/null
+libc6-arm64-cross pv u-boot-tools -qq 2>/dev/null
 
 # Utility script
 # Apt concurrency manager wrapper via
@@ -535,88 +535,12 @@ startfunc
 #         waitfor "image_apt_upgrade"
 # startfunc
   echo "* Installing wifi & networking tools to image."
-    #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
-    #install wireless-tools wireless-regdb crda \
-    #net-tools network-manager -y $silence_apt_flags" &>> /tmp/${FUNCNAME[0]}.install.log
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
     install wireless-tools wireless-regdb crda \
     net-tools network-manager -qq " &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Wifi & networking tools installed." 
-    #chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" &>> /output/initramfs.log
-
 endfunc
 }
-
-# nativebuild () {
-#     waitfor "arm64_chroot_setup"
-# startfunc
-#     echo "* Downloading software for building portions of kernel natively on chroot."
-#     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
-#     -o dir::cache::archives=$apt_cache \
-#     install -d -qq --no-install-recommends \
-#                build-essential \
-#                bc \
-#                bison \
-#                ccache \
-#                cdbs \
-#                cmake \
-#                cpio \
-#                devscripts \
-#                dkms \
-#                dpkg-dev \
-#                equivs \
-#                fakeroot \
-#                flex \
-#                gawk \
-#                gcc \
-#                cpp \
-#                g++  \
-#                git \
-#                kpartx \
-#                lz4 \
-#                libelf-dev \
-#                libncurses-dev \
-#                libssl-dev \
-#                qemu-user-static \
-#                patch \
-#                rsync \
-#                sudo \
-#                wget \
-#                xz-utils 2>/dev/null
-#     echo "* Installing native kernel build software to image."
-#     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -y --no-install-recommends \
-#                build-essential \
-#                bc \
-#                bison \
-#                ccache \
-#                cdbs \
-#                cmake \
-#                cpio \
-#                devscripts \
-#                dkms \
-#                dpkg-dev \
-#                equivs \
-#                fakeroot \
-#                flex \
-#                gawk \
-#                gcc \
-#                cpp \
-#                g++  \
-#                git \
-#                kpartx \
-#                lz4 \
-#                libelf-dev \
-#                libncurses-dev \
-#                libssl-dev \
-#                qemu-user-static \
-#                patch \
-#                rsync \
-#                sudo \
-#                wget \
-#                xz-utils $silence_apt_flags"
-#     echo "* Native kernel build software installed."
-# endfunc
-# }
 
 
 rpi_firmware () {
@@ -706,10 +630,6 @@ startfunc
     #O=$workdir/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
     
     echo "* Making $KERNEL_VERS kernel debs."
-    # Enable this if we want certain kernel install files compiled in
-    # arm64 chroot
-    # But we don't actually need this, so this will get removed.
-    #ext_mod_build_infrastructure
     cd $workdir/rpi-linux
     debcmd="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
@@ -722,66 +642,6 @@ startfunc
     
 endfunc
 }
-
-# ext_mod_build_infrastructure () {
-#     waitfor "arm64_chroot_setup"
-#     waitfor "kernelbuild_setup"
-# startfunc
-# 
-#     cd $workdir/rpi-linux
-#     echo "* Regenerating broken cross-compile module installation infrastructure."
-#     nativebuild
-#     # Cross-compilation of kernel wreaks havoc with building out of kernel modules
-#     # later, due to module install files being installed into the target system in
-#     # the cross-compile build host architecture, so let's fix this with natively 
-#     # compiled module tools which have been installed into the image.
-#     files=("scripts/recordmcount" "scripts/mod/modpost" \
-#         "scripts/basic/fixdep")
-#         
-#     for i in "${files[@]}"
-#     do
-#      rm $workdir/kernel-build/$i || true
-#     done
-#     
-#     # This is all we can do before the image is mounted.
-#     waitfor "image_extract_and_mount"   
-#     waitfor "arm64_chroot_setup"
-#     
-#     chroot /mnt /bin/bash -c "cd $workdir/rpi-linux ; make \
-#     CCACHE_DIR=/ccache PATH=/usr/lib/ccache:$PATH \
-#     -j $(($(nproc) + 1)) O=$workdir/kernel-build \
-#     modules_prepare" &>> /tmp/${FUNCNAME[0]}.compile.log
-#     #LOCALVERSION=-${kernelrev} \
-# 
-#     mkdir -p $workdir/kernel-build/tmp/scripts/mod
-#     mkdir -p $workdir/kernel-build/tmp/scripts/basic
-#     for i in "${files[@]}"
-#     do
-#      cp $workdir/kernel-build/$i $workdir/kernel-build/tmp/$i
-#      rm $workdir/kernel-build/$i
-#      sed -i "/.tmp_quiet_recordmcount$/i TABTMP\$(Q)cp $workdir/kernel-build/tmp/${i} ${i}" \
-#      $workdir/rpi-linux/Makefile
-#     done
-#     TAB=$'\t'
-#     sed -i "s/TABTMP/${TAB}/g" $workdir/rpi-linux/Makefile
-#     
-#     # Now we have qemu-static & arm64 binaries installed, so we copy libraries over
-#     # from image to build container in case they are needed during this install.
-#     #cp /mnt/usr/lib/aarch64-linux-gnu/libc.so.6 /lib64/
-#     #cp /mnt/lib/ld-linux-aarch64.so.1 /lib/
-#     
-#     # Maybe this can all be worked around by statically compiling these files
-#     # so that qemu-static can just deal with them without library issues during the 
-#     # packaging process. This two lines may not be needed.
-#     aarch64-linux-gnu-gcc -static $workdir/rpi-linux/scripts/basic/fixdep.c -o \
-#     $workdir/kernel-build/tmp/scripts/basic/fixdep &>> /tmp/${FUNCNAME[0]}.compile.log
-#     
-#     aarch64-linux-gnu-gcc -static $workdir/rpi-linux/scripts/recordmcount.c -o \
-#     $workdir/kernel-build/tmp/scripts/recordmount &>> /tmp/${FUNCNAME[0]}.compile.log
-#     
-#     endfunc
-#     }
-
 
 
 kernel_debs () {
@@ -825,9 +685,6 @@ startfunc
         kernel_build &
         spinnerwait kernel_build
         
-        #waitfor "kernel_build"
-        #arbitrary_wait
-
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
         rm -f $workdir/linux-libc-dev*.deb
         cp $workdir/*.deb $apt_cache/ || (echo "Kernel Build Failed!" ; pkill -F /flag/main)
@@ -859,8 +716,6 @@ startfunc
     &>> /tmp/${FUNCNAME[0]}.install.log || true
     cp /mnt/boot/initrd.img-$KERNEL_VERS /mnt/boot/firmware/initrd.img
     cp /mnt/boot/vmlinuz-$KERNEL_VERS /mnt/boot/firmware/vmlinuz
-   # chroot /mnt /bin/bash -c "lsinitramfs /boot/firmware/initrd.img" \
-   #&> /output/initramfs.log || true
     vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
     if [ "$vmlinuz_type" == "MS-DOS executable" ]
         then
@@ -1072,9 +927,14 @@ startfunc
     cp $workdir/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.img
     mkdir -p /mnt/usr/lib/u-boot/rpi_4/
     cp $workdir/u-boot/u-boot.bin /mnt/usr/lib/u-boot/rpi_4/
-    chroot /mnt /bin/bash -c "mkimage -A arm64 -O linux -T script \
-    -d /etc/flash-kernel/bootscript/bootscr.rpi \
-    /boot/firmware/boot.scr" &>> /tmp/${FUNCNAME[0]}.compile.log
+    # This can be done without chroot by just having u-boot-tools on the build
+    # container
+    #chroot /mnt /bin/bash -c "mkimage -A arm64 -O linux -T script \
+    #-d /etc/flash-kernel/bootscript/bootscr.rpi \
+    #/boot/firmware/boot.scr" &>> /tmp/${FUNCNAME[0]}.compile.log
+    mkimage -A arm64 -O linux -T script \
+    -d /mnt/etc/flash-kernel/bootscript/bootscr.rpi \
+    /mnt/boot/firmware/boot.scr" &>> /tmp/${FUNCNAME[0]}.compile.log
 
 endfunc
 }
@@ -1307,7 +1167,7 @@ endfunc
 
 xdelta3_image_export () {
 startfunc
-        echo "* Making xdelta3 binary diffs between today's eoan base image"
+        echo "* Making xdelta3 binary diffs between current eoan base image"
         echo "* and the new images."
         xdelta3 -e -S none -I 0 -B 1812725760 -W 16777216 -fs \
         $workdir/old_image.img $workdir/${new_image}.img \

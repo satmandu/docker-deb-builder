@@ -41,6 +41,7 @@ RUN set -ex \
                pv \
                rsync \
                sudo \
+               u-boot-tools \
                vim \
                vim-common \
                vim-runtime \
