@@ -1135,8 +1135,8 @@ startfunc
     umount -l /mnt || (lsof +f -- /mnt ; sleep 60 ; umount /mnt) || true
     #guestunmount /mnt
 
-    fsck.ext4 -fy /dev/${loop_device}p2 || true
-    fsck.vfat -wa /dev/${loop_device}p1 || true
+    fsck.ext4 -fy /dev/mapper/${loop_device}p2 || true
+    fsck.vfat -wa /dev/mapper/${loop_device}p1 || true
     kpartx -dv $workdir/${new_image}.img &>> /tmp/${FUNCNAME[0]}.cleanup.log || true
     losetup -d /dev/$loop_device &>/dev/null || true
     dmsetup remove -f /dev/$loop_device &>/dev/null || true
