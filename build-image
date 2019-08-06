@@ -71,7 +71,7 @@ SYSTEM=`uname`
 # Check that mandatory parameters are valid
 [ !    "$outdir"        ] && fatal "output directory was not given (-o DIR)"
 [ ! -d "$outdir"        ] && fatal "output directory does not exist: $outdir"
-[ !    "$srcdir"        ] && fatal "source directory not given"
+[ !    ${srcdir}        ] && fatal "source directory not given"
 [ !    "$image"         ] && fatal "docker image name not given (-i IMAGE)"
 
 # Needed for loopback to work inside container.
@@ -86,7 +86,7 @@ if [ "$depdir" ]; then
     docker_args+="-v $(abspath "$depdir"):/dependencies:ro "
 fi
 
-docker_args+="-v $(abspath "$srcdir"):/source-ro:ro -v $(abspath "$outdir"):/output -v $(cd $PROG_DIR; pwd)/build-rpi4.sh:/build-rpi4.sh:ro "
+docker_args+="-v $(abspath ${srcdir}):/source-ro:ro -v $(abspath "$outdir"):/output -v $(cd $PROG_DIR; pwd)/build-rpi4.sh:/build-rpi4.sh:ro "
 
 # Pass current UID and GID to container, so that it can change the
 # ownership of output files which are otherwise writen to outdir as
@@ -101,15 +101,15 @@ check_new_image_hash () {
     echo "* Checking image hash."
     current_output=`curl --silent ${base_url}/SHA1SUMS`
     current=${current_output%% *}
-    [ $SYSTEM == "Linux" ] && local_hash_output=`sha1sum $(abspath "$srcdir")/${base_image}.new`
-    [ $SYSTEM == "Darwin" ] && local_hash_output=`shasum $(abspath "$srcdir")/${base_image}.new`
+    [ $SYSTEM == "Linux" ] && local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}.new`
+    [ $SYSTEM == "Darwin" ] && local_hash_output=`shasum $(abspath ${srcdir})/${base_image}.new`
     local=${local_hash_output%% *}
     if [ "$local" == "$current" ]; then
-        tee $(abspath "$srcdir")/${base_image}.shasum <<EOF
+        tee $(abspath ${srcdir})/${base_image}.shasum <<EOF
 $local
 EOF
     echo "* ${base_image} hash verified."
-    mv $(abspath "$srcdir")/${base_image}.new $(abspath "$srcdir")/${base_image}
+    mv $(abspath ${srcdir})/${base_image}.new $(abspath ${srcdir})/${base_image}
     else
     echo "* Image hash mismatch."
     hashfail=1
@@ -119,34 +119,34 @@ EOF
 
 download_base_image () {
         echo "* Downloading ${base_image} ."
-        if [ -e "$(abspath "$srcdir")/$base_image" ] && \
-        [ -e "$(abspath "$srcdir")/${base_image}.shasum" ] ; then
-            [ -e "$(abspath "$srcdir")/${base_image%xz}" ] && rm \
-            "$(abspath "$srcdir")/${base_image%xz}"
-            cp $(abspath "$srcdir")/$base_image \
-            $(abspath "$srcdir")/${base_image}.bak 2>/dev/null
+        if [ -e "$(abspath ${srcdir})/$base_image" ] && \
+        [ -e "$(abspath ${srcdir})/${base_image}.shasum" ] ; then
+            [ -e "$(abspath ${srcdir})/${base_image%xz}" ] && rm \
+            "$(abspath ${srcdir})/${base_image%xz}"
+            cp $(abspath ${srcdir})/$base_image \
+            $(abspath ${srcdir})/${base_image}.bak 2>/dev/null
         fi
-        curl -o $(abspath "$srcdir")/${base_image}.new $base_image_url || curl_fail=1
+        curl -o $(abspath ${srcdir})/${base_image}.new $base_image_url || curl_fail=1
         check_new_image_hash
 
         if [ "$curl_fail" ]; then 
             echo "* ${base_image} download failed."
-            if [ -e "$(abspath "$srcdir")/${base_image}.bak" ] &&
-            [ -e "$(abspath "$srcdir")/${base_image}.shasum" ]; then
-                mv $(abspath "$srcdir")/${base_image}.bak \
-                $(abspath "$srcdir")/$base_image
+            if [ -e "$(abspath ${srcdir})/${base_image}.bak" ] &&
+            [ -e "$(abspath ${srcdir})/${base_image}.shasum" ]; then
+                mv $(abspath ${srcdir})/${base_image}.bak \
+                $(abspath ${srcdir})/$base_image
                 echo "* Restoring existing  ${base_image}"
             fi
         fi
-        [ -e "$(abspath "$srcdir")/$base_image" ] && \
+        [ -e "$(abspath ${srcdir})/$base_image" ] && \
         echo "* Now have local ${base_image} ."
 }
 
 check_for_current_image () {
     current_output=`curl --silent ${base_url}/SHA1SUMS`
     current=${current_output%% *}
-    [ $SYSTEM == "Darwin" ] && local_hash_output=`shasum $(abspath "$srcdir")/${base_image}`
-    [ $SYSTEM == "Linux" ] && local_hash_output=`sha1sum $(abspath "$srcdir")/${base_image}`
+    [ $SYSTEM == "Darwin" ] && local_hash_output=`shasum $(abspath ${srcdir})/${base_image}`
+    [ $SYSTEM == "Linux" ] && local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}`
     local=${local_hash_output%% *}
     if [ ! "$local" == "$current" ]; then
         echo "Local base image sha1sum is:"
@@ -155,7 +155,7 @@ check_for_current_image () {
         echo $current
         echo "* New base image available."
         echo "* Trying to get current base image."
-        download_base_image && rm -rf "$(abspath "$srcdir")/${base_image%.xz}" || true
+        download_base_image && rm -rf "$(abspath ${srcdir})/${base_image%.xz}" || true
         [ "$curl_fail" ] && "* Download failed. Using existing image." || \
             echo ""
         else
@@ -165,20 +165,20 @@ check_for_current_image () {
 }
 
 
-if [ ! -f $(abspath "$srcdir")/$base_image ]; then
+if [ ! -f $(abspath ${srcdir})/$base_image ]; then
         download_base_image
     else
         check_for_current_image
 fi
 
-if [[ ! -f "$(abspath "$srcdir")/${base_image%.xz}" ]]
+if [[ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ]]
     then 
-    cd $(abspath "$srcdir")
-    echo "Extracting $(abspath "$srcdir")/${base_image%.xz} ."
-    xz -dk $(abspath "$srcdir")/${base_image}
+    cd $(abspath ${srcdir})
+    echo "Extracting $(abspath ${srcdir})/${base_image%.xz} ."
+    xz -dk $(abspath ${srcdir})/${base_image}
 fi
 
-docker_args+="-v $(abspath "$srcdir")/$base_image:/$base_image "
+docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
 
 # For ccache
 #docker_args+="-e CCACHE_DIR=/ccache --volumes-from ccache -v ccache:/ccache "
