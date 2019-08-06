@@ -305,7 +305,7 @@ echo "(Some renices are expected to fail.)"
 sudo renice -n 20 -p $PID_LIST &> /dev/null || true
 echo -e "Note that the command to open a shell into this docker instance would be:\n"
 echo -e "docker exec -it ${build_cid} /bin/bash\n"
-echo -e "Or run ./buildshell from this directory.\n\k"
+echo -e "Or run ./buildshell from this directory.\n"
 #echo "columns: $columns COLUMNS: $COLUMNS"
 echo "Tailing build log:"
 tail_log_cmd="docker exec -it ${build_cid} tail -F /tmp/build.log" 
