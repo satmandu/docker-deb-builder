@@ -118,7 +118,7 @@ check_new_image_hash () {
     if [ "$(which sha1sum)" ]; then
         local local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}.new`
     else
-        local local_hash_output=linux_cmd "sha1sum ${base_image}.new"
+        local local_hash_output=$(linux_cmd "sha1sum ${base_image}.new")
     fi
     local local=${local_hash_output%% *}
     if [ "$local" == "$current" ]; then
@@ -169,7 +169,7 @@ check_for_current_image () {
     if [ "$(which sha1sum)" ]; then 
         local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}`
     else
-        read local_hash_output < linux_cmd "sha1sum ${base_image}"
+        local_hash_output=$(linux_cmd "sha1sum ${base_image}")
     fi
     local local=${local_hash_output%% *}
     if [ ! "$local" == "$current" ]; then
