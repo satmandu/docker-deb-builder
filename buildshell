@@ -1,0 +1,2 @@
+#!/bin/bash
+docker exec -it ` docker ps | grep docker-rpi4-imagebuilder:19.10 | awk '{print $1}'` /bin/bash
