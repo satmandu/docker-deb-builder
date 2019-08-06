@@ -762,7 +762,7 @@ startfunc
     debcmd="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     -j$(($(nproc) + 1)) O=$workdir/kernel-build \
-    bindeb-pkg &>> /tmp/${FUNCNAME[0]}.compile.log"
+    bindeb-pkg &> /tmp/${FUNCNAME[0]}.compile.log"
     
 
     echo $debcmd
