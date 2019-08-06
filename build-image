@@ -165,10 +165,11 @@ download_base_image () {
 check_for_current_image () {
     current_output=`curl --silent ${base_url}/SHA1SUMS`
     current=${current_output%% *}
+    local local_hash_output
     if [ "$(which sha1sum)" ]; then 
-        local local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}`
+        local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}`
     else
-        local local_hash_output=linux_cmd "sha1sum ${base_image}"
+        read local_hash_output < linux_cmd "sha1sum ${base_image}"
     fi
     local local=${local_hash_output%% *}
     if [ ! "$local" == "$current" ]; then
