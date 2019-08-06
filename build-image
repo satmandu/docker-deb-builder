@@ -101,41 +101,13 @@ docker_args+="-e USER=$(id -u) -e GROUP=$(id -g) "
 docker_args+="--rm "
 
 linux_cmd () {
-# extract xz using docker image
-local linux_cmd_args="$1"
-local linux_cmd_docker_args+="-it -e USER=$(id -u) -e GROUP=$(id -g) "
-local linux_cmd_docker_args+="--rm -v $(abspath ${srcdir}):/work "
-local LINUX_CMD=$(mktemp $(abspath ${srcdir})/LINUX_CMD.XXXXXXXXXX) || { echo "Failed to create temp file"; exit 1; }
-cat <<-EOF> $LINUX_CMD
-	#!/bin/bash
-	cd /work
-	${linux_cmd_args}
-	exit 0
-EOF
-chmod +x "$LINUX_CMD"
-ls -aFl  "$LINUX_CMD"
-local docker_linux_cmd="/work/$(basename $LINUX_CMD)"
-#docker run $linux_cmd_docker_args $image $docker_linux_cmd
-dockercmd='docker run $linux_cmd_docker_args $image /bin/bash -c "echo docker_app && cd /work && ${linux_cmd_args}"'
-echo $dockercmd 
-#docker run $linux_cmd_docker_args $image /bin/bash
-docker run ${linux_cmd_docker_args} ${image} /bin/bash -c "echo docker_app && cd /work && ${linux_cmd_args}"
-
-echo "Press 'q' to exit"
-count=0
-while : ; do
-read -n 1 k <&1
-if [[ $k = q ]] ; then
-printf "\nQuitting from the program\n"
-break
-else
-((count=$count+1))
-printf "\nIterate for $count times\n"
-echo "Press 'q' to exit"
-fi
-done
-
-rm -f $LINUX_CMD
+    # This is a hack, but if apps are missing it is more annoying to find them
+    # locally for every OS.
+    local linux_cmd_args="$1"
+    local linux_cmd_docker_args+="-it -e USER=$(id -u) -e GROUP=$(id -g) "
+    local linux_cmd_docker_args+="--rm -v $(abspath ${srcdir}):/work "
+    docker run ${linux_cmd_docker_args} ${image} /bin/bash -c "touch . \
+    && cd /work && ${linux_cmd_args}"
 }
 
 
@@ -143,9 +115,12 @@ check_new_image_hash () {
     echo "* Checking image hash."
     current_output=`curl --silent ${base_url}/SHA1SUMS`
     current=${current_output%% *}
-    [ $SYSTEM == "Linux" ] && local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}.new`
-    [ $SYSTEM == "Darwin" ] && local_hash_output=`shasum $(abspath ${srcdir})/${base_image}.new`
-    local=${local_hash_output%% *}
+    if [ "$(which sha1sum)" ]; then
+        local local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}.new`
+    else
+        local local_hash_output=linux_cmd "sha1sum ${base_image}.new"
+    fi
+    local local=${local_hash_output%% *}
     if [ "$local" == "$current" ]; then
         tee $(abspath ${srcdir})/${base_image}.shasum <<EOF
 $local
@@ -190,9 +165,12 @@ download_base_image () {
 check_for_current_image () {
     current_output=`curl --silent ${base_url}/SHA1SUMS`
     current=${current_output%% *}
-    [ $SYSTEM == "Linux" ] && local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}`
-    [ $SYSTEM == "Darwin" ] && local_hash_output=`shasum $(abspath ${srcdir})/${base_image}`
-    local=${local_hash_output%% *}
+    if [ "$(which sha1sum)" ]; then 
+        local local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}`
+    else
+        local local_hash_output=linux_cmd "sha1sum ${base_image}"
+    fi
+    local local=${local_hash_output%% *}
     if [ ! "$local" == "$current" ]; then
         echo "Local base image sha1sum is:"
         echo $local
@@ -223,9 +201,9 @@ if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ]
         cd $(abspath ${srcdir})
         echo "* Extracting $(abspath ${srcdir})/${base_image%.xz} ."
         if [ "$(which xz)" ]; then
-            xz -vdk $(abspath ${srcdir})/${base_image}
+            xz -dk $(abspath ${srcdir})/${base_image}
         else
-            linux_cmd "xz -dk ${base_image}"
+            linux_cmd "xz -vdk ${base_image}"
         fi
     else
     echo "* Base image already extracted."
@@ -299,6 +277,7 @@ echo ""
 # Now lower priority of container.
 # From https://unix.stackexchange.com/posts/317605/revisions
 
+# No idea what to do if not macos or Linux.
 PID_LIST=
 [ $SYSTEM == "Darwin" ] && PID_LIST=`pgrep com.docker.hyperkit`
 if [ $SYSTEM == "Linux" ]; then
