@@ -25,7 +25,7 @@ function abspath {
 
 ###########################################################################
 
-[[ $# -eq 0 ]] && usage
+[ "$#" -eq "0" ] && usage
 
 while getopts "i:o:h" opt; do
     case $opt in
