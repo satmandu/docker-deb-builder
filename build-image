@@ -102,7 +102,8 @@ docker_args+="--rm "
 
 maclinux () {
 # extract xz using docker image
-local args="$@"
+local args="$1"
+local xzdocker_args+="-e USER=$(id -u) -e GROUP=$(id -g) "
 local xzdocker_args+="--rm -v $(abspath ${srcdir}):/work "
 docker run $xzdocker_args $image /bin/bash -c "cd /work ; ${args}"
 }
@@ -191,7 +192,7 @@ if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ]
         cd $(abspath ${srcdir})
         echo "* Extracting $(abspath ${srcdir})/${base_image%.xz} ."
         [ "$SYSTEM" == "Linux" ] && xz -dk $(abspath ${srcdir})/${base_image}
-        [ "$SYSTEM" == "Darwin" ] && maclinux xz -dk ${base_image}
+        [ "$SYSTEM" == "Darwin" ] && maclinux "xz -dk ${base_image}; chown $USER:$GROUP ${base_image%.xz"
     else
     echo "* Base image already extracted."
 fi
