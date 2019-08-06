@@ -105,7 +105,10 @@ linux_cmd () {
 local linux_cmd_args="$1"
 local linux_cmddocker_args+="-e USER=$(id -u) -e GROUP=$(id -g) "
 local linux_cmd__docker_args+="--rm -v $(abspath ${srcdir}):/work "
-docker run $linux_cmd_docker_args $image /bin/bash -c 'echo shellcmd && cd /work && ${linux_cmd_args}'
+docker run $linux_cmd_docker_args $image '/bin/bash -s' <<-EOF
+	cd /work
+	${linux_cmd_args}
+EOF
 }
 
 
