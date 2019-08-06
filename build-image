@@ -121,6 +121,8 @@ check_new_image_hash () {
         local local_hash_output=$(linux_cmd "sha1sum ${base_image}.new")
     fi
     local local=${local_hash_output%% *}
+    echo "local: $local"
+    echo "current: $current"
     if [ "$local" == "$current" ]; then
         tee $(abspath ${srcdir})/${base_image}.shasum <<EOF
 $local
@@ -172,6 +174,8 @@ check_for_current_image () {
         local_hash_output=$(linux_cmd "sha1sum ${base_image}")
     fi
     local local=${local_hash_output%% *}
+    echo "local: $local"
+    echo "current: $current"
     if [ ! "$local" == "$current" ]; then
         echo "Local base image sha1sum is:"
         echo $local
@@ -202,7 +206,7 @@ if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ]
         cd $(abspath ${srcdir})
         echo "* Extracting $(abspath ${srcdir})/${base_image%.xz} ."
         if [ "$(which xz)" ]; then
-            xz -dk $(abspath ${srcdir})/${base_image}
+            xz -vdk $(abspath ${srcdir})/${base_image}
         else
             linux_cmd "xz -vdk ${base_image}"
         fi
