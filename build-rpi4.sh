@@ -50,7 +50,7 @@ COLUMNS="${COLS:-80}"
 
 
 # Set Time Stamp
-now=`date +"%m_%d_%Y_%H%M%Z"`
+now=$(date +"%m_%d_%Y_%H%M%Z")
 
 # Create debug output folder.
 [[ $DEBUG ]] && ( mkdir -p /output/$now/ ; chown $USER:$GROUP /output/$now/ )
@@ -174,7 +174,7 @@ startfunc
         wait_file "/flag/start.${1}" $start_timeout || \
         echo "${1} didn't start."
         echo "Starting ${1}" >> /tmp/spinnerwait
-        local job_id=`cat /flag/start.${1}`
+        local job_id=$(cat /flag/start.${1})
         echo "Waiting for ${job_id} to end." >> /tmp/spinnerwait
         tput sc
         while (pgrep -cxP ${job_id} &>/dev/null)
@@ -229,7 +229,7 @@ git_check () {
     local git_base="$1"
     local git_branch="$2"
     [ ! -z "$2" ] || git_branch="master"
-    local git_output=`git ls-remote ${git_base} refs/heads/${git_branch}`
+    local git_output=$(git ls-remote ${git_base} refs/heads/${git_branch})
     local git_hash
     local discard 
     read git_hash discard< <(echo "$git_output")
@@ -240,7 +240,7 @@ local_check () {
     local git_path="$1"
     local git_branch="$2"
     [ ! -z "$2" ] || git_branch="HEAD"
-    local git_output=`git -C $git_path rev-parse ${git_branch} 2>/dev/null`
+    local git_output=$(git -C $git_path rev-parse ${git_branch} 2>/dev/null)
     echo $git_output
 }
 
@@ -712,7 +712,7 @@ kernel_deb_install () {
     waitfor "added_scripts"
     waitfor "image_apt_installs"
 startfunc
-    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     # Try installing the generated debs in chroot before we do anything else.
     cp $workdir/*.deb /mnt/tmp/
     waitfor "added_scripts"
@@ -1130,7 +1130,7 @@ endfunc
 image_unmount () {
 startfunc
     echo "* Unmounting modified ${new_image}.img"
-    loop_device=`cat /tmp/loop_device`
+    loop_device=$(cat /tmp/loop_device)
     umount -l /mnt/boot/firmware || (lsof +f -- /mnt/boot/firmware ; sleep 60 ; \
     umount -l /mnt/boot/firmware) || true
     #umount /mnt || (mount | grep /mnt)
@@ -1139,10 +1139,10 @@ startfunc
     #guestunmount /mnt
 
     
-    kpartx -dv $workdir/${new_image}.img
+    kpartx -dv $workdir/${new_image}.img &>> /tmp/${FUNCNAME[0]}.install.log || true
     losetup -d /dev/$loop_device &>/dev/null || true
     dmsetup remove -f /dev/$loop_device &>/dev/null || true
-    dmsetup info
+    dmsetup info &>> /tmp/${FUNCNAME[0]}.install.log || true
     # To stop here "rm /flag/done.ok_to_exit_container_after_build".
     if [ ! -f /flag/done.ok_to_exit_container_after_build ]; then
         echo "** Image unmounted & container paused. **"
@@ -1156,7 +1156,7 @@ endfunc
 compressed_image_export () {
 startfunc
 
-    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     # Note that lz4 is much much faster than using xz.
     chown -R $USER:$GROUP /build
     cd $workdir
@@ -1185,7 +1185,7 @@ startfunc
         xdelta3 -e -S none -I 0 -B 1812725760 -W 16777216 -fs \
         $workdir/old_image.img $workdir/${new_image}.img \
         $workdir/patch.xdelta
-        KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+        KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
         for i in "${image_compressors[@]}"
         do
             echo "* Compressing patch.xdelta with $i and exporting."
@@ -1207,7 +1207,7 @@ endfunc
 export_log () {
     waitfor "compressed_image_export"
 startfunc
-    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     echo "* Build log at: build-log-$KERNEL_VERS_${now}.log"
     cat $TMPLOG > /output/build-log-$KERNEL_VERS_${now}.log
     chown $USER:$GROUP /output/build-log-$KERNEL_VERS_${now}.log
