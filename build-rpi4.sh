@@ -1230,7 +1230,13 @@ endfunc
 }
 
 export_log () {
-[[ ! $JUSTDEBS ]] && waitfor "compressed_image_export"
+if [[ ! $JUSTDEBS ]];
+    then
+    waitfor "compressed_image_export"
+    else
+    waitfor "kernel_debs"
+fi
+
 startfunc
     KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     echo "* Build log at: build-log-$KERNEL_VERS_${now}.log"
