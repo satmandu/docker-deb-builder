@@ -551,76 +551,76 @@ startfunc
 endfunc
 }
 
-nativebuild () {
-    waitfor "arm64_chroot_setup"
-startfunc
-    echo "* Downloading software for building portions of kernel natively on chroot."
-    chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
-    -o dir::cache::archives=$apt_cache \
-    install -d -qq --no-install-recommends \
-               build-essential \
-               bc \
-               bison \
-               ccache \
-               cdbs \
-               cmake \
-               cpio \
-               devscripts \
-               dkms \
-               dpkg-dev \
-               equivs \
-               fakeroot \
-               flex \
-               gawk \
-               gcc \
-               cpp \
-               g++  \
-               git \
-               kpartx \
-               lz4 \
-               libelf-dev \
-               libncurses-dev \
-               libssl-dev \
-               qemu-user-static \
-               patch \
-               rsync \
-               sudo \
-               wget \
-               xz-utils 2>/dev/null
-    echo "* Installing native kernel build software to image."
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -y --no-install-recommends \
-               build-essential \
-               bc \
-               bison \
-               ccache \
-               cdbs \
-               cmake \
-               cpio \
-               devscripts \
-               dkms \
-               dpkg-dev \
-               equivs \
-               fakeroot \
-               flex \
-               gawk \
-               gcc \
-               cpp \
-               g++  \
-               git \
-               kpartx \
-               lz4 \
-               libelf-dev \
-               libncurses-dev \
-               libssl-dev \
-               qemu-user-static \
-               patch \
-               rsync \
-               sudo \
-               wget \
-               xz-utils $silence_apt_flags"
-    echo "* Native kernel build software installed."
-endfunc
-}
+# nativebuild () {
+#     waitfor "arm64_chroot_setup"
+# startfunc
+#     echo "* Downloading software for building portions of kernel natively on chroot."
+#     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
+#     -o dir::cache::archives=$apt_cache \
+#     install -d -qq --no-install-recommends \
+#                build-essential \
+#                bc \
+#                bison \
+#                ccache \
+#                cdbs \
+#                cmake \
+#                cpio \
+#                devscripts \
+#                dkms \
+#                dpkg-dev \
+#                equivs \
+#                fakeroot \
+#                flex \
+#                gawk \
+#                gcc \
+#                cpp \
+#                g++  \
+#                git \
+#                kpartx \
+#                lz4 \
+#                libelf-dev \
+#                libncurses-dev \
+#                libssl-dev \
+#                qemu-user-static \
+#                patch \
+#                rsync \
+#                sudo \
+#                wget \
+#                xz-utils 2>/dev/null
+#     echo "* Installing native kernel build software to image."
+#     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -y --no-install-recommends \
+#                build-essential \
+#                bc \
+#                bison \
+#                ccache \
+#                cdbs \
+#                cmake \
+#                cpio \
+#                devscripts \
+#                dkms \
+#                dpkg-dev \
+#                equivs \
+#                fakeroot \
+#                flex \
+#                gawk \
+#                gcc \
+#                cpp \
+#                g++  \
+#                git \
+#                kpartx \
+#                lz4 \
+#                libelf-dev \
+#                libncurses-dev \
+#                libssl-dev \
+#                qemu-user-static \
+#                patch \
+#                rsync \
+#                sudo \
+#                wget \
+#                xz-utils $silence_apt_flags"
+#     echo "* Native kernel build software installed."
+# endfunc
+# }
 
 
 rpi_firmware () {
@@ -722,7 +722,7 @@ startfunc
     
 
     echo $debcmd
-    $debcmd &> /tmp/${FUNCNAME[0]}.compile.log
+    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
     
 endfunc
 }
