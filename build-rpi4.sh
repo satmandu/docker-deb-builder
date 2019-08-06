@@ -364,26 +364,31 @@ startfunc
 endfunc
 }
 
-image_extract_and_mount () {
+image_extract () {
     waitfor "base_image_check"
 startfunc 
     if [[ -f "/source-ro/${base_image%.xz}" ]] 
-    then
-    cp "/source-ro/${base_image%.xz}" $workdir/$new_image.img
-    [[ $DELTA ]] && (ln -s "/source-ro/${base_image%.xz}" $workdir/old_image.img &)
-    else
-    local size
-    local filename   
-    echo "* Extracting: ${base_image} to ${new_image}.img"
-    read size filename < <(ls -sH ${workdir}/${base_image})
-    #echo $size
-    #size="620M"
-    #echo "pv -cfpterb -s ${size} -N "xzcat:${base_image}" $workdir/$base_image"
-    pvcmd="pv -s ${size} -cfperb -N "xzcat:${base_image}" $workdir/$base_image"
-    echo $pvcmd
-    $pvcmd | xzcat > $workdir/$new_image.img
-    [[ $DELTA ]] && (cp $workdir/$new_image.img $workdir/old_image.img &)
+        then
+            cp "/source-ro/${base_image%.xz}" $workdir/$new_image.img
+        [[ $DELTA ]] && (ln -s "/source-ro/${base_image%.xz}" \
+            $workdir/old_image.img &)
+        else
+            local size
+            local filename   
+            echo "* Extracting: ${base_image} to ${new_image}.img"
+            read size filename < <(ls -sH ${workdir}/${base_image})
+            pvcmd="pv -s ${size} -cfperb -N "xzcat:${base_image}" $workdir/$base_image"
+            echo $pvcmd
+            $pvcmd | xzcat > $workdir/$new_image.img
+        [[ $DELTA ]] && (cp $workdir/$new_image.img $workdir/old_image.img &)
     fi
+
+endfunc
+}
+
+image_mount () {
+    waitfor "image_extract"
+startfunc 
     [[ -f "/output/loop_device" ]] && ( old_loop_device=$(cat /output/loop_device) ; \
     dmsetup remove -f /dev/mapper/${old_loop_device}p2 &> /dev/null || true; \
     dmsetup remove -f /dev/mapper/${old_loop_device}p1 &> /dev/null || true; \
@@ -423,7 +428,7 @@ endfunc
 }
 
 arm64_chroot_setup () {
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
     echo "* Setup ARM64 chroot"
     cp /usr/bin/qemu-aarch64-static /mnt/usr/bin
@@ -558,7 +563,7 @@ endfunc
 
 rpi_firmware () {
     git_get "https://github.com/Hexxeh/rpi-firmware" "rpi-firmware"
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
     cd $workdir/rpi-firmware
     echo "* Installing current RPI firmware."
@@ -712,7 +717,7 @@ startfunc
 
 kernel_deb_install () {
     waitfor "kernel_debs"
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
     waitfor "added_scripts"
     waitfor "image_apt_installs"
 startfunc
@@ -750,14 +755,14 @@ armstub8-gic () {
 startfunc    
     cd $workdir/rpi-tools/armstubs
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make armstub8-gic.bin &>> /tmp/${FUNCNAME[0]}.compile.log
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
     cp $workdir/rpi-tools/armstubs/armstub8-gic.bin /mnt/boot/firmware/armstub8-gic.bin
 endfunc
 }
 
 non-free_firmware () {
     git_get "https://github.com/RPi-Distro/firmware-nonfree" "firmware-nonfree"
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
     cp -af $workdir/firmware-nonfree/* /mnt/usr/lib/firmware
 endfunc
@@ -765,7 +770,7 @@ endfunc
 
 
 rpi_config_txt_configuration () {
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
     echo "* Making /boot/firmware/config.txt modifications."
     
@@ -833,7 +838,7 @@ endfunc
 }
 
 rpi_cmdline_txt_configuration () {
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
     echo "* Making /boot/firmware/cmdline.txt modifications."
     
@@ -862,7 +867,7 @@ endfunc
 
 rpi_userland () {
     git_get "https://github.com/raspberrypi/userland" "rpi-userland"
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc
     echo "* Installing Raspberry Pi userland source."
     cd $workdir
@@ -907,7 +912,7 @@ endfunc
 }
 
 wifi_firmware_modification () {
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
     waitfor "non-free_firmware"
 startfunc    
     #echo "* Modifying wireless firmware if necessary."
@@ -933,7 +938,7 @@ startfunc
     echo "CONFIG_REGEX=y" >> $workdir/u-boot/configs/rpi_4_defconfig
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make rpi_4_defconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make -j $(($(nproc) + 1)) &>> /tmp/${FUNCNAME[0]}.compile.log
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
     echo "* Installing Andrei Gherzan's RPI uboot fork to image."
     cp $workdir/u-boot/u-boot.bin /mnt/boot/firmware/uboot.bin
     cp $workdir/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.bin
@@ -953,7 +958,7 @@ endfunc
 }
 
 first_boot_scripts_setup () {
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
     echo "* Creating first start cleanup script."
     cat <<-'EOF' > /mnt/etc/rc.local
@@ -994,7 +999,7 @@ endfunc
 } 
 
 added_scripts () {
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
 
     ## This script allows flash-kernel to create the uncompressed kernel file
@@ -1239,7 +1244,8 @@ touch /flag/done.ok_to_exit_container_after_build
 #inotify_touch_events &
 
 base_image_check
-image_extract_and_mount &
+image_extract &
+image_mount &
 rpi_firmware &
 armstub8-gic &
 non-free_firmware & 
