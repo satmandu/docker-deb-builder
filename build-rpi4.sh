@@ -573,7 +573,7 @@ kernelbuild_setup () {
     majorversion=$(grep VERSION $src_cache/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
     patchlevel=$(grep PATCHLEVEL $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'0
+    head -1 | awk -F ' = ' '{print $2}')
     sublevel=$(grep SUBLEVEL $src_cache/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
     extraversion=$(grep EXTRAVERSION $src_cache/rpi-linux/Makefile | \
