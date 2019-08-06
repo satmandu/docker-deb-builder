@@ -284,8 +284,8 @@ git_get () {
                     recreate_git $git_repo $local_path $git_branch
             fi
             # Is the requested branch the same as the local saved branch?
-            local local_branch=`git -C $src_cache/$local_path rev-parse \
-            --abbrev-ref HEAD` || local_branch=
+            local local_branch=`git -C $src_cache/$local_path \
+            rev-parse --abbrev-ref HEAD` || local_branch=
             # Set HEAD = master
             [[ "$local_branch" = "HEAD" ]] && local_branch="master"
             if [[ "$local_branch" != "$git_branch" ]]
