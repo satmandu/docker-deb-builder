@@ -587,7 +587,7 @@ kernelbuild_setup () {
     #echo "PKGVER: $PKGVER"
     kernelrev=$(git -C $src_cache/rpi-linux rev-parse --short HEAD) > /dev/null
     KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${kernelrev}"
-    echo "Current Kernel Version: $KERNEL_VERS" 
+    echo "** Current Kernel Version: $KERNEL_VERS" 
     echo $KERNEL_VERS > /tmp/KERNEL_VERS
 startfunc    
     cd $workdir/rpi-linux
