@@ -71,7 +71,7 @@ SYSTEM=`uname`
 # Check that mandatory parameters are valid
 [ !    "$outdir"        ] && fatal "output directory was not given (-o DIR)"
 [ ! -d "$outdir"        ] && fatal "output directory does not exist: $outdir"
-[ !    ${srcdir}        ] && fatal "source directory not given"
+[ !    "${srcdir}"        ] && fatal "source directory not given"
 [ !    "$image"         ] && fatal "docker image name not given (-i IMAGE)"
 
 # Needed for loopback to work inside container.
