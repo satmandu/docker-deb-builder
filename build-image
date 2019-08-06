@@ -121,8 +121,8 @@ download_base_image () {
         echo "* Downloading ${base_image} ."
         if [ -e "$(abspath ${srcdir})/$base_image" ] && \
         [ -e "$(abspath ${srcdir})/${base_image}.shasum" ] ; then
-            [ -e "$(abspath ${srcdir})/${base_image%xz}" ] && rm \
-            "$(abspath ${srcdir})/${base_image%xz}"
+            [ -e "$(abspath ${srcdir})/${base_image%.xz}" ] && rm \
+            "$(abspath ${srcdir})/${base_image%.xz}"
             cp $(abspath ${srcdir})/$base_image \
             $(abspath ${srcdir})/${base_image}.bak 2>/dev/null
         fi
@@ -145,8 +145,8 @@ download_base_image () {
 check_for_current_image () {
     current_output=`curl --silent ${base_url}/SHA1SUMS`
     current=${current_output%% *}
-    [ $SYSTEM == "Darwin" ] && local_hash_output=`shasum $(abspath ${srcdir})/${base_image}`
     [ $SYSTEM == "Linux" ] && local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}`
+    [ $SYSTEM == "Darwin" ] && local_hash_output=`shasum $(abspath ${srcdir})/${base_image}`
     local=${local_hash_output%% *}
     if [ ! "$local" == "$current" ]; then
         echo "Local base image sha1sum is:"
@@ -232,8 +232,6 @@ rm -rf $outdir/build_fail_status.log
 rm -rf $outdir/*.install.log
 rm -rf $outdir/*.compile.log
 
-#cmd="docker run $docker_args $image /bin/bash -c $startcmd"
-
 # Create Docker ccache volume if it does not exist as per https://stackoverflow.com/revisions/39652117/2
 echo "Creating docker cache volume $cache_volume if it does not exist."
 docker volume create --name $cache_volume
@@ -246,9 +244,6 @@ echo "Running build in docker:"
 echo "rm -f $cidfile ; docker run $docker_args $image /bin/bash -c \"$startcmd\""
 rm -f $cidfile ; docker run $docker_args $image /bin/bash -c "$startcmd"
 build_cid=`cat $cidfile`
-# Following does not work.
-# read build_cid <$cidfile
-# echo $build_cid
 echo ""
 
 # Now lower priority of container.
