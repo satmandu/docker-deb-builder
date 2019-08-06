@@ -100,12 +100,12 @@ docker_args+="-e USER=$(id -u) -e GROUP=$(id -g) "
 # for debugging
 docker_args+="--rm "
 
-maclinux () {
+linux_cmd () {
 # extract xz using docker image
-local args="$1"
-local xzdocker_args+="-e USER=$(id -u) -e GROUP=$(id -g) "
-local xzdocker_args+="--rm -v $(abspath ${srcdir}):/work "
-docker run $xzdocker_args $image /bin/bash -c "cd /work ; ${args}"
+local linux_cmd_args="$1"
+local linux_cmddocker_args+="-e USER=$(id -u) -e GROUP=$(id -g) "
+local linux_cmd__docker_args+="--rm -v $(abspath ${srcdir}):/work "
+docker run $linux_cmd_docker_args $image /bin/bash -c "cd /work ; ${linux_cmd_args}"
 }
 
 
@@ -187,12 +187,16 @@ if [ ! -f $(abspath ${srcdir})/$base_image ]; then
 fi
 
 
+
 if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ]
     then 
         cd $(abspath ${srcdir})
         echo "* Extracting $(abspath ${srcdir})/${base_image%.xz} ."
-        [ "$SYSTEM" == "Linux" ] && xz -dk $(abspath ${srcdir})/${base_image}
-        [ "$SYSTEM" == "Darwin" ] && maclinux "xz -dk ${base_image}; chown $USER:$GROUP ${base_image%.xz"
+        if [ "$(which xz)" ]; then
+            xz -dk $(abspath ${srcdir})/${base_image}
+        else
+            linux_cmd "xz -dk ${base_image}; chown $USER:$GROUP ${base_image%.xz"
+        fi
     else
     echo "* Base image already extracted."
 fi
