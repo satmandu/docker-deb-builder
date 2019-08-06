@@ -173,9 +173,11 @@ fi
 
 if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ]
     then 
-    cd $(abspath ${srcdir})
-    echo "Extracting $(abspath ${srcdir})/${base_image%.xz} ."
-    xz -dk $(abspath ${srcdir})/${base_image}
+        cd $(abspath ${srcdir})
+        echo "Extracting $(abspath ${srcdir})/${base_image%.xz} ."
+        xz -dk $(abspath ${srcdir})/${base_image}
+    else
+    echo "Base image already extracted."
 fi
 
 docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
