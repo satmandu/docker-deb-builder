@@ -30,7 +30,6 @@ RUN set -ex \
                lz4 \
                libc6-arm64-cross \
                libelf-dev \
-               libguestfs-tools \
                libncurses-dev \
                libssl-dev \
                libxdelta2 \
