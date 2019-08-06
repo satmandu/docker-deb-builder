@@ -285,11 +285,10 @@ git_get () {
     local git_flags=" --quiet --depth=1 "
     local clone_flags=" $git_repo $git_extra_flags "
     local pull_flags="origin/$git_branch"
-    echo -e "${FUNCNAME[1]}\nremote hash: $remote_git\nlocal hash: $local_git"
+    #echo -e "${FUNCNAME[1]}\nremote hash: $remote_git\nlocal hash: $local_git"
       
     if [ ! "$remote_git" = "$local_git" ]
         then
-            printf "%${COLUMNS}s\n"  "${FUNCNAME[1]} refreshing cache files from git."
             # Does the local repo even exist?
             if [ ! -d "$src_cache/$local_path/.git" ] 
                 then
@@ -308,13 +307,19 @@ git_get () {
                     cd $src_cache/$local_path
                     git checkout $git_branch || recreate_git $git_repo \
                     $local_path $git_branch
+                else
+                echo -e "${FUNCNAME[1]}\nremote hash: $remote_git\nlocal hash: \
+            BRANCH SWITCH"
             fi
+            printf "%${COLUMNS}s\n"  "${FUNCNAME[1]} refreshing cache files from git."
+            
             # sync to local branch
             cd $src_cache/$local_path
             git fetch --all $git_flags &>> /tmp/${FUNCNAME[1]}.git.log || true
             git reset --hard $pull_flags --quiet 2>> /tmp/${FUNCNAME[1]}.git.log
         else
-            echo -e "${FUNCNAME[1]} getting files from cache volume. 😎\n"
+            echo -e "${FUNCNAME[1]}\nremote hash: $remote_git\nlocal hash: \
+            $local_git\n\r${FUNCNAME[1]} getting files from cache volume. 😎\n"
     fi
     cd $src_cache/$local_path 
     last_commit=$(git log --graph \
