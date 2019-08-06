@@ -960,6 +960,10 @@ startfunc
 	    printf "My IP address is %s\n" "$_IP"
 	fi
 	#
+	# Disable wifi power saving, which causes wifi instability.
+	# See discussion here: https://github.com/raspberrypi/linux/issues/3127
+	iwconfig wlan0 power off
+	#
 	/etc/rc.local.temp &
 	exit 0
 EOF
