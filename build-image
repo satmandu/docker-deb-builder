@@ -116,8 +116,8 @@ chmod +x "$LINUX_CMD"
 ls -aFl  "$LINUX_CMD"
 local docker_linux_cmd="/work/$(basename $LINUX_CMD)"
 #docker run $linux_cmd_docker_args $image $docker_linux_cmd
-dockercmd="docker run $linux_cmd_docker_args $image $docker_linux_cmd"
-echo $dockercmd
+dockercmd='docker run $linux_cmd_docker_args $image /bin/bash -c "echo docker_app && cd /work && ${linux_cmd_args}'
+echo $dockercmd 
 #docker run $linux_cmd_docker_args $image /bin/bash
 $dockercmd
 
@@ -223,9 +223,9 @@ if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ]
         cd $(abspath ${srcdir})
         echo "* Extracting $(abspath ${srcdir})/${base_image%.xz} ."
         if [ "$(which xz)" ]; then
-            xz -dk $(abspath ${srcdir})/${base_image}
+            xz -vdk $(abspath ${srcdir})/${base_image}
         else
-            linux_cmd "xz -dk ${base_image}; chown $USER:$GROUP ${base_image%.xz}"
+            linux_cmd "xz -dk ${base_image}"
         fi
     else
     echo "* Base image already extracted."
