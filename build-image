@@ -93,11 +93,15 @@ docker_args+="-e USER=$(id -u) -e GROUP=$(id -g) "
 # for debugging
 docker_args+="--rm "
 
+system=`uname`
+
+
 check_new_image_hash () {
     echo "* Checking image hash."
     current_output=`curl --silent ${base_url}/SHA1SUMS`
     current=${current_output%% *}
-    local_hash_output=`sha1sum $(abspath "$srcdir")/${base_image}.new`
+    [[ $system == "Linux" ]] && local_hash_output=`sha1sum $(abspath "$srcdir")/${base_image}.new`
+    [[ $system == "Darwin" ]] && local_hash_output=`shasum $(abspath "$srcdir")/${base_image}.new`
     local=${local_hash_output%% *}
     if [ "$local" == "$current" ]; then
         tee $(abspath "$srcdir")/${base_image}.shasum <<EOF
