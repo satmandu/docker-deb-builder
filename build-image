@@ -116,7 +116,25 @@ chmod +x "$LINUX_CMD"
 ls -aFl  "$LINUX_CMD"
 local docker_linux_cmd="/work/$(basename $LINUX_CMD)"
 #docker run $linux_cmd_docker_args $image $docker_linux_cmd
-docker run $linux_cmd_docker_args $image /bin/bash
+dockercmd="docker run $linux_cmd_docker_args $image /bin/bash"
+echo $dockercmd
+#docker run $linux_cmd_docker_args $image /bin/bash
+$dockercmd
+
+echo "Press 'q' to exit"
+count=0
+while : ; do
+read -n 1 k <&1
+if [[ $k = q ]] ; then
+printf "\nQuitting from the program\n"
+break
+else
+((count=$count+1))
+printf "\nIterate for $count times\n"
+echo "Press 'q' to exit"
+fi
+done
+
 rm -f $LINUX_CMD
 }
 
