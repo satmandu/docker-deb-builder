@@ -684,7 +684,7 @@ startfunc
     if [[ -e /tmp/nodebs ]]
     then
     echo -e "Using existing $KERNEL_VERS debs from cache volume.\n \
-    \kNo kernel needs to be built."
+    \rNo kernel needs to be built."
     cp $apt_cache/linux-image-*${KERNEL_VERS}*arm64.deb $workdir/
     cp $apt_cache/linux-headers-*${KERNEL_VERS}*arm64.deb $workdir/
     cp $workdir/*.deb /output/ 
