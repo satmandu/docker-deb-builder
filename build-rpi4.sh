@@ -585,9 +585,9 @@ kernelbuild_setup () {
     PKGVER="$majorversion.$patchlevel.$sublevel"
     
     #echo "PKGVER: $PKGVER"
-    kernelrev=`git -C $src_cache/rpi-linux rev-parse --short HEAD` > /dev/null
+    kernelrev=$(git -C $src_cache/rpi-linux rev-parse --short HEAD) > /dev/null
     KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${kernelrev}"
-    echo "KERNEL_VERS: $KERNEL_VERS" 
+    echo "Current Kernel Version: $KERNEL_VERS" 
     echo $KERNEL_VERS > /tmp/KERNEL_VERS
 startfunc    
     cd $workdir/rpi-linux
@@ -615,7 +615,7 @@ endfunc
 kernel_build () {
     waitfor "kernelbuild_setup"
 startfunc
-    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     cd $workdir/rpi-linux
     make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
@@ -634,7 +634,7 @@ startfunc
     olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     
     
-    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     #make -j$(($(nproc) + 1)) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     #O=$workdir/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
     
@@ -659,7 +659,7 @@ startfunc
 
    # Don't remake debs if they already exist in output.
    arbitrary_wait
-   KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+   KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
    echo -e "Looking for cached $KERNEL_VERS kernel debs."
     for f in $apt_cache/linux-image-*${KERNEL_VERS}*; do
      if [[ -f $f ]]
