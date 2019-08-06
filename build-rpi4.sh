@@ -26,6 +26,7 @@ image_compressors=("lz4" "xz")
 #  files onto /build.
 mkdir /flag
 echo $BASHPID > /flag/main
+mainPID=$BASHPID
 
 # Quick build shell exit script
 cat <<-EOF> /usr/bin/killme
@@ -209,6 +210,7 @@ waitforstart () {
 
 startfunc () {
     echo $BASHPID > /flag/start.${FUNCNAME[1]}
+    [[ ! -e /flag/start.${FUNCNAME[1]} ]] && touch /flag/start.${FUNCNAME[1]} || true
     if [ ! "${FUNCNAME[1]}" == "spinnerwait" ] 
         then printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[1]} [ ] "
     fi
