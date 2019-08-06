@@ -116,7 +116,7 @@ chmod +x "$LINUX_CMD"
 ls -aFl  "$LINUX_CMD"
 local docker_linux_cmd="/work/$(basename $LINUX_CMD)"
 #docker run $linux_cmd_docker_args $image $docker_linux_cmd
-dockercmd='docker run $linux_cmd_docker_args $image /bin/bash -c "echo docker_app && cd /work && ${linux_cmd_args}'
+dockercmd='docker run $linux_cmd_docker_args $image /bin/bash -c "echo docker_app && cd /work && ${linux_cmd_args}"'
 echo $dockercmd 
 #docker run $linux_cmd_docker_args $image /bin/bash
 $dockercmd
