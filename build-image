@@ -114,7 +114,7 @@ ${linux_cmd_args}
 exit 0
 EOF
 chmod +x $LINUX_CMD
-docker run $linux_cmd_docker_args $image $LINUX_CMD ; rm -f $LINUX_CMD
+docker run $linux_cmd_docker_args $image /work/$LINUX_CMD ; rm -f $LINUX_CMD
 }
 
 
