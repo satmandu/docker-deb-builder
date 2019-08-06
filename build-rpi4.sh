@@ -311,10 +311,10 @@ git_get () {
             echo -e "${FUNCNAME[1]} getting files from cache volume. 😎\n"
     fi
     cd $src_cache/$local_path 
-    last_commit=`git log --graph \
+    last_commit=$(git log --graph \
     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
     %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
-    --quiet 2> /dev/null`
+    --quiet 2> /dev/null)
     echo -e "*${FUNCNAME[1]} Last Commits:\n$last_commit\n"
     rsync -a $src_cache/$local_path $workdir/
 }
@@ -380,7 +380,7 @@ startfunc
     $pvcmd | xzcat > $workdir/$new_image.img
     [[ $DELTA ]] && (cp $workdir/$new_image.img $workdir/old_image.img &)
     fi
-    [[ -f "/output/loop_device" ]] && ( old_loop_device=`cat /output/loop_device` ; \
+    [[ -f "/output/loop_device" ]] && ( old_loop_device=$(cat /output/loop_device) ; \
     dmsetup remove -f /dev/mapper/${old_loop_device}p2 &> /dev/null || true; \
     dmsetup remove -f /dev/mapper/${old_loop_device}p1 &> /dev/null || true; \
     losetup -d /dev/${old_loop_device} &> /dev/null || true)
@@ -570,18 +570,18 @@ endfunc
 
 kernelbuild_setup () {
     git_get "$kernelgitrepo" "rpi-linux" "$kernel_branch"
-    majorversion=`grep VERSION $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'`
-    patchlevel=`grep PATCHLEVEL $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'`
-    sublevel=`grep SUBLEVEL $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'`
-    extraversion=`grep EXTRAVERSION $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'`
+    majorversion=$(grep VERSION $src_cache/rpi-linux/Makefile | \
+    head -1 | awk -F ' = ' '{print $2}')
+    patchlevel=$(grep PATCHLEVEL $src_cache/rpi-linux/Makefile | \
+    head -1 | awk -F ' = ' '{print $2}'0
+    sublevel=$(grep SUBLEVEL $src_cache/rpi-linux/Makefile | \
+    head -1 | awk -F ' = ' '{print $2}')
+    extraversion=$(grep EXTRAVERSION $src_cache/rpi-linux/Makefile | \
+    head -1 | awk -F ' = ' '{print $2}')
     extraversion_nohyphen="${extraversion//-}"
-    CONFIG_LOCALVERSION=`grep CONFIG_LOCALVERSION \
+    CONFIG_LOCALVERSION=$(grep CONFIG_LOCALVERSION \
     $src_cache/rpi-linux/arch/arm64/configs/bcm2711_defconfig | \
-    head -1 | awk -F '=' '{print $2}' | sed 's/"//g'`
+    head -1 | awk -F '=' '{print $2}' | sed 's/"//g')
     PKGVER="$majorversion.$patchlevel.$sublevel"
     
     #echo "PKGVER: $PKGVER"
@@ -725,7 +725,7 @@ startfunc
     &>> /tmp/${FUNCNAME[0]}.install.log || true
     cp /mnt/boot/initrd.img-$KERNEL_VERS /mnt/boot/firmware/initrd.img
     cp /mnt/boot/vmlinuz-$KERNEL_VERS /mnt/boot/firmware/vmlinuz
-    vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
+    vmlinuz_type=$(file -bn /mnt/boot/firmware/vmlinuz)
     if [ "$vmlinuz_type" == "MS-DOS executable" ]
         then
         cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
@@ -821,7 +821,7 @@ EOF
     
     
     # 3Gb limitation because USB & devices do not work currently without this.
-     [ `grep -cs "total_mem=" /mnt/boot/firmware/config.txt` -gt 0 ] && \
+     [ $(grep -cs "total_mem=" /mnt/boot/firmware/config.txt) -gt 0 ] && \
      sed -i 's/total_mem=*$/total_mem=3072/' /mnt/boot/firmware/config.txt || \
      echo "total_mem=3072" >> /mnt/boot/firmware/config.txt
 
@@ -889,7 +889,7 @@ EOF
     cat  <<-EOF > /mnt/etc/ld.so.conf.d/00-vmcs.conf
 	/opt/vc/lib
 EOF
-    local SUDOPATH=`sed -n 's/\(^.*secure_path="\)//p' /mnt/etc/sudoers | sed s'/.$//'`
+    local SUDOPATH=$(sed -n 's/\(^.*secure_path="\)//p' /mnt/etc/sudoers | sed s'/.$//')
     SUDOPATH="${SUDOPATH:-/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin}"
     SUDOPATH+=":/opt/vc/bin:/opt/vc/sbin"
     # Add path to sudo
@@ -1005,7 +1005,7 @@ startfunc
 	#
 	# First exit if we aren't running an ARM64 kernel.
 	#
-	[ `uname -m` != aarch64 ] && exit 0
+	[ $(uname -m) != aarch64 ] && exit 0
 	#
 	KERNEL_VERSION="$1"
 	KERNEL_INSTALLED_PATH="$2"
@@ -1093,13 +1093,6 @@ startfunc
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives=/mnt/var/cache/apt/archives/ \
     -d install qemu-user-binfmt -qq 2>/dev/null
-
-
-    # I'm not sure where this is needed, but kernel install
-    # craps out without this: /lib/firmware/`uname -r`/device-tree/
-    # So we create it:
-    #mkdir -p /mnt/lib/firmware/`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`/device-tree/
-    # Now handled by script on image.
     
     # Copy in kernel debs generated earlier to be installed at
     # first boot.
