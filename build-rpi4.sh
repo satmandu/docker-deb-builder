@@ -1239,10 +1239,10 @@ endfunc
 # The shell command would be something like this:
 # docker exec -it `cat ~/docker-rpi4-imagebuilder/build.cid` /bin/bash
 # Note that this flag is looked for in the image_and_chroot_cleanup function
-touch /flag/done.ok_to_umount_image_after_build
+[[ ! $JUSTDEBS ]] && touch /flag/done.ok_to_umount_image_after_build
 
 # For debugging.
-touch /flag/done.ok_to_continue_after_mount_image
+[[ ! $JUSTDEBS ]] && touch /flag/done.ok_to_continue_after_mount_image
 
 # Arbitrary pause for debugging.
 touch /flag/done.ok_to_continue_after_here
@@ -1259,30 +1259,30 @@ touch /flag/done.ok_to_exit_container_after_build
 # So we will work around it.
 #inotify_touch_events &
 
-base_image_check
-image_extract &
-image_mount &
-rpi_firmware &
-armstub8-gic &
-non-free_firmware & 
-rpi_userland &
-andrei_gherzan_uboot_fork &
+[[ ! $JUSTDEBS ]] && base_image_check
+[[ ! $JUSTDEBS ]] && image_extract &
+[[ ! $JUSTDEBS ]] && image_mount &
+[[ ! $JUSTDEBS ]] && rpi_firmware &
+[[ ! $JUSTDEBS ]] && armstub8-gic &
+[[ ! $JUSTDEBS ]] && non-free_firmware & 
+[[ ! $JUSTDEBS ]] && rpi_userland &
+[[ ! $JUSTDEBS ]] && andrei_gherzan_uboot_fork &
 kernelbuild_setup &
-rpi_config_txt_configuration &
-rpi_cmdline_txt_configuration &
-wifi_firmware_modification &
-first_boot_scripts_setup &
-added_scripts &
+[[ ! $JUSTDEBS ]] && rpi_config_txt_configuration &
+[[ ! $JUSTDEBS ]] && rpi_cmdline_txt_configuration &
+[[ ! $JUSTDEBS ]] && wifi_firmware_modification &
+[[ ! $JUSTDEBS ]] && first_boot_scripts_setup &
+[[ ! $JUSTDEBS ]] && added_scripts &
 waitforstart "kernelbuild_setup" && kernel_debs &
-arm64_chroot_setup &
-image_apt_installs &
-spinnerwait image_apt_installs
-kernel_deb_install
-image_and_chroot_cleanup
-image_unmount
-compressed_image_export &
-[[ $DELTA ]] && xdelta3_image_export
-[[ $DELTA ]] && waitfor "xdelta3_image_export"
+[[ ! $JUSTDEBS ]] && arm64_chroot_setup &
+[[ ! $JUSTDEBS ]] && image_apt_installs &
+[[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
+[[ ! $JUSTDEBS ]] && kernel_deb_install
+[[ ! $JUSTDEBS ]] && image_and_chroot_cleanup
+[[ ! $JUSTDEBS ]] && image_unmount
+[[ ! $JUSTDEBS ]] && compressed_image_export &
+[[ ! $JUSTDEBS ]] && [[ $DELTA ]] && xdelta3_image_export
+[[ ! $JUSTDEBS ]] && [[ $DELTA ]] && waitfor "xdelta3_image_export"
 export_log
 # This stops the tail process.
 rm $TMPLOG
