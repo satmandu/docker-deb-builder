@@ -119,7 +119,7 @@ local docker_linux_cmd="/work/$(basename $LINUX_CMD)"
 dockercmd='docker run $linux_cmd_docker_args $image /bin/bash -c "echo docker_app && cd /work && ${linux_cmd_args}"'
 echo $dockercmd 
 #docker run $linux_cmd_docker_args $image /bin/bash
-$dockercmd
+docker run ${linux_cmd_docker_args} ${image} /bin/bash -c "echo docker_app && cd /work && ${linux_cmd_args}"
 
 echo "Press 'q' to exit"
 count=0
