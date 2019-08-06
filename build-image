@@ -206,13 +206,22 @@ docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo
 
 
 # Let XZ be disabled.
-[[ -v "$NOXZ" ]] && docker_args+="-e NOXZ=${NOXZ} "
+if [[ -v "$NOXZ" ]]
+    then 
+    docker_args+="-e NOXZ=${NOXZ} "
+fi
 
 # Is an email local variable set?
-[[ -v "$EMAIL" ]] && docker_args+="-e EMAIL=${EMAIL} "
+if [[ -v "$EMAIL" ]]
+    then
+    docker_args+="-e EMAIL=${EMAIL} "
+fi
 
 # Is a XDELTA local variable set? (Can not use XDELTA since XDELTA uses that itself.)
-[[ -v "$DELTA" ]] && docker_args+="-e DELTA=${DELTA} "
+if [[ -v "$DELTA" ]]
+    then
+    docker_args+="-e DELTA=${DELTA} "
+fi
 
 # Send in columns for display.
 shopt -s checkwinsize 
