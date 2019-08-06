@@ -1134,7 +1134,7 @@ startfunc
     umount -l /mnt/boot/firmware || (lsof +f -- /mnt/boot/firmware ; sleep 60 ; \
     umount -l /mnt/boot/firmware) || true
     #umount /mnt || (mount | grep /mnt)
-    e4defrag /mnt >/dev/null
+    e4defrag /mnt >/dev/null || true
     umount -l /mnt || (lsof +f -- /mnt ; sleep 60 ; umount /mnt) || true
     #guestunmount /mnt
 
