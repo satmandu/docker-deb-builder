@@ -218,6 +218,8 @@ startfunc () {
 endfunc () {
     [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.compile.log || true
     [[ -f /tmp/${FUNCNAME[1]}.install.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
+    [[ -f /tmp/${FUNCNAME[1]}.git.log ]] && rm /tmp/${FUNCNAME[1]}.git.log || true
+    [[ -f /tmp/${FUNCNAME[1]}.cleanup.log ]] && rm /tmp/${FUNCNAME[1]}.cleanup.log || true
     mv -f /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
     if [ ! "${FUNCNAME[1]}" == "spinnerwait" ]
         then printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X] "
@@ -1133,10 +1135,10 @@ startfunc
 
     fsck.ext4 -fy /dev/${loop_device}p2 || true
     fsck.vfat -wa /dev/${loop_device}p1 || true
-    kpartx -dv $workdir/${new_image}.img &>> /tmp/${FUNCNAME[0]}.install.log || true
+    kpartx -dv $workdir/${new_image}.img &>> /tmp/${FUNCNAME[0]}.cleanup.log || true
     losetup -d /dev/$loop_device &>/dev/null || true
     dmsetup remove -f /dev/$loop_device &>/dev/null || true
-    dmsetup info &>> /tmp/${FUNCNAME[0]}.install.log || true
+    dmsetup info &>> /tmp/${FUNCNAME[0]}.cleanup.log || true
     # To stop here "rm /flag/done.ok_to_exit_container_after_build".
     if [ ! -f /flag/done.ok_to_exit_container_after_build ]; then
         echo "** Image unmounted & container paused. **"
