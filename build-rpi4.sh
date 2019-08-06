@@ -25,6 +25,7 @@ image_compressors=("lz4" "xz")
 # Let's see if the inotify issues go away by moving function status
 #  files onto /build.
 mkdir /flag
+echo $BASHPID > /flag/main
 
 #DEBUG=1
 GIT_DISCOVERY_ACROSS_FILESYSTEM=1
@@ -828,12 +829,13 @@ startfunc
         echo "Cached $KERNEL_VERS kernel debs not found. Building."
         kernel_build &
         spinnerwait kernel_build
+        
         #waitfor "kernel_build"
         #arbitrary_wait
 
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
         rm -f $workdir/linux-libc-dev*.deb
-        cp $workdir/*.deb $apt_cache/
+        cp $workdir/*.deb $apt_cache/ || (echo "Build failed!" ; pkill -F /flag/main)
         cp $workdir/*.deb /output/ 
         chown $USER:$GROUP /output/*.deb
     fi
