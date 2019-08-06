@@ -302,16 +302,19 @@ git_get () {
             [[ "$local_branch" = "HEAD" ]] && local_branch="master"
             if [[ "$local_branch" != "$git_branch" ]]
                 then 
-                    echo "Branch mismatch!"
-                    # Be safe.
+                    #echo -e "${FUNCNAME[1]}\nremote hash: $remote_git\nlocal hash: \
+                BRANCH Mismatch"
+                    echo "Kernel git branch mismatch!"
+                    printf "%${COLUMNS}s\n"  \
+                    "${FUNCNAME[1]} refreshing cache files from git."
                     cd $src_cache/$local_path
                     git checkout $git_branch || recreate_git $git_repo \
                     $local_path $git_branch
                 else
-                echo -e "${FUNCNAME[1]}\nremote hash: $remote_git\nlocal hash: \
-            BRANCH SWITCH"
+                    printf "%${COLUMNS}s\n"  \
+                    "${FUNCNAME[1]} refreshing cache files from git."
             fi
-            printf "%${COLUMNS}s\n"  "${FUNCNAME[1]} refreshing cache files from git."
+            
             
             # sync to local branch
             cd $src_cache/$local_path
