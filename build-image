@@ -247,6 +247,9 @@ docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo
 # Is a XDELTA local variable set? (Can not use XDELTA since XDELTA uses that itself.)
 [ -n "$DELTA" ] && docker_args+="-e DELTA=${DELTA} "
 
+# Just make kerneldebs?
+[ -n "$JUSTDEBS" ] && docker_args+="-e JUSTDEBS=${JUSTDEBS} "
+
 # Send in columns for display.
 shopt -s checkwinsize 
 size=$(stty size) 
