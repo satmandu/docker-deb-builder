@@ -65,25 +65,23 @@ ccache -F 0 > /dev/null
 echo "Build ccache stats:"
 ccache -s
 
-
+# These environment variables are set at container invocation.
 # Create work directory.
-workdir=/build/source
+#workdir=/build/source
 mkdir -p $workdir
 #cp -a /source-ro/ $workdir
-
 # Source cache is on the cache volume.
-src_cache=/cache/src_cache
+#src_cache=/cache/src_cache
 mkdir -p $src_cache
-
 # Apt cache is on the cache volume.
-apt_cache=/cache/apt_cache
+#apt_cache=/cache/apt_cache
 # This is needed or apt has issues.
 mkdir -p $apt_cache/partial 
 
 #env >> /output/environment
 
-# Make sure inotify-tools is installed.
-apt-get -o dir::cache::archives=$apt_cache install  lsof xdelta3 vim \
+
+apt-get -o dir::cache::archives=$apt_cache install lsof xdelta3 vim \
 e2fsprogs qemu-user-static \
 libc6-arm64-cross pv -qq 2>/dev/null
 
@@ -153,42 +151,6 @@ wait_file() {
 }
 
 
-# inotify_touch_events () {
-#     # Since inotifywait seems to need help in docker. :/
-#     while [ ! -f "/flag/done.export_log" ]
-#     do
-#         touch /flag/*
-#         sleep 1
-#     done
-# }
-
-# spinnerwaitfor () {
-#     local waitforit
-#     local i=0
-#     tput sc
-#     # waitforit file is written in the function "endfunc"
-#     touch /flag/wait.${FUNCNAME[1]}_for_${1}
-#     #printf "%${COLUMNS}s\n" "${FUNCNAME[1]} waits for: ${1}    "
-#     printf "%${COLUMNS}s\r\n\n\r" "${FUNCNAME[1]} waits for: ${1} [$j] "
-#     while read waitforit; do 
-#     if [ "$waitforit" = done.${1} ]; 
-#         then break; \
-#     fi; 
-#     case $(($i % 4)) in
-#         0 ) j="-" ;;
-#         1 ) j="\\" ;;
-#         2 ) j="|" ;;
-#         3 ) j="/" ;;
-#     esac
-#     tput rc
-#     printf "%${COLUMNS}s\r" "${FUNCNAME[1]} waits for: ${1} [$j] "
-#     sleep 1
-#     ((i=i+1))
-#     done \
-#    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
-#     printf "%${COLUMNS}s\r" "${FUNCNAME[1]} noticed: ${1} [X] " && rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
-# }
-
 spinnerwait () {
         local start_timeout=10000
         if [[ -f "/flag/start.spinnerwait" ]]
@@ -233,13 +195,6 @@ waitfor () {
 waitforstart () {
     local start_timeout=10000
     wait_file "/flag/start.${1}" $start_timeout
-    # local waitforit
-#     while read waitforit; do 
-#     if [ "$waitforit" = start.${1} ]; 
-#         then break; \
-#     fi; 
-#     done \
-#    < <(inotifywait  -e create,open,access --format '%f' --quiet /flag --monitor)
 }
 
 
@@ -552,7 +507,7 @@ startfunc
     -o dir::cache::archives=$apt_cache \
     -d install wireless-tools wireless-regdb crda \
     net-tools network-manager -qq &>> /tmp/${FUNCNAME[0]}.install.log || true
-    # This setup is to see if we can get around the issues with kernel
+    # This setup DOES get around the issues with kernel
     # module support binaries built in amd64 instead of arm64.
     #echo "* Downloading qemu-user-static"
     # qemu-user-binfmt needs to be installed after reboot though otherwise there 
@@ -757,77 +712,79 @@ startfunc
     echo "* Making $KERNEL_VERS kernel debs."
     # Enable this if we want certain kernel install files compiled in
     # arm64 chroot
+    # But we don't actually need this, so this will get removed.
     #ext_mod_build_infrastructure
     cd $workdir/rpi-linux
     debcmd="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     -j$(($(nproc) + 1)) O=$workdir/kernel-build \
-    bindeb-pkg &> /tmp/${FUNCNAME[0]}.compile.log"
+    bindeb-pkg" 
     
 
     echo $debcmd
-    $debcmd &
+    $debcmd &> /tmp/${FUNCNAME[0]}.compile.log
+    
 endfunc
 }
 
-ext_mod_build_infrastructure () {
-    waitfor "arm64_chroot_setup"
-    waitfor "kernelbuild_setup"
-startfunc
-
-    cd $workdir/rpi-linux
-    echo "* Regenerating broken cross-compile module installation infrastructure."
-    nativebuild
-    # Cross-compilation of kernel wreaks havoc with building out of kernel modules
-    # later, due to module install files being installed into the target system in
-    # the cross-compile build host architecture, so let's fix this with natively 
-    # compiled module tools which have been installed into the image.
-    files=("scripts/recordmcount" "scripts/mod/modpost" \
-        "scripts/basic/fixdep")
-        
-    for i in "${files[@]}"
-    do
-     rm $workdir/kernel-build/$i || true
-    done
-    
-    # This is all we can do before the image is mounted.
-    waitfor "image_extract_and_mount"   
-    waitfor "arm64_chroot_setup"
-    
-    chroot /mnt /bin/bash -c "cd $workdir/rpi-linux ; make \
-    CCACHE_DIR=/ccache PATH=/usr/lib/ccache:$PATH \
-    -j $(($(nproc) + 1)) O=$workdir/kernel-build \
-    modules_prepare" &>> /tmp/${FUNCNAME[0]}.compile.log
-    #LOCALVERSION=-${kernelrev} \
-
-    mkdir -p $workdir/kernel-build/tmp/scripts/mod
-    mkdir -p $workdir/kernel-build/tmp/scripts/basic
-    for i in "${files[@]}"
-    do
-     cp $workdir/kernel-build/$i $workdir/kernel-build/tmp/$i
-     rm $workdir/kernel-build/$i
-     sed -i "/.tmp_quiet_recordmcount$/i TABTMP\$(Q)cp $workdir/kernel-build/tmp/${i} ${i}" \
-     $workdir/rpi-linux/Makefile
-    done
-    TAB=$'\t'
-    sed -i "s/TABTMP/${TAB}/g" $workdir/rpi-linux/Makefile
-    
-    # Now we have qemu-static & arm64 binaries installed, so we copy libraries over
-    # from image to build container in case they are needed during this install.
-    #cp /mnt/usr/lib/aarch64-linux-gnu/libc.so.6 /lib64/
-    #cp /mnt/lib/ld-linux-aarch64.so.1 /lib/
-    
-    # Maybe this can all be worked around by statically compiling these files
-    # so that qemu-static can just deal with them without library issues during the 
-    # packaging process. This two lines may not be needed.
-    aarch64-linux-gnu-gcc -static $workdir/rpi-linux/scripts/basic/fixdep.c -o \
-    $workdir/kernel-build/tmp/scripts/basic/fixdep &>> /tmp/${FUNCNAME[0]}.compile.log
-    
-    aarch64-linux-gnu-gcc -static $workdir/rpi-linux/scripts/recordmcount.c -o \
-    $workdir/kernel-build/tmp/scripts/recordmount &>> /tmp/${FUNCNAME[0]}.compile.log
-    
-    endfunc
-    }
+# ext_mod_build_infrastructure () {
+#     waitfor "arm64_chroot_setup"
+#     waitfor "kernelbuild_setup"
+# startfunc
+# 
+#     cd $workdir/rpi-linux
+#     echo "* Regenerating broken cross-compile module installation infrastructure."
+#     nativebuild
+#     # Cross-compilation of kernel wreaks havoc with building out of kernel modules
+#     # later, due to module install files being installed into the target system in
+#     # the cross-compile build host architecture, so let's fix this with natively 
+#     # compiled module tools which have been installed into the image.
+#     files=("scripts/recordmcount" "scripts/mod/modpost" \
+#         "scripts/basic/fixdep")
+#         
+#     for i in "${files[@]}"
+#     do
+#      rm $workdir/kernel-build/$i || true
+#     done
+#     
+#     # This is all we can do before the image is mounted.
+#     waitfor "image_extract_and_mount"   
+#     waitfor "arm64_chroot_setup"
+#     
+#     chroot /mnt /bin/bash -c "cd $workdir/rpi-linux ; make \
+#     CCACHE_DIR=/ccache PATH=/usr/lib/ccache:$PATH \
+#     -j $(($(nproc) + 1)) O=$workdir/kernel-build \
+#     modules_prepare" &>> /tmp/${FUNCNAME[0]}.compile.log
+#     #LOCALVERSION=-${kernelrev} \
+# 
+#     mkdir -p $workdir/kernel-build/tmp/scripts/mod
+#     mkdir -p $workdir/kernel-build/tmp/scripts/basic
+#     for i in "${files[@]}"
+#     do
+#      cp $workdir/kernel-build/$i $workdir/kernel-build/tmp/$i
+#      rm $workdir/kernel-build/$i
+#      sed -i "/.tmp_quiet_recordmcount$/i TABTMP\$(Q)cp $workdir/kernel-build/tmp/${i} ${i}" \
+#      $workdir/rpi-linux/Makefile
+#     done
+#     TAB=$'\t'
+#     sed -i "s/TABTMP/${TAB}/g" $workdir/rpi-linux/Makefile
+#     
+#     # Now we have qemu-static & arm64 binaries installed, so we copy libraries over
+#     # from image to build container in case they are needed during this install.
+#     #cp /mnt/usr/lib/aarch64-linux-gnu/libc.so.6 /lib64/
+#     #cp /mnt/lib/ld-linux-aarch64.so.1 /lib/
+#     
+#     # Maybe this can all be worked around by statically compiling these files
+#     # so that qemu-static can just deal with them without library issues during the 
+#     # packaging process. This two lines may not be needed.
+#     aarch64-linux-gnu-gcc -static $workdir/rpi-linux/scripts/basic/fixdep.c -o \
+#     $workdir/kernel-build/tmp/scripts/basic/fixdep &>> /tmp/${FUNCNAME[0]}.compile.log
+#     
+#     aarch64-linux-gnu-gcc -static $workdir/rpi-linux/scripts/recordmcount.c -o \
+#     $workdir/kernel-build/tmp/scripts/recordmount &>> /tmp/${FUNCNAME[0]}.compile.log
+#     
+#     endfunc
+#     }
 
 
 
@@ -1431,22 +1388,8 @@ added_scripts &
 waitforstart "kernelbuild_setup" && kernel_debs &
 arm64_chroot_setup &
 image_apt_installs &
-# image_apt_installs & image_apt_installs_job=$!
 spinnerwait image_apt_installs
-# while kill -0 $image_apt_installs_job 2>/dev/null
-#         do for s in / - \\ \|
-#             do printf "%${COLUMNS}s\r" "Image software installs.$s"
-#             sleep .1
-#             done
-# done
-#arbitrary_wait
 kernel_deb_install
-# while kill -0 $kernel_deb_install_job 2>/dev/null
-#         do for s in / - \\ \|
-#             do printf "%${COLUMNS}s\r" "Setting up kernel install to image.$s"
-#             sleep .1
-#             done
-# done
 image_and_chroot_cleanup
 image_unmount
 compressed_image_export &
