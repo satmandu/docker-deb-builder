@@ -249,19 +249,21 @@ echo ""
 # From https://unix.stackexchange.com/posts/317605/revisions
 
 PID_LIST=
-# This doesn't work on macos!
-container_pid=`pgrep build-rpi4.sh`
-findpids() {
-        for pid in /proc/$1/task/* ; do
-                pid="$(basename "$pid")"
-                PID_LIST="$PID_LIST$pid "
-                for cpid in $(cat /proc/$1/task/$pid/children) ; do
-                        findpids $cpid
-                done
-        done
-}
+[ $SYSTEM == "Darwin" ] && PID_LIST=`pgrep com.docker.hyperkit`
+if [ $SYSTEM == "Linux" ]; then
+    container_pid=`pgrep build-rpi4.sh`
+    findpids() {
+            for pid in /proc/$1/task/* ; do
+                    pid="$(basename "$pid")"
+                    PID_LIST="$PID_LIST$pid "
+                    for cpid in $(cat /proc/$1/task/$pid/children) ; do
+                            findpids $cpid
+                    done
+            done
+    }
 
-findpids $container_pid
+    findpids $container_pid
+fi
 
 echo "Using sudo to renice build container to lowest priority:"
 echo "(Some renices are expected to fail.)"
