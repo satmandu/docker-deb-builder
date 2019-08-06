@@ -249,6 +249,7 @@ echo ""
 # From https://unix.stackexchange.com/posts/317605/revisions
 
 PID_LIST=
+# This doesn't work on macos!
 container_pid=`pgrep build-rpi4.sh`
 findpids() {
         for pid in /proc/$1/task/* ; do
