@@ -113,8 +113,7 @@ cat <<-EOF> $LINUX_CMD
 	exit 0
 EOF
 chmod +x "$LINUX_CMD"
-cat $LINUX_CMD
-docker run $linux_cmd_docker_args $image /bin/bash -c "/work/$LINUX_CMD"
+docker run $linux_cmd_docker_args $image /bin/bash -c "/work/$(basename $LINUX_CMD)"
 rm -f $LINUX_CMD
 }
 
