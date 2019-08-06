@@ -195,7 +195,7 @@ if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ]
         if [ "$(which xz)" ]; then
             xz -dk $(abspath ${srcdir})/${base_image}
         else
-            linux_cmd "xz -dk ${base_image}; chown $USER:$GROUP ${base_image%.xz"
+            linux_cmd "xz -dk ${base_image}; chown $USER:$GROUP ${base_image%.xz}"
         fi
     else
     echo "* Base image already extracted."
