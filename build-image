@@ -64,6 +64,10 @@ docker_args="-dt "
 #build_container_name="rpi4-image-build"
 #docker_args="--name $build_container_name "
 
+SYSTEM=`uname`
+
+
+
 # Check that mandatory parameters are valid
 [[ !    "$outdir"        ]] && fatal "output directory was not given (-o DIR)"
 [[ ! -d "$outdir"        ]] && fatal "output directory does not exist: $outdir"
@@ -144,7 +148,8 @@ download_base_image () {
 check_for_current_image () {
     current_output=`curl --silent ${base_url}/SHA1SUMS`
     current=${current_output%% *}
-    local_hash_output=`sha1sum $(abspath "$srcdir")/${base_image}`
+    [[ $SYSTEM == "Darwin" ]] && local_hash_output=`shasum $(abspath "$srcdir")/${base_image}`
+    [[ $SYSTEM == "Linux" ]] && local_hash_output=`sha1sum $(abspath "$srcdir")/${base_image}`
     local=${local_hash_output%% *}
     if [ ! "$local" == "$current" ]; then
         echo "Local base image sha1sum is:"
