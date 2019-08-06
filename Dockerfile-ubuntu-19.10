@@ -36,9 +36,10 @@ RUN set -ex \
                libpython3.7 \
                linux-image-5.2.0-8-generic \
                linux-modules-5.2.0-8-generic \
-               qemu-user-static \
                patch \
+               psmisc \
                pv \
+               qemu-user-static \
                rsync \
                sudo \
                u-boot-tools \
