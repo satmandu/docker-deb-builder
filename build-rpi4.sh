@@ -730,7 +730,7 @@ startfunc
         cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
     else
         cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
-        cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz \
+        cd /mnt/boot/firmware/ ; gunzip -f /mnt/boot/firmware/kernel8.img.nouboot.gz \
         &>> /tmp/${FUNCNAME[0]}.install.log
     fi
     # Make booting without uboot the default so we get the default 3Gb ram available.
