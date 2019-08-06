@@ -664,7 +664,7 @@ startfunc
     for f in $apt_cache/linux-image-*${KERNEL_VERS}*; do
      if [[ -f $f ]]
      then
-        echo -e "$f on cache volume. 😎\n"
+        echo -e "$(basename $f) on cache volume. 😎\n"
         echo "linux-image" >> /tmp/nodebs
      else
         rm -f /tmp/nodebs || true
@@ -674,7 +674,7 @@ startfunc
     for f in $apt_cache/linux-headers-*${KERNEL_VERS}*; do
      if [[ -f $f ]]
      then
-        echo -e "$f on cache volume. 😎\n"
+        echo -e "$(basename $f) on cache volume. 😎\n"
         echo "linux-headers" >> /tmp/nodebs
      else
          rm -f /tmp/nodebs || true
