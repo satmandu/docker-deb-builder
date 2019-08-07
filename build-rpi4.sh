@@ -91,15 +91,15 @@ mkdir -p $apt_cache/partial
 #env >> /output/environment
 
 echo "Starting local container software installs."
-apt-get -o dir::cache::archives=$apt_cache install lsof -y &>> /tmp/${FUNCNAME[0]}.install.log 
-apt-get -o dir::cache::archives=$apt_cache install xdelta3 -y &>> /tmp/${FUNCNAME[0]}.install.log 
-apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/${FUNCNAME[0]}.install.log 
-apt-get -o dir::cache::archives=$apt_cache install e2fsprogs -y &>> /tmp/${FUNCNAME[0]}.install.log 
-apt-get -o dir::cache::archives=$apt_cache install qemu-user-static -y &>> /tmp/${FUNCNAME[0]}.install.log 
-apt-get -o dir::cache::archives=$apt_cache install dosfstools -y &>> /tmp/${FUNCNAME[0]}.install.log 
-apt-get -o dir::cache::archives=$apt_cache install libc6-arm64-cross -y &>> /tmp/${FUNCNAME[0]}.install.log 
-apt-get -o dir::cache::archives=$apt_cache install pv -y &>> /tmp/${FUNCNAME[0]}.install.log 
-apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -y &>> /tmp/${FUNCNAME[0]}.install.log 
+apt-get -o dir::cache::archives=$apt_cache install lsof -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=$apt_cache install xdelta3 -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=$apt_cache install e2fsprogs -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=$apt_cache install qemu-user-static -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=$apt_cache install dosfstools -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=$apt_cache install libc6-arm64-cross -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=$apt_cache install pv -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -y &>> /tmp/main.install.log 
 #apt-get -o dir::cache::archives=$apt_cache install xdelta3 vim \
 #e2fsprogs qemu-user-static dosfstools \
 #libc6-arm64-cross pv u-boot-tools -qq 2>/dev/null
@@ -201,14 +201,16 @@ endfunc
 
 
 waitfor () {
+    local proc_name=${FUNCNAME[1]}
+    [[ -z ${proc_name} ]] && proc_name=main
     local waitforit
     # waitforit file is written in the function "endfunc"
-    touch /flag/wait.${FUNCNAME[1]}_for_${1}
-    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
+    touch /flag/wait.${proc_name}_for_${1}
+    printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${1} [/] "
     local start_timeout=10000
     wait_file "/flag/done.${1}" $start_timeout
-    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [X] " && \
-    rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
+    printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${1} [X] " && \
+    rm -f /flag/wait.${proc_name}_for_${1}
 }
 
 waitforstart () {
@@ -218,22 +220,26 @@ waitforstart () {
 
 
 startfunc () {
-    echo $BASHPID > /flag/start.${FUNCNAME[1]}
-    [[ ! -e /flag/start.${FUNCNAME[1]} ]] && touch /flag/start.${FUNCNAME[1]} || true
-    if [ ! "${FUNCNAME[1]}" == "spinnerwait" ] 
-        then printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[1]} [ ] "
+    local proc_name=${FUNCNAME[1]}
+    [[ -z ${proc_name} ]] && proc_name=main
+    echo $BASHPID > /flag/start.${proc_name}
+    [[ ! -e /flag/start.${proc_name} ]] && touch /flag/start.${proc_name} || true
+    if [ ! "${proc_name}" == "spinnerwait" ] 
+        then printf "%${COLUMNS}s\n" "Started: ${proc_name} [ ] "
     fi
     
 }
 
 endfunc () {
-   [[ ! $DEBUG ]] && [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.compile.log || true
-   [[ ! $DEBUG ]] && [[ -f /tmp/${FUNCNAME[1]}.install.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
-   [[ ! $DEBUG ]] && [[ -f /tmp/${FUNCNAME[1]}.git.log ]] && rm /tmp/${FUNCNAME[1]}.git.log || true
-   [[ ! $DEBUG ]] && [[ -f /tmp/${FUNCNAME[1]}.cleanup.log ]] && rm /tmp/${FUNCNAME[1]}.cleanup.log || true
-    mv -f /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
-    if [ ! "${FUNCNAME[1]}" == "spinnerwait" ]
-        then printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X] "
+    local proc_name=${FUNCNAME[1]}
+    [[ -z ${proc_name} ]] && proc_name=main
+   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.compile.log ]] && rm /tmp/${proc_name}.compile.log || true
+   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.install.log ]] && rm /tmp/${proc_name}.install.log || true
+   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.git.log ]] && rm /tmp/${proc_name}.git.log || true
+   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.cleanup.log ]] && rm /tmp/${proc_name}.cleanup.log || true
+    mv -f /flag/start.${proc_name} /flag/done.${proc_name}
+    if [ ! "${proc_name}" == "spinnerwait" ]
+        then printf "%${COLUMNS}s\n" "Done: ${proc_name} [X] "
     fi
 }
 
@@ -280,6 +286,8 @@ arbitrary_wait () {
 # }
 
 git_get () {
+    local proc_name=${FUNCNAME[1]}
+    [[ -z ${proc_name} ]] && proc_name=main
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
@@ -294,7 +302,7 @@ git_get () {
     local git_flags=" --quiet --depth=1 "
     local clone_flags=" $git_repo $git_extra_flags "
     local pull_flags="origin/$git_branch"
-    #echo -e "${FUNCNAME[1]}\nremote hash: $remote_git\nlocal hash: $local_git"
+    #echo -e "${proc_name}\nremote hash: $remote_git\nlocal hash: $local_git"
       
     if [ ! "$remote_git" = "$local_git" ]
         then
@@ -312,31 +320,31 @@ git_get () {
             if [[ "$local_branch" != "$git_branch" ]]
                 then 
                     echo "Kernel git branch mismatch!"
-                    printf "%${COLUMNS}s\n" "${FUNCNAME[1]} refreshing cache files from git."
+                    printf "%${COLUMNS}s\n" "${proc_name} refreshing cache files from git."
                     cd $src_cache/$local_path
                     git checkout $git_branch || recreate_git $git_repo \
                     $local_path $git_branch
                 else
-                    echo -e "${FUNCNAME[1]}\nremote hash: \
+                    echo -e "${proc_name}\nremote hash: \
                     $remote_git\nlocal hash:$local_git\n"
-                    printf "%${COLUMNS}s\n" "${FUNCNAME[1]} refreshing cache files from git."
+                    printf "%${COLUMNS}s\n" "${proc_name} refreshing cache files from git."
             fi
             
             
             # sync to local branch
             cd $src_cache/$local_path
-            git fetch --all $git_flags &>> /tmp/${FUNCNAME[1]}.git.log || true
-            git reset --hard $pull_flags --quiet 2>> /tmp/${FUNCNAME[1]}.git.log
+            git fetch --all $git_flags &>> /tmp/${proc_name}.git.log || true
+            git reset --hard $pull_flags --quiet 2>> /tmp/${proc_name}.git.log
         else
-            echo -e "${FUNCNAME[1]}\nremote hash: $remote_git\nlocal hash: \
-            $local_git\n\r${FUNCNAME[1]} getting files from cache volume. 😎\n"
+            echo -e "${proc_name}\nremote hash: $remote_git\nlocal hash: \
+            $local_git\n\r${proc_name} getting files from cache volume. 😎\n"
     fi
     cd $src_cache/$local_path 
     last_commit=$(git log --graph \
     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
     %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
     --quiet 2> /dev/null)
-    echo -e "*${FUNCNAME[1]} Last Commits:\n$last_commit\n"
+    echo -e "*${proc_name} Last Commits:\n$last_commit\n"
     rsync -a $src_cache/$local_path $workdir/
 }
 
