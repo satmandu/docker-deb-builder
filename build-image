@@ -63,7 +63,8 @@ kernelgitrepo="https://github.com/raspberrypi/linux.git"
 srcdir=$1
 srcdir="${srcdir:-.}"
 
-image="{image:-docker-rpi4-imagebuilder:19.10}"
+defaultimage="docker-rpi4-imagebuilder:19.10"
+image="{image:-${defaultimage}}"
 
 
 #docker_args="-it "
