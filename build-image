@@ -40,9 +40,9 @@ while getopts "i:o:h" opt; do
         h)
             usage
             ;;
-        *)
-            usage
-            ;;
+#         *)
+#             usage
+#             ;;
     esac
 done
 
