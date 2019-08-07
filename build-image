@@ -77,6 +77,8 @@ docker_args="-dt "
 # Are we mac or are we linux?
 SYSTEM=`uname`
 
+# Just make kerneldebs?
+[ -n "$JUSTDEBS" ] && docker_args+="-e JUSTDEBS=${JUSTDEBS} "
 
 # Check that mandatory parameters are valid
 #[ !    "$outdir"        ] && fatal "output directory was not given (-o DIR)"
@@ -207,7 +209,7 @@ check_for_current_image () {
 }
 
 
-if [ ! -f $(abspath ${srcdir})/$base_image ]; then
+if [ ! -f $(abspath ${srcdir})/$base_image ] && [ ! $JUSTDEBS ]; then
         download_base_image
     else
         check_for_current_image
@@ -215,7 +217,7 @@ fi
 
 
 
-if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ]
+if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ] && [ ! $JUSTDEBS ]
     then 
         cd $(abspath ${srcdir})
         echo "* Extracting $(abspath ${srcdir})/${base_image%.xz} ."
@@ -227,8 +229,9 @@ if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ]
     else
     echo "* Base image already extracted."
 fi
+fi
 
-docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
+[ ! $JUSTDEBS ] && docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
 
 # For ccache
 #docker_args+="-e CCACHE_DIR=/ccache --volumes-from ccache -v ccache:/ccache "
@@ -244,7 +247,7 @@ docker_args+="-e apt_cache=/cache/apt_cache "
 docker_args+="-e workdir=/build/source "
 
 # Send in base image environment variables:
-docker_args+="-e base_url=${base_url} -e base_image=${base_image} "
+[ ! $JUSTDEBS ] && docker_args+="-e base_url=${base_url} -e base_image=${base_image} "
 
 #Send in linux repo environment variables:
 docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo} "
@@ -257,9 +260,6 @@ docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo
 
 # Is a XDELTA local variable set? (Can not use XDELTA since XDELTA uses that itself.)
 [ -n "$DELTA" ] && docker_args+="-e DELTA=${DELTA} "
-
-# Just make kerneldebs?
-[ -n "$JUSTDEBS" ] && docker_args+="-e JUSTDEBS=${JUSTDEBS} "
 
 # DEBUG?
 [ -n "$DEBUG" ] && docker_args+="-e DEBUG=${DEBUG} "
