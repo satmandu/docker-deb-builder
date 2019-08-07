@@ -227,10 +227,10 @@ startfunc () {
 }
 
 endfunc () {
-    [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.compile.log || true
-    [[ -f /tmp/${FUNCNAME[1]}.install.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
-    [[ -f /tmp/${FUNCNAME[1]}.git.log ]] && rm /tmp/${FUNCNAME[1]}.git.log || true
-    [[ -f /tmp/${FUNCNAME[1]}.cleanup.log ]] && rm /tmp/${FUNCNAME[1]}.cleanup.log || true
+   [[ ! $DEBUG ]] && [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.compile.log || true
+   [[ ! $DEBUG ]] && [[ -f /tmp/${FUNCNAME[1]}.install.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
+   [[ ! $DEBUG ]] && [[ -f /tmp/${FUNCNAME[1]}.git.log ]] && rm /tmp/${FUNCNAME[1]}.git.log || true
+   [[ ! $DEBUG ]] && [[ -f /tmp/${FUNCNAME[1]}.cleanup.log ]] && rm /tmp/${FUNCNAME[1]}.cleanup.log || true
     mv -f /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
     if [ ! "${FUNCNAME[1]}" == "spinnerwait" ]
         then printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X] "
