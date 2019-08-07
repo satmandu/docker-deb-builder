@@ -44,27 +44,16 @@ Clone the [docker-rpi4-imagebuilder](https://github.com/satmandu/docker-rpi4-ima
     cd docker-rpi4-imagebuilder
 
 
-## 2.  Create Docker Build container 
-*(This only has to be done once every several days.)*
-
-Build a container that will act as package build environment:
-
-    docker build -t docker-rpi4-imagebuilder:19.10 -f Dockerfile-ubuntu-19.10 .
-
-In this example the target is Ubuntu 19.10 but you can create and modify `Dockerfile-nnn` to match your target environment. 
-(I have only tested with Ubuntu 19.10, since that is what the source image is built from.)
-
-
-## 3.  Build package from inside source directory
+## 2.  Build package from inside source directory
     git pull ; time ./build-image
     
 A first build takes about 30 min on my Skylake build machine. A second build takes about 10 min due to the use of ccache if I have xz compression disabled and just use lz4 for image compression, or 25 min if I use both.
 
 xz compression be toggled by adding XZ=1 at the command line like this: 
-git pull ; XZ=1 time ./build-image
+   git pull ; XZ=1 time ./build-image
 
 Just building the kernel debs (and not the image) and putting them into the output folder can be toggled by adding JUSTDEBS=1 at the command line like this: 
-git pull ; JUSTDEBS=1 time ./build-image
+   git pull ; JUSTDEBS=1 time ./build-image
 
 
 After a successful build you will find the `eoan-preinstalled-server-arm64+raspi4.img___kernel___timestamp.lz4` 
@@ -73,7 +62,7 @@ file in your specified `output` directory (defaults to `output` ). (Failure will
 Currently the images are under 700Mb compressed with xz, or about 1.3Gb compressed with lz4.
 The xz images are about 50 Mb larger than the base ubuntu images.
 
-## 4. Installing image to sd card
+## 3. Installing image to sd card
 
 Use the instructions here: https://ubuntu.com/download/iot/installation-media
 
