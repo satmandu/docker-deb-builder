@@ -93,63 +93,19 @@ mkdir -p $apt_cache/partial
 echo "Starting local container software installs."
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install lsof -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install xdelta3 -y &>> /tmp/main.install.log 
-apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install e2fsprogs -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install qemu-user-static -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install dosfstools -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install libc6-arm64-cross -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install pv -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=$apt_cache autoclean -qq &>> /tmp/main.install.log 
+
 #apt-get -o dir::cache::archives=$apt_cache install xdelta3 vim \
 #e2fsprogs qemu-user-static dosfstools \
 #libc6-arm64-cross pv u-boot-tools -qq 2>/dev/null
 
-# Utility script
-# Apt concurrency manager wrapper via
-# https://askubuntu.com/posts/375031/revisions
-cat <<'EOF'> /usr/bin/chroot-apt-wrapper
-#!/bin/bash
-
-i=0
-tput sc
-while fuser /mnt/var/lib/dpkg/lock >/dev/null 2>&1 ; do
-    case $(($i % 4)) in
-        0 ) j="-" ;;
-        1 ) j="\\" ;;
-        2 ) j="|" ;;
-        3 ) j="/" ;;
-    esac
-    tput rc
-    echo -en "\r[$j] Waiting for other apt instances to finish..." 
-    sleep 0.5
-    ((i=i+1))
-done 
-
-/usr/bin/apt-get "$@"
-EOF
-chmod +x /usr/bin/chroot-apt-wrapper
-
-cat <<'EOF'> /usr/bin/chroot-dpkg-wrapper
-#!/bin/bash
-
-i=0
-tput sc
-while fuser /mnt/var/lib/dpkg/lock >/dev/null 2>&1 ; do
-    case $(($i % 4)) in
-        0 ) j="-" ;;
-        1 ) j="\\" ;;
-        2 ) j="|" ;;
-        3 ) j="/" ;;
-    esac
-    tput rc
-    echo -en "\r[$j] Waiting for other dpkg instances to finish..." 
-    sleep 0.5
-    ((i=i+1))
-done 
-
-/usr/bin/dpkg "$@"
-EOF
-chmod +x /usr/bin/chroot-dpkg-wrapper
 
 
 
@@ -365,6 +321,108 @@ recreate_git () {
 
 # Main functions
 
+utility_scripts () {
+startfunc
+# Apt concurrency manager wrapper via
+# https://askubuntu.com/posts/375031/revisions
+cat <<'EOF'> /usr/bin/chroot-apt-wrapper
+#!/bin/bash
+
+i=0
+tput sc
+while fuser /mnt/var/lib/dpkg/lock >/dev/null 2>&1 ; do
+    case $(($i % 4)) in
+        0 ) j="-" ;;
+        1 ) j="\\" ;;
+        2 ) j="|" ;;
+        3 ) j="/" ;;
+    esac
+    tput rc
+    echo -en "\r[$j] Waiting for other apt instances to finish..." 
+    sleep 0.5
+    ((i=i+1))
+done 
+
+/usr/bin/apt-get "$@"
+EOF
+chmod +x /usr/bin/chroot-apt-wrapper
+
+cat <<'EOF'> /usr/bin/chroot-dpkg-wrapper
+#!/bin/bash
+
+i=0
+tput sc
+while fuser /mnt/var/lib/dpkg/lock >/dev/null 2>&1 ; do
+    case $(($i % 4)) in
+        0 ) j="-" ;;
+        1 ) j="\\" ;;
+        2 ) j="|" ;;
+        3 ) j="/" ;;
+    esac
+    tput rc
+    echo -en "\r[$j] Waiting for other dpkg instances to finish..." 
+    sleep 0.5
+    ((i=i+1))
+done 
+
+/usr/bin/dpkg "$@"
+EOF
+chmod +x /usr/bin/chroot-dpkg-wrapper
+
+waitfor "image_mount"
+    # Apt concurrency manager wrapper via
+    # https://askubuntu.com/posts/375031/revisions
+    mkdir -p /mnt/usr/local/bin
+    cat <<'EOF'> /mnt/usr/local/bin/chroot-apt-wrapper
+#!/bin/bash
+
+i=0
+tput sc
+while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
+    case $(($i % 4)) in
+        0 ) j="-" ;;
+        1 ) j="\\" ;;
+        2 ) j="|" ;;
+        3 ) j="/" ;;
+    esac
+    tput rc
+    echo -en "\r[$j] Waiting for other apt instances to finish..." 
+    sleep 0.5
+    ((i=i+1))
+done 
+
+/usr/bin/apt-get "$@"
+EOF
+    chmod +x /mnt/usr/local/bin/chroot-apt-wrapper
+
+cat <<'EOF'> /mnt/usr/local/bin/chroot-dpkg-wrapper
+#!/bin/bash
+
+i=0
+tput sc
+while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
+    case $(($i % 4)) in
+        0 ) j="-" ;;
+        1 ) j="\\" ;;
+        2 ) j="|" ;;
+        3 ) j="/" ;;
+    esac
+    tput rc
+    echo -en "\r[$j] Waiting for other dpkg instances to finish..." 
+    sleep 0.5
+    ((i=i+1))
+done 
+
+/usr/bin/dpkg "$@"
+EOF
+chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
+
+endfunc
+}
+
+
+
+
 download_base_image () {
 startfunc
     echo "* Downloading ${base_image} ."
@@ -474,55 +532,6 @@ startfunc
     rsync -avh --devices --specials /run/systemd/resolve /mnt/run/systemd > /dev/null
     
     
-    # Apt concurrency manager wrapper via
-    # https://askubuntu.com/posts/375031/revisions
-    mkdir -p /mnt/usr/local/bin
-    cat <<'EOF'> /mnt/usr/local/bin/chroot-apt-wrapper
-#!/bin/bash
-
-i=0
-tput sc
-while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
-    case $(($i % 4)) in
-        0 ) j="-" ;;
-        1 ) j="\\" ;;
-        2 ) j="|" ;;
-        3 ) j="/" ;;
-    esac
-    tput rc
-    echo -en "\r[$j] Waiting for other apt instances to finish..." 
-    sleep 0.5
-    ((i=i+1))
-done 
-
-/usr/bin/apt-get "$@"
-EOF
-    chmod +x /mnt/usr/local/bin/chroot-apt-wrapper
-
-cat <<'EOF'> /mnt/usr/local/bin/chroot-dpkg-wrapper
-#!/bin/bash
-
-i=0
-tput sc
-while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
-    case $(($i % 4)) in
-        0 ) j="-" ;;
-        1 ) j="\\" ;;
-        2 ) j="|" ;;
-        3 ) j="/" ;;
-    esac
-    tput rc
-    echo -en "\r[$j] Waiting for other dpkg instances to finish..." 
-    sleep 0.5
-    ((i=i+1))
-done 
-
-/usr/bin/dpkg "$@"
-EOF
-chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
-
-
-
     mkdir -p /mnt/build
     mount -o bind /build /mnt/build
     echo "* ARM64 chroot setup is complete."  
@@ -531,6 +540,7 @@ endfunc
 
 image_apt_installs () {
         waitfor "arm64_chroot_setup"
+        waitfor "utility_scripts"
 startfunc    
     echo "* Starting apt update."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
@@ -708,27 +718,6 @@ startfunc
     else
         rm -f /tmp/nodebs || true
     fi
-#    echo -e "Looking for cached $KERNEL_VERS kernel debs."
-#     for f in $apt_cache/linux-image-*${KERNEL_VERS}*; do
-#      if [[ -f $f ]]
-#      then
-#         echo -e "$(basename $f) on cache volume. 😎\n"
-#         echo "linux-image" >> /tmp/nodebs
-#      else
-#         rm -f /tmp/nodebs || true
-#     fi
-#     break
-#     done
-#     for f in $apt_cache/linux-headers-*${KERNEL_VERS}*; do
-#      if [[ -f $f ]]
-#      then
-#         echo -e "$(basename $f) on cache volume. 😎\n"
-#         echo "linux-headers" >> /tmp/nodebs
-#      else
-#          rm -f /tmp/nodebs || true
-#      fi
-#      break
-#     done
     if [[ -e /tmp/nodebs ]]
     then
     echo -e "Using existing $KERNEL_VERS debs from cache volume.\n \
@@ -1288,6 +1277,7 @@ touch /flag/done.ok_to_exit_container_after_build
 # So we will work around it.
 #inotify_touch_events &
 
+[[ ! $JUSTDEBS ]] && utility_scripts &
 [[ ! $JUSTDEBS ]] && base_image_check
 [[ ! $JUSTDEBS ]] && image_extract &
 [[ ! $JUSTDEBS ]] && image_mount &
