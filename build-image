@@ -61,7 +61,7 @@ defaultimage="docker-rpi4-imagebuilder:19.10"
 kernel_branch="${kernel_branch:-rpi-4.19.y}"
 kernelgitrepo="https://github.com/raspberrypi/linux.git"
 
-srcdir=$1
+srcdir=${PROG_DIR}
 srcdir="${srcdir:-.}"
 
 
