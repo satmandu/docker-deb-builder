@@ -90,7 +90,7 @@ mkdir -p $apt_cache/partial
 
 #env >> /output/environment
 
-
+echo "Starting local container software installs."
 apt-get -o dir::cache::archives=$apt_cache install lsof xdelta3 vim \
 e2fsprogs qemu-user-static dosfstools \
 libc6-arm64-cross pv u-boot-tools -qq 2>/dev/null
