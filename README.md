@@ -37,6 +37,11 @@ Feel free to offer suggestions on how to make this setup safer without making th
 ## 1. Make sure you have a recent install of Docker.
 Installation instructions for Ubuntu: https://docs.docker.com/install/linux/docker-ce/ubuntu/
 
+## 1.5. Some have reported that qemu-user-static needs to be installed on your HOST system before this setup works:
+    sudo apt install qemu-user-static -y
+(Note that this is installed in the container, and I don't know why this helps... but FYI.)
+
+
 ## 2. Clone Build build environment
 
 Clone the [docker-rpi4-imagebuilder](https://github.com/satmandu/docker-rpi4-imagebuilder)
