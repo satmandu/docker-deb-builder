@@ -100,7 +100,7 @@ echo "Starting local container software installs."
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install pv -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -y &>> /tmp/main.install.log 
 apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/main.install.log 
-apt-get -o dir::cache::archives=$apt_cache autoclean -qq &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=$apt_cache autoclean -y -qq &>> /tmp/main.install.log 
 
 #apt-get -o dir::cache::archives=$apt_cache install xdelta3 vim \
 #e2fsprogs qemu-user-static dosfstools \
