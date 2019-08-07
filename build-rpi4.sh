@@ -19,8 +19,8 @@ new_image="eoan-preinstalled-server-arm64+raspi4"
 # Note that these only work for the chroot commands.
 silence_apt_flags="-o Dpkg::Use-Pty=0 -qq < /dev/null > /dev/null "
 silence_apt_update_flags="-o Dpkg::Use-Pty=0 < /dev/null > /dev/null "
-image_compressors=("lz4" "xz")
-[[ $NOXZ ]] && image_compressors=("lz4")
+image_compressors=("lz4")
+[[ $XZ ]] && image_compressors=("lz4" "xz")
 
 # Let's see if the inotify issues go away by moving function status
 #  files onto /build.

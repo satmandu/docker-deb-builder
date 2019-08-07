@@ -63,12 +63,9 @@ A first build takes about 30 min on my Skylake build machine. A second build tak
 xz compression be toggled by adding XZ=1 at the command line like this: 
 git pull ; XZ=1 time ./build-image
 
-Just building the kernel debs (and not the image) and putting them into the output folder can be toggled by adding JUSTDEBS=1 at the command line like this: 
-git pull ; JUSTDEBS=1 time ./build-image
-
 
 After a successful build you will find the `eoan-preinstalled-server-arm64+raspi4.img___kernel___timestamp.lz4` 
-file in your specified `output` directory (defaults to `output` ). (Failure will lead to a build_fail.log in that folder.)
+file in your specified `output` directory. (Failure will lead to a build_fail.log in that folder.)
 
 Currently the images are under 700Mb compressed with xz, or about 1.3Gb compressed with lz4.
 The xz images are about 50 Mb larger than the base ubuntu images.
