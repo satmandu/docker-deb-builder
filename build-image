@@ -8,7 +8,8 @@ function usage {
 usage: $PROG [options...] SOURCEDIR_for_scripts
 Options:
   -i IMAGE  Name of the docker image (including tag) to use as package build environment.
-  -o DIR    Destination directory to store packages to.
+           Defaults to docker-rpi4-imagebuilder:19.10 .
+  -o DIR    Destination directory to store packages to. Defaults to "output".
 EOF
     exit 1
 }
@@ -51,6 +52,8 @@ base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
 base_image="eoan-preinstalled-server-arm64+raspi3.img.xz"
 base_image_url="${base_url}/${base_image}"
 cache_volume=rpi4-imagebuilder-cache
+outdir="${output:-output}"
+
 
 # This is the linux version we want to use:
 #kernel_branch=rpi-4.19.y
@@ -58,6 +61,11 @@ kernel_branch="${kernel_branch:-rpi-4.19.y}"
 kernelgitrepo="https://github.com/raspberrypi/linux.git"
 
 srcdir=$1
+srcdir="${srcdir:-.}"
+
+image="{image:-docker-rpi4-imagebuilder:19.10}"
+
+
 #docker_args="-it "
 # The bash script & copy log if failure setup doesn't work without the "-dt" docker argument.
 docker_args="-dt "
@@ -69,10 +77,11 @@ SYSTEM=`uname`
 
 
 # Check that mandatory parameters are valid
-[ !    "$outdir"        ] && fatal "output directory was not given (-o DIR)"
-[ ! -d "$outdir"        ] && fatal "output directory does not exist: $outdir"
-[ !    "${srcdir}"        ] && fatal "source directory not given"
-[ !    "$image"         ] && fatal "docker image name not given (-i IMAGE)"
+#[ !    "$outdir"        ] && fatal "output directory was not given (-o DIR)"
+#[ ! -d "$outdir"        ] && fatal "output directory does not exist: $outdir"
+[ ! -d "$outdir"        ] && mkdir ${outdir}
+#[ !    "${srcdir}"        ] && fatal "source directory not given"
+#[ !    "$image"         ] && fatal "docker image name not given (-i IMAGE)"
 
 # Create Docker Image if it does not exist.
 echo "Creating Docker Image ${image} if it does not exist."
