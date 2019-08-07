@@ -1268,10 +1268,10 @@ endfunc
 # The shell command would be something like this:
 # docker exec -it `cat ~/docker-rpi4-imagebuilder/build.cid` /bin/bash
 # Note that this flag is looked for in the image_and_chroot_cleanup function
-[[ ! $JUSTDEBS ]] && touch /flag/done.ok_to_umount_image_after_build
+touch /flag/done.ok_to_umount_image_after_build
 
 # For debugging.
-[[ ! $JUSTDEBS ]] && touch /flag/done.ok_to_continue_after_mount_image
+touch /flag/done.ok_to_continue_after_mount_image
 
 # Arbitrary pause for debugging.
 touch /flag/done.ok_to_continue_after_here
