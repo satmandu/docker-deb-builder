@@ -34,7 +34,10 @@ Feel free to offer suggestions on how to make this setup safer without making th
 
  ## To build an Ubuntu Eoan Raspberry Pi 4B image run following commands:
 
-## 1. Clone Build build environment
+## 1. Make sure you have a recent install of Docker.
+Installation instructions for Ubuntu: https://docs.docker.com/install/linux/docker-ce/ubuntu/
+
+## 2. Clone Build build environment
 
 Clone the [docker-rpi4-imagebuilder](https://github.com/satmandu/docker-rpi4-imagebuilder)
 (the repository you are reading now):
@@ -44,7 +47,7 @@ Clone the [docker-rpi4-imagebuilder](https://github.com/satmandu/docker-rpi4-ima
     cd docker-rpi4-imagebuilder
 
 
-## 2.  Build package from inside source directory
+## 3.  Build package from inside source directory
     git pull ; time ./build-image
     
 A first build takes about 30 min on my Skylake build machine. A second build takes about 10 min due to the use of ccache if I have xz compression disabled and just use lz4 for image compression, or 25 min if I use both.
@@ -62,7 +65,7 @@ file in your specified `output` directory (defaults to `output` ). (Failure will
 Currently the images are under 700Mb compressed with xz, or about 1.3Gb compressed with lz4.
 The xz images are about 50 Mb larger than the base ubuntu images.
 
-## 3. Installing image to sd card
+## 4. Installing image to sd card
 
 Use the instructions here: https://ubuntu.com/download/iot/installation-media
 
