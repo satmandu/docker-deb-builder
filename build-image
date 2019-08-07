@@ -53,7 +53,7 @@ base_image="eoan-preinstalled-server-arm64+raspi3.img.xz"
 base_image_url="${base_url}/${base_image}"
 cache_volume=rpi4-imagebuilder-cache
 outdir="${output:-output}"
-
+defaultimage="docker-rpi4-imagebuilder:19.10"
 
 # This is the linux version we want to use:
 #kernel_branch=rpi-4.19.y
@@ -63,8 +63,8 @@ kernelgitrepo="https://github.com/raspberrypi/linux.git"
 srcdir=$1
 srcdir="${srcdir:-.}"
 
-defaultimage="docker-rpi4-imagebuilder:19.10"
-image="{image:-${defaultimage}}"
+
+image="${image:-${defaultimage}}"
 
 
 #docker_args="-it "
