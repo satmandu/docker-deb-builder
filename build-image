@@ -27,7 +27,7 @@ function abspath {
 
 ###########################################################################
 
-[ "$#" -eq "0" ] && usage
+#[ "$#" -eq "0" ] && usage
 
 while getopts "i:o:h" opt; do
     case $opt in
@@ -40,9 +40,9 @@ while getopts "i:o:h" opt; do
         h)
             usage
             ;;
-#         *)
-#             usage
-#             ;;
+         -h)
+             usage
+             ;;
     esac
 done
 
