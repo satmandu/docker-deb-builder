@@ -91,15 +91,15 @@ mkdir -p $apt_cache/partial
 #env >> /output/environment
 
 echo "Starting local container software installs."
-apt-get -o dir::cache::archives=$apt_cache install lsof -qq -qq
-apt-get -o dir::cache::archives=$apt_cache install xdelta3 -qq
-apt-get -o dir::cache::archives=$apt_cache install vim -qq
-apt-get -o dir::cache::archives=$apt_cache install e2fsprogs -qq
-apt-get -o dir::cache::archives=$apt_cache install qemu-user-static -qq
-apt-get -o dir::cache::archives=$apt_cache install dosfstools -qq
-apt-get -o dir::cache::archives=$apt_cache install libc6-arm64-cross -qq
-apt-get -o dir::cache::archives=$apt_cache install pv -qq
-apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -qq
+apt-get -o dir::cache::archives=$apt_cache install lsof -y &>> /tmp/${FUNCNAME[0]}.install.log 
+apt-get -o dir::cache::archives=$apt_cache install xdelta3 -y &>> /tmp/${FUNCNAME[0]}.install.log 
+apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/${FUNCNAME[0]}.install.log 
+apt-get -o dir::cache::archives=$apt_cache install e2fsprogs -y &>> /tmp/${FUNCNAME[0]}.install.log 
+apt-get -o dir::cache::archives=$apt_cache install qemu-user-static -y &>> /tmp/${FUNCNAME[0]}.install.log 
+apt-get -o dir::cache::archives=$apt_cache install dosfstools -y &>> /tmp/${FUNCNAME[0]}.install.log 
+apt-get -o dir::cache::archives=$apt_cache install libc6-arm64-cross -y &>> /tmp/${FUNCNAME[0]}.install.log 
+apt-get -o dir::cache::archives=$apt_cache install pv -y &>> /tmp/${FUNCNAME[0]}.install.log 
+apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -y &>> /tmp/${FUNCNAME[0]}.install.log 
 #apt-get -o dir::cache::archives=$apt_cache install xdelta3 vim \
 #e2fsprogs qemu-user-static dosfstools \
 #libc6-arm64-cross pv u-boot-tools -qq 2>/dev/null
