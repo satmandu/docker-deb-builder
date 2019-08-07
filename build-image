@@ -229,7 +229,7 @@ if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ] && [ ! $JUSTDEBS ]
     else
     echo "* Base image already extracted."
 fi
-fi
+
 
 [ ! $JUSTDEBS ] && docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
 
