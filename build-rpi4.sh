@@ -1052,7 +1052,8 @@ startfunc
 	# If kernel8.img does not look like u-boot, then assume u-boot
 	# is not being used.
 	file /boot/firmware/kernel8.img | grep -vq "PCX" && \
-	gunzip -c -f ${KERNEL_INSTALLED_PATH} > /boot/firmware/kernel8.img
+	gunzip -c -f ${KERNEL_INSTALLED_PATH} > /boot/firmware/kernel8.img && \
+	cp /boot/firmware/kernel8.img /boot/firmware/kernel8.img.nouboot
 	
 	exit 0
 EOF
