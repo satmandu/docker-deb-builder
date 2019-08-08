@@ -212,7 +212,7 @@ check_for_current_image () {
 if [ ! -f $(abspath ${srcdir})/$base_image ] && [ ! $JUSTDEBS ]; then
         download_base_image
     else
-        check_for_current_image
+        [ ! $JUSTDEBS ] && check_for_current_image
 fi
 
 
