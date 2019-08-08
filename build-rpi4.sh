@@ -673,7 +673,8 @@ startfunc
     # This is needed to enable squashfs - which snapd requires, since otherwise
     # login at boot fails on the ubuntu server image.
     # This also enables the BPF syscall for systemd-journald firewalling
-    [[ -e /source-ro/conform_config-${kernel_branch}.sh ]] && /source-ro/conform_config-${kernel_branch}.sh
+    [[ -e /source-ro/conform_config-${kernel_branch}.sh ]] && { /source-ro/conform_config-${kernel_branch}.sh ;true; } || \
+    /source-ro/conform_config.sh
     yes "" | make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build/ \
     olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
