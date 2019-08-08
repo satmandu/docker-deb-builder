@@ -190,3 +190,4 @@ unset_kernel_config CONFIG_SND_BCM2708_SOC_HIFIBERRY_DIGI
 unset_kernel_config CONFIG_SND_BCM2708_SOC_HIFIBERRY_AMP
 unset_kernel_config CONFIG_RTL8187
 unset_kernel_config CONFIG_SND_BCM2835_SOC_I2S
+unset_kernel_config CONFIG_RTL8192CU 
