@@ -638,9 +638,9 @@ startfunc
     cd $workdir/rpi-linux
         # Get rid of dirty localversion as per https://stackoverflow.com/questions/25090803/linux-kernel-kernel-version-string-appended-with-either-or-dirty
     #touch $workdir/rpi-linux/.scmversion
-    sed -i \
-     "s/scripts\/package/scripts\/package\\\|Makefile\\\|scripts\/setlocalversion/g" \
-     $workdir/rpi-linux/scripts/setlocalversion
+    #sed -i \
+    # "s/scripts\/package/scripts\/package\\\|Makefile\\\|scripts\/setlocalversion/g" \
+    # $workdir/rpi-linux/scripts/setlocalversion
 
     cd $workdir/rpi-linux
     git update-index --refresh &>> /tmp/${FUNCNAME[0]}.compile.log || true
