@@ -221,7 +221,7 @@ local_check () {
 }
 
 
-arbitrary_wait () {
+arbitrary_wait_here () {
     # To stop here "rm /flag/done.ok_to_continue_after_here".
     # Arbitrary build pause for debugging
     if [ ! -f /flag/done.ok_to_continue_after_here ]; then
@@ -686,11 +686,14 @@ startfunc
     
     echo "* Making $KERNEL_VERS kernel debs."
     cd $workdir/rpi-linux
-    debcmd="make \
+    [[ ! $BUILDNATIVE ]] && debcmd="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    -j$(($(nproc) + 1)) O=$workdir/kernel-build \
+    -j$(($(nproc) + 1)) c \
     bindeb-pkg" 
     
+    [[ $BUILDNATIVE ]] && waitfor "image_apt_installs"
+    arbitrary_wait_here
+    [[ $BUILDNATIVE ]] && debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) bindeb-pkg"'
 
     echo $debcmd
     $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
@@ -704,7 +707,6 @@ kernel_debs () {
 startfunc
 
    # Don't remake debs if they already exist in output.
-   arbitrary_wait
    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
    if test -n "$(find $apt_cache -maxdepth 1 -name linux-image-*${KERNEL_VERS}* -print -quit)"
    then
@@ -1265,8 +1267,8 @@ touch /flag/done.ok_to_umount_image_after_build
 # For debugging.
 touch /flag/done.ok_to_continue_after_mount_image
 
-# Arbitrary pause for debugging.
-touch /flag/done.ok_to_continue_after_here
+# Arbitrary_wait pause for debugging.
+[[ ! $ARBITRARY_WAIT ]] && touch /flag/done.ok_to_continue_after_here
 
 # Delete this by connecting to the container using a shell if you want to 
 # debug the container before the container is exited.
@@ -1280,10 +1282,10 @@ touch /flag/done.ok_to_exit_container_after_build
 # So we will work around it.
 #inotify_touch_events &
 
-[[ ! $JUSTDEBS ]] && utility_scripts &
-[[ ! $JUSTDEBS ]] && base_image_check
-[[ ! $JUSTDEBS ]] && image_extract &
-[[ ! $JUSTDEBS ]] && image_mount &
+[[ [[ $BUILDNATIVE ]] || [[ ! $JUSTDEBS ]] ]] && utility_scripts &
+[[ [[ $BUILDNATIVE ]] || [[ ! $JUSTDEBS ]] ]] && base_image_check
+[[ [[ $BUILDNATIVE ]] || [[ ! $JUSTDEBS ]] ]] && image_extract &
+[[ [[ $BUILDNATIVE ]] || [[ ! $JUSTDEBS ]] ]] && image_mount &
 [[ ! $JUSTDEBS ]] && rpi_firmware &
 [[ ! $JUSTDEBS ]] && armstub8-gic &
 [[ ! $JUSTDEBS ]] && non-free_firmware & 
@@ -1296,9 +1298,9 @@ kernelbuild_setup &
 [[ ! $JUSTDEBS ]] && first_boot_scripts_setup &
 [[ ! $JUSTDEBS ]] && added_scripts &
 waitforstart "kernelbuild_setup" && kernel_debs &
-[[ ! $JUSTDEBS ]] && arm64_chroot_setup &
-[[ ! $JUSTDEBS ]] && image_apt_installs &
-[[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
+[[ [[ $BUILDNATIVE ]] || [[ ! $JUSTDEBS ]] ]] && arm64_chroot_setup &
+[[ [[ $BUILDNATIVE ]] || [[ ! $JUSTDEBS ]] ]] && image_apt_installs &
+[[ [[ $BUILDNATIVE ]] || [[ ! $JUSTDEBS ]] ]] && spinnerwait image_apt_installs
 [[ ! $JUSTDEBS ]] && kernel_deb_install
 [[ ! $JUSTDEBS ]] && image_and_chroot_cleanup
 [[ ! $JUSTDEBS ]] && image_unmount
