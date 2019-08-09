@@ -265,10 +265,10 @@ docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo
 [ -n "$DEBUG" ] && docker_args+="-e DEBUG=${DEBUG} "
 
 # Is the build set to be done in a native chroot?
-[ -n "$BUILDNATIVE" ] && docker_args+="-e $BUILDNATIVE=${$BUILDNATIVE} "
+[ -n "$BUILDNATIVE" ] && docker_args+="-e BUILDNATIVE=${$BUILDNATIVE} "
 
 # Should we enable the arbitrary wait flag?
-[ -n "$ARBITRARY_WAIT" ] && docker_args+="-e $ARBITRARY_WAIT=${$ARBITRARY_WAIT} "
+[ -n "$ARBITRARY_WAIT" ] && docker_args+="-e ARBITRARY_WAIT=${$ARBITRARY_WAIT} "
 
 
 
