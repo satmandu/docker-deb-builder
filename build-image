@@ -209,15 +209,15 @@ check_for_current_image () {
 }
 
 
-if [ ! -f $(abspath ${srcdir})/$base_image ] && [ { [ -n $BUILDNATIVE ] -o [ ! -n $JUSTDEBS ] } ]; then
+if [ ! -f $(abspath ${srcdir})/$base_image ] && [ { [ -n $BUILDNATIVE ] || [ ! -n $JUSTDEBS ] } ]; then
         download_base_image
     else
-        [ { [ -n $BUILDNATIVE ] -o [ ! -n $JUSTDEBS ] } ] && check_for_current_image
+        [ { [ -n $BUILDNATIVE ] || [ ! -n $JUSTDEBS ] } ] && check_for_current_image
 fi
 
 
 
-if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ] && [ { [ -n $BUILDNATIVE ] -o [ ! -n $JUSTDEBS ] } ]
+if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ] && [ { [ -n $BUILDNATIVE ] || [ ! -n $JUSTDEBS ] } ]
     then 
         cd $(abspath ${srcdir})
         echo "* Extracting $(abspath ${srcdir})/${base_image%.xz} ."
@@ -231,7 +231,7 @@ if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ] && [ { [ -n $BUILDNATIVE ] 
 fi
 
 
-[ { [ -n $BUILDNATIVE ] -o [ ! -n $JUSTDEBS ] } ] && docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
+[ { [ -n $BUILDNATIVE ] || [ ! -n $JUSTDEBS ] } ] && docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
 
 # For ccache
 #docker_args+="-e CCACHE_DIR=/ccache --volumes-from ccache -v ccache:/ccache "
@@ -247,7 +247,7 @@ docker_args+="-e apt_cache=/cache/apt_cache "
 docker_args+="-e workdir=/build/source "
 
 # Send in base image environment variables:
-[ { [ -n $BUILDNATIVE ] -o [ ! -n $JUSTDEBS ] } ] && docker_args+="-e base_url=${base_url} -e base_image=${base_image} "
+[ { [ -n $BUILDNATIVE ] || [ ! -n $JUSTDEBS ] } ] && docker_args+="-e base_url=${base_url} -e base_image=${base_image} "
 
 #Send in linux repo environment variables:
 docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo} "
