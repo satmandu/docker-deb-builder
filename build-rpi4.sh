@@ -1282,10 +1282,10 @@ touch /flag/done.ok_to_exit_container_after_build
 # So we will work around it.
 #inotify_touch_events &
 
-[[ $BUILDNATIVE  || ! $JUSTDEBS  ]] && utility_scripts &
-[[ [[ $BUILDNATIVE ]] -o [[ ! $JUSTDEBS ]] ]] && base_image_check
-[[ [[ $BUILDNATIVE ]] -o [[ ! $JUSTDEBS ]] ]] && image_extract &
-[[ [[ $BUILDNATIVE ]] -o [[ ! $JUSTDEBS ]] ]] && image_mount &
+[[ $BUILDNATIVE || ! $JUSTDEBS  ]] && utility_scripts &
+[[ $BUILDNATIVE || ! $JUSTDEBS ]] && base_image_check
+[[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_extract &
+[[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_mount &
 [[ ! $JUSTDEBS ]] && rpi_firmware &
 [[ ! $JUSTDEBS ]] && armstub8-gic &
 [[ ! $JUSTDEBS ]] && non-free_firmware & 
@@ -1298,9 +1298,9 @@ kernelbuild_setup &
 [[ ! $JUSTDEBS ]] && first_boot_scripts_setup &
 [[ ! $JUSTDEBS ]] && added_scripts &
 waitforstart "kernelbuild_setup" && kernel_debs &
-[[ [[ $BUILDNATIVE ]] -o [[ ! $JUSTDEBS ]] ]] && arm64_chroot_setup &
-[[ [[ $BUILDNATIVE ]] -o [[ ! $JUSTDEBS ]] ]] && image_apt_installs &
-[[ [[ $BUILDNATIVE ]] -o [[ ! $JUSTDEBS ]] ]] && spinnerwait image_apt_installs
+[[ $BUILDNATIVE || ! $JUSTDEBS ]] && arm64_chroot_setup &
+[[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_apt_installs &
+[[ $BUILDNATIVE || ! $JUSTDEBS ]] && spinnerwait image_apt_installs
 [[ ! $JUSTDEBS ]] && kernel_deb_install
 [[ ! $JUSTDEBS ]] && image_and_chroot_cleanup
 [[ ! $JUSTDEBS ]] && image_unmount
