@@ -1282,7 +1282,7 @@ touch /flag/done.ok_to_exit_container_after_build
 # So we will work around it.
 #inotify_touch_events &
 
-[[ [[ $BUILDNATIVE ]] -o [[ ! $JUSTDEBS ]] ]] && utility_scripts &
+[[ { [[ $BUILDNATIVE ]] || [[ ! $JUSTDEBS ]] } ]] && utility_scripts &
 [[ [[ $BUILDNATIVE ]] -o [[ ! $JUSTDEBS ]] ]] && base_image_check
 [[ [[ $BUILDNATIVE ]] -o [[ ! $JUSTDEBS ]] ]] && image_extract &
 [[ [[ $BUILDNATIVE ]] -o [[ ! $JUSTDEBS ]] ]] && image_mount &
