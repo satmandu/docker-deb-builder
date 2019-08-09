@@ -19,13 +19,14 @@ new_image="eoan-preinstalled-server-arm64+raspi4"
 # Note that these only work for the chroot commands.
 silence_apt_flags="-o Dpkg::Use-Pty=0 -qq < /dev/null > /dev/null "
 silence_apt_update_flags="-o Dpkg::Use-Pty=0 < /dev/null > /dev/null "
-image_compressors=("lz4" "xz")
-[[ $NOXZ ]] && image_compressors=("lz4")
+image_compressors=("lz4")
+[[ $XZ ]] && image_compressors=("lz4" "xz")
 
 # Let's see if the inotify issues go away by moving function status
 #  files onto /build.
 mkdir /flag
 echo $BASHPID > /flag/main
+mainPID=$BASHPID
 
 # Quick build shell exit script
 cat <<-EOF> /usr/bin/killme
@@ -50,7 +51,7 @@ COLUMNS="${COLS:-80}"
 
 
 # Set Time Stamp
-now=`date +"%m_%d_%Y_%H%M%Z"`
+now=$(date +"%m_%d_%Y_%H%M%Z")
 
 # Create debug output folder.
 [[ $DEBUG ]] && ( mkdir -p /output/$now/ ; chown $USER:$GROUP /output/$now/ )
@@ -89,12 +90,240 @@ mkdir -p $apt_cache/partial
 
 #env >> /output/environment
 
+echo "Starting local container software installs."
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install lsof -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install xdelta3 -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install e2fsprogs -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install qemu-user-static -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install dosfstools -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install libc6-arm64-cross -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install pv -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/main.install.log 
+echo -e "Performing cache volume apt autoclean.\n\r"
+apt-get -o dir::cache::archives=$apt_cache autoclean -y -qq &>> /tmp/main.install.log 
 
-apt-get -o dir::cache::archives=$apt_cache install lsof xdelta3 vim \
-e2fsprogs qemu-user-static \
-libc6-arm64-cross pv u-boot-tools -qq 2>/dev/null
+#apt-get -o dir::cache::archives=$apt_cache install xdelta3 vim \
+#e2fsprogs qemu-user-static dosfstools \
+#libc6-arm64-cross pv u-boot-tools -qq 2>/dev/null
 
-# Utility script
+
+
+
+# Utility Functions
+
+function abspath {
+    echo $(cd "$1" && pwd)
+}
+
+# Via https://superuser.com/a/917073
+wait_file() {
+  local file="$1"; shift
+  local wait_seconds="${1:-10}"; shift # 10 seconds as default timeout
+
+  until test $((wait_seconds--)) -eq 0 -o -f "$file" ; do sleep 1; done
+
+  ((++wait_seconds))
+}
+
+
+spinnerwait () {
+        local start_timeout=10000
+        if [[ -f "/flag/start.spinnerwait" ]]
+        then
+            echo "${1} waiting" >> /tmp/spinnerwait
+            wait_file "/flag/done.spinnerwait" $start_timeout
+            echo "${1} done waiting" >> /tmp/spinnerwait
+            rm -f "/flag/done.spinnerwait"
+        fi
+startfunc
+        echo "start.${1}" >> /tmp/spinnerwait
+        wait_file "/flag/start.${1}" $start_timeout || \
+        echo "${1} didn't start."
+        echo "Starting ${1}" >> /tmp/spinnerwait
+        local job_id=$(cat /flag/start.${1})
+        echo "Waiting for ${job_id} to end." >> /tmp/spinnerwait
+        tput sc
+        while (pgrep -cxP ${job_id} &>/dev/null)
+        do for s in / - \\ \|
+            do 
+            tput rc
+            printf "%${COLUMNS}s\r" "${1} .$s"
+            sleep .1
+            done
+        done
+        echo "${job_id} done." >> /tmp/spinnerwait
+endfunc
+}
+
+
+waitfor () {
+    local proc_name=${FUNCNAME[1]}
+    [[ -z ${proc_name} ]] && proc_name=main
+    local waitforit
+    # waitforit file is written in the function "endfunc"
+    touch /flag/wait.${proc_name}_for_${1}
+    printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${1} [/] "
+    local start_timeout=10000
+    wait_file "/flag/done.${1}" $start_timeout
+    printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${1} [X] " && \
+    rm -f /flag/wait.${proc_name}_for_${1}
+}
+
+waitforstart () {
+    local start_timeout=10000
+    wait_file "/flag/start.${1}" $start_timeout
+}
+
+
+startfunc () {
+    local proc_name=${FUNCNAME[1]}
+    [[ -z ${proc_name} ]] && proc_name=main
+    echo $BASHPID > /flag/start.${proc_name}
+    [[ ! -e /flag/start.${proc_name} ]] && touch /flag/start.${proc_name} || true
+    if [ ! "${proc_name}" == "spinnerwait" ] 
+        then printf "%${COLUMNS}s\n" "Started: ${proc_name} [ ] "
+    fi
+    
+}
+
+endfunc () {
+    local proc_name=${FUNCNAME[1]}
+    [[ -z ${proc_name} ]] && proc_name=main
+   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.compile.log ]] && rm /tmp/${proc_name}.compile.log || true
+   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.install.log ]] && rm /tmp/${proc_name}.install.log || true
+   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.git.log ]] && rm /tmp/${proc_name}.git.log || true
+   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.cleanup.log ]] && rm /tmp/${proc_name}.cleanup.log || true
+    mv -f /flag/start.${proc_name} /flag/done.${proc_name}
+    if [ ! "${proc_name}" == "spinnerwait" ]
+        then printf "%${COLUMNS}s\n" "Done: ${proc_name} [X] "
+    fi
+}
+
+
+git_check () {
+    local git_base="$1"
+    local git_branch="$2"
+    [ ! -z "$2" ] || git_branch="master"
+    local git_output=$(git ls-remote ${git_base} refs/heads/${git_branch})
+    local git_hash
+    local discard 
+    read git_hash discard< <(echo "$git_output")
+    echo $git_hash
+}
+
+local_check () {
+    local git_path="$1"
+    local git_branch="$2"
+    [ ! -z "$2" ] || git_branch="HEAD"
+    local git_output=$(git -C $git_path rev-parse ${git_branch} 2>/dev/null)
+    echo $git_output
+}
+
+
+arbitrary_wait () {
+    # To stop here "rm /flag/done.ok_to_continue_after_here".
+    # Arbitrary build pause for debugging
+    if [ ! -f /flag/done.ok_to_continue_after_here ]; then
+        echo "** Build Paused. **"
+        echo 'Type in "touch /flag/done.ok_to_continue_after_here"'
+        echo "in a shell into this container to continue."
+    fi 
+    waitfor "ok_to_continue_after_here"
+}
+
+
+# Standalone get with git function
+# get_software_src () {
+# startfunc
+# 
+#     git_get "gitrepo" "local_path" "git_branch"
+# 
+# endfunc
+# }
+
+git_get () {
+    local proc_name=${FUNCNAME[1]}
+    [[ -z ${proc_name} ]] && proc_name=main
+    local git_repo="$1"
+    local local_path="$2"
+    local git_branch="$3"
+    [ ! -z "$3" ] || git_branch="master"
+    mkdir -p $src_cache/$local_path
+    mkdir -p $workdir/$local_path
+    
+    local remote_git=$(git_check "$git_repo" "$git_branch")
+    local local_git=$(local_check "$src_cache/$local_path" "$git_branch")
+    
+    [ -z $git_branch ] && git_extra_flags= || git_extra_flags=" -b $git_branch "
+    local git_flags=" --quiet --depth=1 "
+    local clone_flags=" $git_repo $git_extra_flags "
+    local pull_flags="origin/$git_branch"
+    #echo -e "${proc_name}\nremote hash: $remote_git\nlocal hash: $local_git"
+      
+    if [ ! "$remote_git" = "$local_git" ]
+        then
+            # Does the local repo even exist?
+            if [ ! -d "$src_cache/$local_path/.git" ] 
+                then
+                    recreate_git $git_repo $local_path $git_branch
+            fi
+            # Is the requested branch the same as the local saved branch?
+            local local_branch=
+            local local_branch=$(git -C $src_cache/$local_path \
+            rev-parse --abbrev-ref HEAD || true)
+            # Set HEAD = master
+            [[ "$local_branch" = "HEAD" ]] && local_branch="master"
+            if [[ "$local_branch" != "$git_branch" ]]
+                then 
+                    echo "Kernel git branch mismatch!"
+                    printf "%${COLUMNS}s\n" "${proc_name} refreshing cache files from git."
+                    cd $src_cache/$local_path
+                    git checkout $git_branch || recreate_git $git_repo \
+                    $local_path $git_branch
+                else
+                    echo -e "${proc_name}\nremote hash: \
+                    $remote_git\nlocal hash:$local_git\n"
+                    printf "%${COLUMNS}s\n" "${proc_name} refreshing cache files from git."
+            fi
+            
+            
+            # sync to local branch
+            cd $src_cache/$local_path
+            git fetch --all $git_flags &>> /tmp/${proc_name}.git.log || true
+            git reset --hard $pull_flags --quiet 2>> /tmp/${proc_name}.git.log
+        else
+            echo -e "${proc_name}\nremote hash: $remote_git\nlocal hash: \
+            $local_git\n\r${proc_name} getting files from cache volume. 😎\n"
+    fi
+    cd $src_cache/$local_path 
+    last_commit=$(git log --graph \
+    --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
+    %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
+    --quiet 2> /dev/null)
+    echo -e "*${proc_name} Last Commits:\n$last_commit\n"
+    rsync -a $src_cache/$local_path $workdir/
+}
+
+recreate_git () {
+#startfunc
+    local git_repo="$1"
+    local local_path="$2"
+    local git_branch="$3"
+    local git_flags=" --quiet --depth=1 "
+    local git_extra_flags=" -b $git_branch "
+    local clone_flags=" $git_repo $git_extra_flags "
+    rm -rf $src_cache/$local_path
+    cd $src_cache
+    git clone $git_flags $clone_flags $local_path \
+    &>> /tmp/${FUNCNAME[2]}.git.log || true
+#endfunc
+}
+
+# Main functions
+
+utility_scripts () {
+startfunc
 # Apt concurrency manager wrapper via
 # https://askubuntu.com/posts/375031/revisions
 cat <<'EOF'> /usr/bin/chroot-apt-wrapper
@@ -141,304 +370,7 @@ done
 EOF
 chmod +x /usr/bin/chroot-dpkg-wrapper
 
-
-
-# Utility Functions
-
-function abspath {
-    echo $(cd "$1" && pwd)
-}
-
-# Via https://superuser.com/a/917073
-wait_file() {
-  local file="$1"; shift
-  local wait_seconds="${1:-10}"; shift # 10 seconds as default timeout
-
-  until test $((wait_seconds--)) -eq 0 -o -f "$file" ; do sleep 1; done
-
-  ((++wait_seconds))
-}
-
-
-spinnerwait () {
-        local start_timeout=10000
-        if [[ -f "/flag/start.spinnerwait" ]]
-        then
-            echo "${1} waiting" >> /tmp/spinnerwait
-            wait_file "/flag/done.spinnerwait" $start_timeout
-            echo "${1} done waiting" >> /tmp/spinnerwait
-            rm -f "/flag/done.spinnerwait"
-        fi
-startfunc
-        echo "start.${1}" >> /tmp/spinnerwait
-        wait_file "/flag/start.${1}" $start_timeout || \
-        echo "${1} didn't start."
-        echo "Starting ${1}" >> /tmp/spinnerwait
-        local job_id=`cat /flag/start.${1}`
-        echo "Waiting for ${job_id} to end." >> /tmp/spinnerwait
-        tput sc
-        while (pgrep -cxP ${job_id} &>/dev/null)
-        do for s in / - \\ \|
-            do 
-            tput rc
-            printf "%${COLUMNS}s\r" "${1} .$s"
-            sleep .1
-            done
-        done
-        echo "${job_id} done." >> /tmp/spinnerwait
-endfunc
-}
-
-
-waitfor () {
-    local waitforit
-    # waitforit file is written in the function "endfunc"
-    touch /flag/wait.${FUNCNAME[1]}_for_${1}
-    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} waits for: ${1} [/] "
-    local start_timeout=10000
-    wait_file "/flag/done.${1}" $start_timeout
-    printf "%${COLUMNS}s\r\n\r" "${FUNCNAME[1]} noticed: ${1} [X] " && \
-    rm -f /flag/wait.${FUNCNAME[1]}_for_${1}
-}
-
-waitforstart () {
-    local start_timeout=10000
-    wait_file "/flag/start.${1}" $start_timeout
-}
-
-
-startfunc () {
-    echo $BASHPID > /flag/start.${FUNCNAME[1]}
-    if [ ! "${FUNCNAME[1]}" == "spinnerwait" ] 
-        then printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[1]} [ ] "
-    fi
-    
-}
-
-endfunc () {
-    [[ -f /tmp/${FUNCNAME[1]}.compile.log ]] && rm /tmp/${FUNCNAME[1]}.compile.log || true
-    [[ -f /tmp/${FUNCNAME[1]}.install.log ]] && rm /tmp/${FUNCNAME[1]}.install.log || true
-    mv -f /flag/start.${FUNCNAME[1]} /flag/done.${FUNCNAME[1]}
-    if [ ! "${FUNCNAME[1]}" == "spinnerwait" ]
-        then printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[1]} [X] "
-    fi
-}
-
-
-git_check () {
-    local git_base="$1"
-    local git_branch="$2"
-    [ ! -z "$2" ] || git_branch="master"
-    local git_output=`git ls-remote ${git_base} refs/heads/${git_branch}`
-    local git_hash
-    local discard 
-    read git_hash discard< <(echo "$git_output")
-    echo $git_hash
-}
-
-local_check () {
-    local git_path="$1"
-    local git_branch="$2"
-    [ ! -z "$2" ] || git_branch="HEAD"
-    local git_output=`git -C $git_path rev-parse ${git_branch} 2>/dev/null`
-    echo $git_output
-}
-
-
-arbitrary_wait () {
-    # To stop here "rm /flag/done.ok_to_continue_after_here".
-    # Arbitrary build pause for debugging
-    if [ ! -f /flag/done.ok_to_continue_after_here ]; then
-        echo "** Build Paused. **"
-        echo 'Type in "touch /flag/done.ok_to_continue_after_here"'
-        echo "in a shell into this container to continue."
-    fi 
-    waitfor "ok_to_continue_after_here"
-}
-
-
-# Standalone get with git function
-# get_software_src () {
-# startfunc
-# 
-#     git_get "gitrepo" "local_path" "git_branch"
-# 
-# endfunc
-# }
-
-git_get () {
-    local git_repo="$1"
-    local local_path="$2"
-    local git_branch="$3"
-    [ ! -z "$3" ] || git_branch="master"
-    mkdir -p $src_cache/$local_path
-    mkdir -p $workdir/$local_path
-    
-    local remote_git=$(git_check "$git_repo" "$git_branch")
-    local local_git=$(local_check "$src_cache/$local_path" "$git_branch")
-    
-    [ -z $git_branch ] && git_extra_flags= || git_extra_flags=" -b $git_branch "
-    local git_flags=" --quiet --depth=1 "
-    local clone_flags=" $git_repo $git_extra_flags "
-    local pull_flags="origin/$git_branch"
-    echo -e "${FUNCNAME[1]}\nremote hash: $remote_git\nlocal hash: $local_git"
-      
-    if [ ! "$remote_git" = "$local_git" ]
-        then
-            printf "%${COLUMNS}s\n"  "${FUNCNAME[1]} refreshing cache files from git."
-            # Does the local repo even exist?
-            if [ ! -d "$src_cache/$local_path/.git" ] 
-                then
-                    recreate_git $git_repo $local_path $git_branch
-            fi
-            # Is the requested branch the same as the local saved branch?
-            local local_branch=`git -C $src_cache/$local_path \
-            rev-parse --abbrev-ref HEAD` || local_branch=
-            # Set HEAD = master
-            [[ "$local_branch" = "HEAD" ]] && local_branch="master"
-            if [[ "$local_branch" != "$git_branch" ]]
-                then 
-                    echo "Branch mismatch!"
-                    # Be safe.
-                    recreate_git $git_repo $local_path $git_branch
-            fi
-            # sync to local branch
-            cd $src_cache/$local_path
-            git fetch --all $git_flags &>> /tmp/${FUNCNAME[1]}.git.log || true
-            git reset --hard $pull_flags --quiet 2>> /tmp/${FUNCNAME[1]}.git.log
-        else
-            echo -e "${FUNCNAME[1]} getting files from cache volume. 😎\n"
-    fi
-    cd $src_cache/$local_path 
-    last_commit=`git log --graph \
-    --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
-    %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
-    --quiet 2> /dev/null`
-    echo -e "*${FUNCNAME[1]} Last Commits:\n$last_commit\n"
-    rsync -a $src_cache/$local_path $workdir/
-}
-
-recreate_git () {
-#startfunc
-    local git_repo="$1"
-    local local_path="$2"
-    local git_branch="$3"
-    local git_flags=" --quiet --depth=1 "
-    local git_extra_flags=" -b $git_branch "
-    local clone_flags=" $git_repo $git_extra_flags "
-    rm -rf $src_cache/$local_path
-    cd $src_cache
-    git clone $git_flags $clone_flags $local_path \
-    &>> /tmp/${FUNCNAME[2]}.git.log || true
-#endfunc
-}
-
-# Main functions
-
-download_base_image () {
-startfunc
-    echo "* Downloading ${base_image} ."
-    wget_fail=0
-    wget -nv ${base_image_url} -O ${base_image} || wget_fail=1
-endfunc
-}
-
-base_image_check () {
-startfunc
-    echo "* Checking for downloaded ${base_image} ."
-    cd $workdir
-    if [ ! -f /${base_image} ]; then
-        download_base_image
-    else
-        echo "* Downloaded ${base_image} exists."
-    fi
-    # Symlink existing image
-    if [ ! -f $workdir/${base_image} ]; then 
-        ln -s /$base_image $workdir/
-    fi   
-endfunc
-}
-
-image_extract_and_mount () {
-    waitfor "base_image_check"
-startfunc 
-    if [[ -f "/source-ro/${base_image%.xz}" ]] 
-    then
-    cp "/source-ro/${base_image%.xz}" $workdir/$new_image.img
-    [[ $DELTA ]] && (ln -s "/source-ro/${base_image%.xz}" $workdir/old_image.img &)
-    else
-    local size
-    local filename   
-    echo "* Extracting: ${base_image} to ${new_image}.img"
-    read size filename < <(ls -sH ${workdir}/${base_image})
-    #echo $size
-    #size="620M"
-    #echo "pv -cfpterb -s ${size} -N "xzcat:${base_image}" $workdir/$base_image"
-    pvcmd="pv -s ${size} -cfperb -N "xzcat:${base_image}" $workdir/$base_image"
-    echo $pvcmd
-    $pvcmd | xzcat > $workdir/$new_image.img
-    [[ $DELTA ]] && (cp $workdir/$new_image.img $workdir/old_image.img &)
-    fi
-    [[ -f "/output/loop_device" ]] && ( old_loop_device=`cat /output/loop_device` ; \
-    dmsetup remove -f /dev/mapper/${old_loop_device}p2 &> /dev/null || true; \
-    dmsetup remove -f /dev/mapper/${old_loop_device}p1 &> /dev/null || true; \
-    losetup -d /dev/${old_loop_device} &> /dev/null || true)
-    #echo "* Increasing image size by 200M"
-    #dd if=/dev/zero bs=1M count=200 >> $workdir/$new_image.img
-    echo "* Clearing existing loopback mounts."
-    # This is dangerous as this may not be the relevant loop device.
-    #losetup -d /dev/loop0 &>/dev/null || true
-    #dmsetup remove_all
-    dmsetup info
-    losetup -a
-    cd $workdir
-    echo "* Mounting: ${new_image}.img"
-    
-    loop_device=$(kpartx -avs ${new_image}.img \
-    | sed -n 's/\(^.*map\ \)// ; s/p1\ (.*//p')
-    echo $loop_device >> /tmp/loop_device
-    echo $loop_device > /output/loop_device
-    #e2fsck -f /dev/loop0p2
-    #resize2fs /dev/loop0p2
-    
-    # To stop here "rm /flag/done.ok_to_continue_after_mount_image".
-    if [ ! -f /flag/done.ok_to_continue_after_mount_image ]; then
-        echo "** Image mount done & container paused. **"
-        echo 'Type in "/flag/done.ok_to_continue_after_mount_image"'
-        echo "in a shell into this container to continue."
-    fi 
-    waitfor "ok_to_continue_after_mount_image"
-    
-    mount /dev/mapper/${loop_device}p2 /mnt
-    mount /dev/mapper/${loop_device}p1 /mnt/boot/firmware
-    # Guestmount is at least an order of magnitude slower than using loopback device.
-    #guestmount -a ${new_image}.img -m /dev/sda2 -m /dev/sda1:/boot/firmware --rw /mnt -o dev
-    
-endfunc
-}
-
-arm64_chroot_setup () {
-    waitfor "image_extract_and_mount"
-startfunc    
-    echo "* Setup ARM64 chroot"
-    cp /usr/bin/qemu-aarch64-static /mnt/usr/bin
-    
-
-    mount -t proc proc     /mnt/proc/
-#    mount -t sysfs sys     /mnt/sys/
-#    mount -o bind /dev     /mnt/dev/
-    mount -o bind /dev/pts /mnt/dev/pts
-    mount --bind $apt_cache /mnt/var/cache/apt
- #   chmod -R 777 /mnt/var/lib/apt/
- #   setfacl -R -m u:_apt:rwx /mnt/var/lib/apt/ 
-    mkdir -p /mnt/ccache || ls -aFl /mnt
-    mount --bind $CCACHE_DIR /mnt/ccache
-    mount --bind /run /mnt/run
-    mkdir -p /run/systemd/resolve
-    cp /etc/resolv.conf /run/systemd/resolve/stub-resolv.conf
-    rsync -avh --devices --specials /run/systemd/resolve /mnt/run/systemd > /dev/null
-    
-    
+waitfor "image_mount"
     # Apt concurrency manager wrapper via
     # https://askubuntu.com/posts/375031/revisions
     mkdir -p /mnt/usr/local/bin
@@ -486,8 +418,121 @@ done
 EOF
 chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
 
+endfunc
+}
 
 
+
+
+download_base_image () {
+startfunc
+    echo "* Downloading ${base_image} ."
+    wget_fail=0
+    wget -nv ${base_image_url} -O ${base_image} || wget_fail=1
+endfunc
+}
+
+base_image_check () {
+startfunc
+    echo "* Checking for downloaded ${base_image} ."
+    cd $workdir
+    if [ ! -f /${base_image} ]; then
+        download_base_image
+    else
+        echo "* Downloaded ${base_image} exists."
+    fi
+    # Symlink existing image
+    if [ ! -f $workdir/${base_image} ]; then 
+        ln -s /$base_image $workdir/
+    fi   
+endfunc
+}
+
+image_extract () {
+    waitfor "base_image_check"
+startfunc 
+    if [[ -f "/source-ro/${base_image%.xz}" ]] 
+        then
+            cp "/source-ro/${base_image%.xz}" $workdir/$new_image.img
+        [[ $DELTA ]] && (ln -s "/source-ro/${base_image%.xz}" \
+            $workdir/old_image.img &)
+        else
+            local size
+            local filename   
+            echo "* Extracting: ${base_image} to ${new_image}.img"
+            read size filename < <(ls -sH ${workdir}/${base_image})
+            pvcmd="pv -s ${size} -cfperb -N "xzcat:${base_image}" $workdir/$base_image"
+            echo $pvcmd
+            $pvcmd | xzcat > $workdir/$new_image.img
+        [[ $DELTA ]] && (cp $workdir/$new_image.img $workdir/old_image.img &)
+    fi
+
+endfunc
+}
+
+image_mount () {
+    waitfor "image_extract"
+startfunc 
+    [[ -f "/output/loop_device" ]] && ( old_loop_device=$(cat /output/loop_device) ; \
+    dmsetup remove -f /dev/mapper/${old_loop_device}p2 &> /dev/null || true; \
+    dmsetup remove -f /dev/mapper/${old_loop_device}p1 &> /dev/null || true; \
+    losetup -d /dev/${old_loop_device} &> /dev/null || true)
+    #echo "* Increasing image size by 200M"
+    #dd if=/dev/zero bs=1M count=200 >> $workdir/$new_image.img
+    echo "* Clearing existing loopback mounts."
+    # This is dangerous as this may not be the relevant loop device.
+    #losetup -d /dev/loop0 &>/dev/null || true
+    #dmsetup remove_all
+    dmsetup info
+    losetup -a
+    cd $workdir
+    echo "* Mounting: ${new_image}.img"
+    
+    loop_device=$(kpartx -avs ${new_image}.img \
+    | sed -n 's/\(^.*map\ \)// ; s/p1\ (.*//p')
+    echo $loop_device >> /tmp/loop_device
+    echo $loop_device > /output/loop_device
+    #e2fsck -f /dev/loop0p2
+    #resize2fs /dev/loop0p2
+    
+    # To stop here "rm /flag/done.ok_to_continue_after_mount_image".
+    if [ ! -f /flag/done.ok_to_continue_after_mount_image ]; then
+        echo "** Image mount done & container paused. **"
+        echo 'Type in "/flag/done.ok_to_continue_after_mount_image"'
+        echo "in a shell into this container to continue."
+    fi 
+    waitfor "ok_to_continue_after_mount_image"
+    
+    mount /dev/mapper/${loop_device}p2 /mnt
+    mount /dev/mapper/${loop_device}p1 /mnt/boot/firmware
+    # Guestmount is at least an order of magnitude slower than using loopback device.
+    #guestmount -a ${new_image}.img -m /dev/sda2 -m /dev/sda1:/boot/firmware --rw /mnt -o dev
+    
+endfunc
+}
+
+arm64_chroot_setup () {
+    waitfor "image_mount"
+startfunc    
+    echo "* Setup ARM64 chroot"
+    cp /usr/bin/qemu-aarch64-static /mnt/usr/bin
+    
+
+    mount -t proc proc     /mnt/proc/
+#    mount -t sysfs sys     /mnt/sys/
+#    mount -o bind /dev     /mnt/dev/
+    mount -o bind /dev/pts /mnt/dev/pts
+    mount --bind $apt_cache /mnt/var/cache/apt
+ #   chmod -R 777 /mnt/var/lib/apt/
+ #   setfacl -R -m u:_apt:rwx /mnt/var/lib/apt/ 
+    mkdir -p /mnt/ccache || ls -aFl /mnt
+    mount --bind $CCACHE_DIR /mnt/ccache
+    mount --bind /run /mnt/run
+    mkdir -p /run/systemd/resolve
+    cp /etc/resolv.conf /run/systemd/resolve/stub-resolv.conf
+    rsync -avh --devices --specials /run/systemd/resolve /mnt/run/systemd > /dev/null
+    
+    
     mkdir -p /mnt/build
     mount -o bind /build /mnt/build
     echo "* ARM64 chroot setup is complete."  
@@ -496,6 +541,7 @@ endfunc
 
 image_apt_installs () {
         waitfor "arm64_chroot_setup"
+        waitfor "utility_scripts"
 startfunc    
     echo "* Starting apt update."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
@@ -553,7 +599,7 @@ endfunc
 
 rpi_firmware () {
     git_get "https://github.com/Hexxeh/rpi-firmware" "rpi-firmware"
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
     cd $workdir/rpi-firmware
     echo "* Installing current RPI firmware."
@@ -569,32 +615,32 @@ endfunc
 
 kernelbuild_setup () {
     git_get "$kernelgitrepo" "rpi-linux" "$kernel_branch"
-    majorversion=`grep VERSION $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'`
-    patchlevel=`grep PATCHLEVEL $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'`
-    sublevel=`grep SUBLEVEL $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'`
-    extraversion=`grep EXTRAVERSION $src_cache/rpi-linux/Makefile | \
-    head -1 | awk -F ' = ' '{print $2}'`
+    majorversion=$(grep VERSION $src_cache/rpi-linux/Makefile | \
+    head -1 | awk -F ' = ' '{print $2}')
+    patchlevel=$(grep PATCHLEVEL $src_cache/rpi-linux/Makefile | \
+    head -1 | awk -F ' = ' '{print $2}')
+    sublevel=$(grep SUBLEVEL $src_cache/rpi-linux/Makefile | \
+    head -1 | awk -F ' = ' '{print $2}')
+    extraversion=$(grep EXTRAVERSION $src_cache/rpi-linux/Makefile | \
+    head -1 | awk -F ' = ' '{print $2}')
     extraversion_nohyphen="${extraversion//-}"
-    CONFIG_LOCALVERSION=`grep CONFIG_LOCALVERSION \
+    CONFIG_LOCALVERSION=$(grep CONFIG_LOCALVERSION \
     $src_cache/rpi-linux/arch/arm64/configs/bcm2711_defconfig | \
-    head -1 | awk -F '=' '{print $2}' | sed 's/"//g'`
+    head -1 | awk -F '=' '{print $2}' | sed 's/"//g')
     PKGVER="$majorversion.$patchlevel.$sublevel"
     
     #echo "PKGVER: $PKGVER"
-    kernelrev=`git -C $src_cache/rpi-linux rev-parse --short HEAD` > /dev/null
+    kernelrev=$(git -C $src_cache/rpi-linux rev-parse --short HEAD) > /dev/null
     KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${kernelrev}"
-    echo "KERNEL_VERS: $KERNEL_VERS" 
+    echo "** Current Kernel Version: $KERNEL_VERS" 
     echo $KERNEL_VERS > /tmp/KERNEL_VERS
 startfunc    
     cd $workdir/rpi-linux
         # Get rid of dirty localversion as per https://stackoverflow.com/questions/25090803/linux-kernel-kernel-version-string-appended-with-either-or-dirty
     #touch $workdir/rpi-linux/.scmversion
-    sed -i \
-     "s/scripts\/package/scripts\/package\\\|Makefile\\\|scripts\/setlocalversion/g" \
-     $workdir/rpi-linux/scripts/setlocalversion
+    #sed -i \
+    # "s/scripts\/package/scripts\/package\\\|Makefile\\\|scripts\/setlocalversion/g" \
+    # $workdir/rpi-linux/scripts/setlocalversion
 
     cd $workdir/rpi-linux
     git update-index --refresh &>> /tmp/${FUNCNAME[0]}.compile.log || true
@@ -614,7 +660,7 @@ endfunc
 kernel_build () {
     waitfor "kernelbuild_setup"
 startfunc
-    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     cd $workdir/rpi-linux
     make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
@@ -627,13 +673,14 @@ startfunc
     # This is needed to enable squashfs - which snapd requires, since otherwise
     # login at boot fails on the ubuntu server image.
     # This also enables the BPF syscall for systemd-journald firewalling
+    [[ -e /source-ro/conform_config-${kernel_branch}.sh ]] && { /source-ro/conform_config-${kernel_branch}.sh ;true; } || \
     /source-ro/conform_config.sh
     yes "" | make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build/ \
     olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     
     
-    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     #make -j$(($(nproc) + 1)) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     #O=$workdir/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
     
@@ -657,33 +704,26 @@ kernel_debs () {
 startfunc
 
    # Don't remake debs if they already exist in output.
-   #arbitrary_wait
-   KERNEL_VERS=`cat /tmp/KERNEL_VERS`
-   echo -e "Looking for cached $KERNEL_VERS kernel debs."
-    for f in "$apt_cache/linux-image-*${KERNEL_VERS}*"; do
-     if [ -f "$f" ]
-     then
-        echo -e "$f on cache volume. 😎\n"
-        echo 1 > /tmp/nodebs
-     else
+   arbitrary_wait
+   KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
+   if test -n "$(find $apt_cache -maxdepth 1 -name linux-image-*${KERNEL_VERS}* -print -quit)"
+   then
+        echo -e "${KERNEL_VERS} linux image on cache volume. 😎\n"
+        echo "linux-image" >> /tmp/nodebs
+    else
         rm -f /tmp/nodebs || true
     fi
-    break
-    done
-    for f in "$apt_cache/linux-headers-*${KERNEL_VERS}*"; do
-     if [ -f "$f" ]
-     then
-        echo -e "$f on cache volume. 😎\n"
-        echo 1> /tmp/nodebs
-     else
-         rm -f /tmp/nodebs || true
-     fi
-     break
-    done
+    if test -n "$(find $apt_cache -maxdepth 1 -name linux-headers-*${KERNEL_VERS}* -print -quit)"
+   then
+        echo -e "${KERNEL_VERS} linux headers on cache volume. 😎\n"
+        echo "linux-image" >> /tmp/nodebs
+    else
+        rm -f /tmp/nodebs || true
+    fi
     if [[ -e /tmp/nodebs ]]
     then
-    echo -e "Using existing $KERNEL_VERS debs from cache volume.\nNo \
-    kernel needs to be built."
+    echo -e "Using existing $KERNEL_VERS debs from cache volume.\n \
+    \rNo kernel needs to be built."
     cp $apt_cache/linux-image-*${KERNEL_VERS}*arm64.deb $workdir/
     cp $apt_cache/linux-headers-*${KERNEL_VERS}*arm64.deb $workdir/
     cp $workdir/*.deb /output/ 
@@ -707,11 +747,11 @@ startfunc
 
 kernel_deb_install () {
     waitfor "kernel_debs"
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
     waitfor "added_scripts"
     waitfor "image_apt_installs"
 startfunc
-    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     # Try installing the generated debs in chroot before we do anything else.
     cp $workdir/*.deb /mnt/tmp/
     waitfor "added_scripts"
@@ -724,13 +764,13 @@ startfunc
     &>> /tmp/${FUNCNAME[0]}.install.log || true
     cp /mnt/boot/initrd.img-$KERNEL_VERS /mnt/boot/firmware/initrd.img
     cp /mnt/boot/vmlinuz-$KERNEL_VERS /mnt/boot/firmware/vmlinuz
-    vmlinuz_type=`file -bn /mnt/boot/firmware/vmlinuz`
+    vmlinuz_type=$(file -bn /mnt/boot/firmware/vmlinuz)
     if [ "$vmlinuz_type" == "MS-DOS executable" ]
         then
         cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
     else
         cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
-        cd /mnt/boot/firmware/ ; gunzip /mnt/boot/firmware/kernel8.img.nouboot.gz \
+        cd /mnt/boot/firmware/ ; gunzip -f /mnt/boot/firmware/kernel8.img.nouboot.gz \
         &>> /tmp/${FUNCNAME[0]}.install.log
     fi
     # Make booting without uboot the default so we get the default 3Gb ram available.
@@ -745,14 +785,14 @@ armstub8-gic () {
 startfunc    
     cd $workdir/rpi-tools/armstubs
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make armstub8-gic.bin &>> /tmp/${FUNCNAME[0]}.compile.log
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
     cp $workdir/rpi-tools/armstubs/armstub8-gic.bin /mnt/boot/firmware/armstub8-gic.bin
 endfunc
 }
 
 non-free_firmware () {
     git_get "https://github.com/RPi-Distro/firmware-nonfree" "firmware-nonfree"
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
     cp -af $workdir/firmware-nonfree/* /mnt/usr/lib/firmware
 endfunc
@@ -760,7 +800,7 @@ endfunc
 
 
 rpi_config_txt_configuration () {
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
     echo "* Making /boot/firmware/config.txt modifications."
     
@@ -820,7 +860,7 @@ EOF
     
     
     # 3Gb limitation because USB & devices do not work currently without this.
-     [ `grep -cs "total_mem=" /mnt/boot/firmware/config.txt` -gt 0 ] && \
+     [ $(grep -cs "total_mem=" /mnt/boot/firmware/config.txt) -gt 0 ] && \
      sed -i 's/total_mem=*$/total_mem=3072/' /mnt/boot/firmware/config.txt || \
      echo "total_mem=3072" >> /mnt/boot/firmware/config.txt
 
@@ -828,7 +868,7 @@ endfunc
 }
 
 rpi_cmdline_txt_configuration () {
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
     echo "* Making /boot/firmware/cmdline.txt modifications."
     
@@ -857,7 +897,7 @@ endfunc
 
 rpi_userland () {
     git_get "https://github.com/raspberrypi/userland" "rpi-userland"
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc
     echo "* Installing Raspberry Pi userland source."
     cd $workdir
@@ -888,7 +928,7 @@ EOF
     cat  <<-EOF > /mnt/etc/ld.so.conf.d/00-vmcs.conf
 	/opt/vc/lib
 EOF
-    local SUDOPATH=`sed -n 's/\(^.*secure_path="\)//p' /mnt/etc/sudoers | sed s'/.$//'`
+    local SUDOPATH=$(sed -n 's/\(^.*secure_path="\)//p' /mnt/etc/sudoers | sed s'/.$//')
     SUDOPATH="${SUDOPATH:-/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin}"
     SUDOPATH+=":/opt/vc/bin:/opt/vc/sbin"
     # Add path to sudo
@@ -902,7 +942,7 @@ endfunc
 }
 
 wifi_firmware_modification () {
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
     waitfor "non-free_firmware"
 startfunc    
     #echo "* Modifying wireless firmware if necessary."
@@ -928,7 +968,7 @@ startfunc
     echo "CONFIG_REGEX=y" >> $workdir/u-boot/configs/rpi_4_defconfig
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make rpi_4_defconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make -j $(($(nproc) + 1)) &>> /tmp/${FUNCNAME[0]}.compile.log
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
     echo "* Installing Andrei Gherzan's RPI uboot fork to image."
     cp $workdir/u-boot/u-boot.bin /mnt/boot/firmware/uboot.bin
     cp $workdir/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.bin
@@ -948,7 +988,7 @@ endfunc
 }
 
 first_boot_scripts_setup () {
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
     echo "* Creating first start cleanup script."
     cat <<-'EOF' > /mnt/etc/rc.local
@@ -989,7 +1029,7 @@ endfunc
 } 
 
 added_scripts () {
-    waitfor "image_extract_and_mount"
+    waitfor "image_mount"
 startfunc    
 
     ## This script allows flash-kernel to create the uncompressed kernel file
@@ -1004,7 +1044,7 @@ startfunc
 	#
 	# First exit if we aren't running an ARM64 kernel.
 	#
-	[ `uname -m` != aarch64 ] && exit 0
+	[ $(uname -m) != aarch64 ] && exit 0
 	#
 	KERNEL_VERSION="$1"
 	KERNEL_INSTALLED_PATH="$2"
@@ -1012,7 +1052,8 @@ startfunc
 	# If kernel8.img does not look like u-boot, then assume u-boot
 	# is not being used.
 	file /boot/firmware/kernel8.img | grep -vq "PCX" && \
-	gunzip -c -f ${KERNEL_INSTALLED_PATH} > /boot/firmware/kernel8.img
+	gunzip -c -f ${KERNEL_INSTALLED_PATH} > /boot/firmware/kernel8.img && \
+	cp /boot/firmware/kernel8.img /boot/firmware/kernel8.img.nouboot
 	
 	exit 0
 EOF
@@ -1092,13 +1133,6 @@ startfunc
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives=/mnt/var/cache/apt/archives/ \
     -d install qemu-user-binfmt -qq 2>/dev/null
-
-
-    # I'm not sure where this is needed, but kernel install
-    # craps out without this: /lib/firmware/`uname -r`/device-tree/
-    # So we create it:
-    #mkdir -p /mnt/lib/firmware/`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`/device-tree/
-    # Now handled by script on image.
     
     # Copy in kernel debs generated earlier to be installed at
     # first boot.
@@ -1129,19 +1163,20 @@ endfunc
 image_unmount () {
 startfunc
     echo "* Unmounting modified ${new_image}.img"
-    loop_device=`cat /tmp/loop_device`
+    loop_device=$(cat /tmp/loop_device)
     umount -l /mnt/boot/firmware || (lsof +f -- /mnt/boot/firmware ; sleep 60 ; \
     umount -l /mnt/boot/firmware) || true
     #umount /mnt || (mount | grep /mnt)
-    e4defrag /mnt >/dev/null
+    e4defrag /mnt >/dev/null || true
     umount -l /mnt || (lsof +f -- /mnt ; sleep 60 ; umount /mnt) || true
     #guestunmount /mnt
 
-    
-    kpartx -dv $workdir/${new_image}.img
+    fsck.ext4 -fy /dev/mapper/${loop_device}p2 || true
+    fsck.vfat -wa /dev/mapper/${loop_device}p1 || true
+    kpartx -dv $workdir/${new_image}.img &>> /tmp/${FUNCNAME[0]}.cleanup.log || true
     losetup -d /dev/$loop_device &>/dev/null || true
     dmsetup remove -f /dev/$loop_device &>/dev/null || true
-    dmsetup info
+    dmsetup info &>> /tmp/${FUNCNAME[0]}.cleanup.log || true
     # To stop here "rm /flag/done.ok_to_exit_container_after_build".
     if [ ! -f /flag/done.ok_to_exit_container_after_build ]; then
         echo "** Image unmounted & container paused. **"
@@ -1155,7 +1190,7 @@ endfunc
 compressed_image_export () {
 startfunc
 
-    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     # Note that lz4 is much much faster than using xz.
     chown -R $USER:$GROUP /build
     cd $workdir
@@ -1184,7 +1219,7 @@ startfunc
         xdelta3 -e -S none -I 0 -B 1812725760 -W 16777216 -fs \
         $workdir/old_image.img $workdir/${new_image}.img \
         $workdir/patch.xdelta
-        KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+        KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
         for i in "${image_compressors[@]}"
         do
             echo "* Compressing patch.xdelta with $i and exporting."
@@ -1204,9 +1239,15 @@ endfunc
 }
 
 export_log () {
+if [[ ! $JUSTDEBS ]];
+    then
     waitfor "compressed_image_export"
+    else
+    waitfor "kernel_debs"
+fi
+
 startfunc
-    KERNEL_VERS=`cat /tmp/KERNEL_VERS`
+    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     echo "* Build log at: build-log-$KERNEL_VERS_${now}.log"
     cat $TMPLOG > /output/build-log-$KERNEL_VERS_${now}.log
     chown $USER:$GROUP /output/build-log-$KERNEL_VERS_${now}.log
@@ -1239,29 +1280,31 @@ touch /flag/done.ok_to_exit_container_after_build
 # So we will work around it.
 #inotify_touch_events &
 
-base_image_check
-image_extract_and_mount &
-rpi_firmware &
-armstub8-gic &
-non-free_firmware & 
-rpi_userland &
-andrei_gherzan_uboot_fork &
+[[ ! $JUSTDEBS ]] && utility_scripts &
+[[ ! $JUSTDEBS ]] && base_image_check
+[[ ! $JUSTDEBS ]] && image_extract &
+[[ ! $JUSTDEBS ]] && image_mount &
+[[ ! $JUSTDEBS ]] && rpi_firmware &
+[[ ! $JUSTDEBS ]] && armstub8-gic &
+[[ ! $JUSTDEBS ]] && non-free_firmware & 
+[[ ! $JUSTDEBS ]] && rpi_userland &
+[[ ! $JUSTDEBS ]] && andrei_gherzan_uboot_fork &
 kernelbuild_setup &
-rpi_config_txt_configuration &
-rpi_cmdline_txt_configuration &
-wifi_firmware_modification &
-first_boot_scripts_setup &
-added_scripts &
+[[ ! $JUSTDEBS ]] && rpi_config_txt_configuration &
+[[ ! $JUSTDEBS ]] && rpi_cmdline_txt_configuration &
+[[ ! $JUSTDEBS ]] && wifi_firmware_modification &
+[[ ! $JUSTDEBS ]] && first_boot_scripts_setup &
+[[ ! $JUSTDEBS ]] && added_scripts &
 waitforstart "kernelbuild_setup" && kernel_debs &
-arm64_chroot_setup &
-image_apt_installs &
-spinnerwait image_apt_installs
-kernel_deb_install
-image_and_chroot_cleanup
-image_unmount
-compressed_image_export &
-[[ $DELTA ]] && xdelta3_image_export
-[[ $DELTA ]] && waitfor "xdelta3_image_export"
+[[ ! $JUSTDEBS ]] && arm64_chroot_setup &
+[[ ! $JUSTDEBS ]] && image_apt_installs &
+[[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
+[[ ! $JUSTDEBS ]] && kernel_deb_install
+[[ ! $JUSTDEBS ]] && image_and_chroot_cleanup
+[[ ! $JUSTDEBS ]] && image_unmount
+[[ ! $JUSTDEBS ]] && compressed_image_export &
+[[ ! $JUSTDEBS ]] && [[ $DELTA ]] && xdelta3_image_export
+[[ ! $JUSTDEBS ]] && [[ $DELTA ]] && waitfor "xdelta3_image_export"
 export_log
 # This stops the tail process.
 rm $TMPLOG

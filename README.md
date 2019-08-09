@@ -5,7 +5,7 @@
 
 ## Overview
 
-This creates a docker container to build an Ubuntu 19.10 server image for a Raspberry Pi 4B using unstable/current software.
+This creates a docker container to build an Ubuntu 19.10 server image for a Raspberry Pi 4B using unstable/current software. This is has been run successfully (self-hosting?) on docker on a RPI 4B with 4Gb of ram to generate both kernels and images.
 A new kernel is compiled, and current firmware is copied into the container.
 
 
@@ -34,49 +34,38 @@ Feel free to offer suggestions on how to make this setup safer without making th
 
  ## To build an Ubuntu Eoan Raspberry Pi 4B image run following commands:
 
-## 1. Clone Build build environment
+## 1. Make sure you have a recent install of Docker.
+Installation instructions for Ubuntu: https://docs.docker.com/install/linux/docker-ce/ubuntu/
+
+## 1.5. Some have reported that qemu-user-static needs to be installed on your HOST system before this setup works:
+    sudo apt install qemu-user-static -y
+(Note that this is installed in the container, and I don't know why this helps... but FYI.)
+
+
+## 2. Clone Build build environment
 
 Clone the [docker-rpi4-imagebuilder](https://github.com/satmandu/docker-rpi4-imagebuilder)
-(the repository you are reading now) and run the build script to see
-usage:
+(the repository you are reading now):
 
 
     git clone https://github.com/satmandu/docker-rpi4-imagebuilder
     cd docker-rpi4-imagebuilder
-    ./build-image
-    usage: build [options...] SOURCEDIR
-    Options:
-      -i IMAGE  Name of the docker image (including tag) to use as package build environment.
-      -o DIR    Destination directory to store output compressed image to.
-
-## 2.  Create Docker Build container 
-*(This only has to be done once every several days.)*
-
-Build a container that will act as package build environment:
-
-    docker build -t docker-rpi4-imagebuilder:19.10 -f Dockerfile-ubuntu-19.10 .
-
-In this example the target is Ubuntu 19.10 but you can create and modify `Dockerfile-nnn` to match your target environment. 
-(I have only tested with Ubuntu 19.10, since that is what the source image is built from.)
-
-## 3.  Create destination directory to store the build results
-
-    mkdir output
 
 
-## 4.  Build package from inside source directory
-    # Example usage:
-    # ./build-image -i docker-rpi4-imagebuilder:19.10 -o output ~/docker-rpi4-imagebuilder
-    # Another option: (This refreshes the script, turns off XZ compression, and measures how long the build took.)
-    git pull ; NOXZ=1 time ./build-image -i docker-rpi4-imagebuilder:19.10 -o output .
+## 3.  Build package from inside source directory
+    git pull ; time ./build-image
     
 A first build takes about 30 min on my Skylake build machine. A second build takes about 10 min due to the use of ccache if I have xz compression disabled and just use lz4 for image compression, or 25 min if I use both.
 
-(xz compression be toggled by dropping NOXZ=1 from the command line.) 
+xz compression be toggled by adding XZ=1 at the command line like this: 
+   git pull ; XZ=1 time ./build-image
+
+Just building the kernel debs (and not the image) and putting them into the output folder can be toggled by adding JUSTDEBS=1 at the command line like this: 
+   git pull ; JUSTDEBS=1 time ./build-image
 
 
 After a successful build you will find the `eoan-preinstalled-server-arm64+raspi4.img___kernel___timestamp.lz4` 
-file in your specified `output` directory. (Failure will lead to a build_fail.log in that folder.)
+file in your specified `output` directory (defaults to `output` ). (Failure will lead to a build_fail.log in that folder.)
 
 Currently the images are under 700Mb compressed with xz, or about 1.3Gb compressed with lz4.
 The xz images are about 50 Mb larger than the base ubuntu images.

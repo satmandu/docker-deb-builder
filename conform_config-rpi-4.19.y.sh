@@ -180,13 +180,3 @@ set_kernel_config CONFIG_IPVLAN m
 
 # Enable RPI POE HAT fan
 set_kernel_config CONFIG_SENSORS_RPI_POE_FAN m
-
-# Unset hifiberry options
-
-unset_kernel_config CONFIG_SND_BCM2708_SOC_HIFIBERRY_DAC
-unset_kernel_config CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUS
-unset_kernel_config CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSADC
-unset_kernel_config CONFIG_SND_BCM2708_SOC_HIFIBERRY_DIGI
-unset_kernel_config CONFIG_SND_BCM2708_SOC_HIFIBERRY_AMP
-unset_kernel_config CONFIG_RTL8187
-unset_kernel_config CONFIG_SND_BCM2835_SOC_I2S
