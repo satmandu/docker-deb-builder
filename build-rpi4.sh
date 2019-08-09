@@ -737,7 +737,7 @@ startfunc
         echo "Cached $KERNEL_VERS kernel debs not found. Building."
         kernel_build &
         spinnerwait kernel_build
-        
+        arbitrary_wait_here
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
         rm -f $workdir/linux-libc-dev*.deb
         cp $workdir/*.deb $apt_cache/ || (echo "Kernel Build Failed!" ; pkill -F /flag/main)
