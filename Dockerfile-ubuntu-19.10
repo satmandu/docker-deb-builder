@@ -12,6 +12,7 @@ RUN set -ex \
                cdbs \
                cmake \
                cpio \
+               curl \
                devscripts \
                dkms \
                dosfstools \
