@@ -49,12 +49,21 @@ done
 shift $(($OPTIND - 1))
 
 # This should be the image we want to modify.
-base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
-base_image="eoan-preinstalled-server-arm64+raspi3.img.xz"
+default_base_dist="eoan"
+defaultimage="docker-rpi4-imagebuilder:19.10"
+
+base_dist="${base_dist:-${default_base_dist}}"
+
+if [ "$base_dist" == "bionic" ]; then
+    base_url="http://cdimage.ubuntu.com/ubuntu-server/bionic/daily-preinstalled/current/"
+    else
+    base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
+fi
+
+base_image="${base_dist}-preinstalled-server-arm64+raspi3.img.xz"
 base_image_url="${base_url}/${base_image}"
 cache_volume=rpi4-imagebuilder-cache
 outdir="${output:-output}"
-defaultimage="docker-rpi4-imagebuilder:19.10"
 
 # This is the linux version we want to use:
 #kernel_branch=rpi-4.19.y
@@ -89,8 +98,13 @@ SYSTEM=`uname`
 
 # Create Docker Image if it does not exist.
 echo "Creating Docker Image ${image} if it does not exist."
-docker inspect "${image}" > /dev/null 2>&1 || docker build -t \
-${image} -f Dockerfile-ubuntu-19.10 .
+if [ ! (docker inspect "${image}" > /dev/null 2>&1 ) ]; then
+    if [ "$base_dist" == "bionic" ]; then
+    docker build -t ${image} -f Dockerfile-ubuntu-18.04 .
+    else
+    docker build -t ${image} -f Dockerfile-ubuntu-19.10 .
+    fi
+fi
 
 
 # Needed for loopback to work inside container.

@@ -691,12 +691,26 @@ startfunc
     cd $workdir/rpi-linux
     [[ ! $BUILDNATIVE ]] && debcmd="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    -j$(($(nproc) + 1)) c \
+    -j$(($(nproc) + 1)) \
     bindeb-pkg" 
     
     [[ $BUILDNATIVE ]] && waitfor "image_apt_installs"
     arbitrary_wait_here
-    [[ $BUILDNATIVE ]] && debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) bindeb-pkg"'
+    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-gcc \
+    /mnt/usr/local/bin/gcc
+    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld \
+    /mnt/usr/local/bin/ld
+    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld.bfd \
+    /mnt/usr/local/bin/ld.bfd
+    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld.gold \
+    /mnt/usr/local/bin/ld.gold
+    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-cpp \
+    /mnt/usr/local/bin/cpp
+    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-g++ \
+    /mnt/usr/local/bin/g++
+    [[ $BUILDNATIVE ]] && debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
+    O=$workdir/kernel-build/ \
+    bindeb-pkg"'
 
     echo $debcmd
     $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
