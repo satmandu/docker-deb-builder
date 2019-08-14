@@ -98,7 +98,7 @@ SYSTEM=`uname`
 
 # Create Docker Image if it does not exist.
 echo "Creating Docker Image ${image} if it does not exist."
-if [ ! (docker inspect "${image}" > /dev/null 2>&1 ) ]; then
+if [ ! $(docker inspect "${image}" > /dev/null 2>&1 ) ]; then
     if [ "$base_dist" == "bionic" ]; then
     docker build -t ${image} -f Dockerfile-ubuntu-18.04 .
     else
