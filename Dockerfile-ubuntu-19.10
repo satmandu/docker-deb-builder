@@ -33,6 +33,8 @@ RUN set -ex \
                libxdelta2 \
                libpython3.7 \
                linux-generic \
+               linux-image-generic \
+               linux-firmware \
                patch \
                psmisc \
                pv \
@@ -48,7 +50,7 @@ RUN set -ex \
                xxd \
                xz-utils \         
     && apt-get build-dep -y linux-image-raspi2 \
-    && apt-get build-dep -y linux-generic \
+    && apt-get build-dep -y linux-image-generic \
     && apt-get upgrade -y \
     && (apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu \
                cpp-aarch64-linux-gnu \
