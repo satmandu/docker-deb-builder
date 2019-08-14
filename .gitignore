@@ -10,3 +10,5 @@ build-image~
 build-image~
 build-image~
 *.sh#
+Dockerfile-ubuntu-18.04~
+buildshell~

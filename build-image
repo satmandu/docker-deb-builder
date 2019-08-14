@@ -49,12 +49,21 @@ done
 shift $(($OPTIND - 1))
 
 # This should be the image we want to modify.
-base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
-base_image="eoan-preinstalled-server-arm64+raspi3.img.xz"
+default_base_dist="eoan"
+defaultimage="docker-rpi4-imagebuilder:19.10"
+
+base_dist="${base_dist:-${default_base_dist}}"
+
+if [ "$base_dist" == "bionic" ]; then
+    base_url="http://cdimage.ubuntu.com/ubuntu-server/bionic/daily-preinstalled/current/"
+    else
+    base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
+fi
+
+base_image="${base_dist}-preinstalled-server-arm64+raspi3.img.xz"
 base_image_url="${base_url}/${base_image}"
 cache_volume=rpi4-imagebuilder-cache
 outdir="${output:-output}"
-defaultimage="docker-rpi4-imagebuilder:19.10"
 
 # This is the linux version we want to use:
 #kernel_branch=rpi-4.19.y
@@ -89,8 +98,13 @@ SYSTEM=`uname`
 
 # Create Docker Image if it does not exist.
 echo "Creating Docker Image ${image} if it does not exist."
-docker inspect "${image}" > /dev/null 2>&1 || docker build -t \
-${image} -f Dockerfile-ubuntu-19.10 .
+if [ ! $(docker inspect "${image}" > /dev/null 2>&1 ) ]; then
+    if [ "$base_dist" == "bionic" ]; then
+    docker build -t ${image} -f Dockerfile-ubuntu-18.04 .
+    else
+    docker build -t ${image} -f Dockerfile-ubuntu-19.10 .
+    fi
+fi
 
 
 # Needed for loopback to work inside container.
@@ -209,15 +223,15 @@ check_for_current_image () {
 }
 
 
-if [ ! -f $(abspath ${srcdir})/$base_image ] && [ ! $JUSTDEBS ]; then
+if [ ! -f $(abspath ${srcdir})/$base_image ] && [ -n "$BUILDNATIVE" -o ! -n "$JUSTDEBS" ]; then
         download_base_image
     else
-        [ ! $JUSTDEBS ] && check_for_current_image
+        [ -n "$BUILDNATIVE" -o ! -n "$JUSTDEBS" ] && check_for_current_image
 fi
 
 
 
-if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ] && [ ! $JUSTDEBS ]
+if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ] && [ -n "$BUILDNATIVE" -o ! -n "$JUSTDEBS" ]
     then 
         cd $(abspath ${srcdir})
         echo "* Extracting $(abspath ${srcdir})/${base_image%.xz} ."
@@ -231,7 +245,7 @@ if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ] && [ ! $JUSTDEBS ]
 fi
 
 
-[ ! $JUSTDEBS ] && docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
+[ -n "$BUILDNATIVE" -o ! -n "$JUSTDEBS" ] && docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
 
 # For ccache
 #docker_args+="-e CCACHE_DIR=/ccache --volumes-from ccache -v ccache:/ccache "
@@ -247,7 +261,7 @@ docker_args+="-e apt_cache=/cache/apt_cache "
 docker_args+="-e workdir=/build/source "
 
 # Send in base image environment variables:
-[ ! $JUSTDEBS ] && docker_args+="-e base_url=${base_url} -e base_image=${base_image} "
+[ -n "$BUILDNATIVE" -o ! -n "$JUSTDEBS" ] && docker_args+="-e base_url=${base_url} -e base_image=${base_image} -e base_dist=${base_dist} "
 
 #Send in linux repo environment variables:
 docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo} "
@@ -263,6 +277,9 @@ docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo
 
 # DEBUG?
 [ -n "$DEBUG" ] && docker_args+="-e DEBUG=${DEBUG} "
+
+# Is the build set to be done in a native chroot?
+[ -n "$BUILDNATIVE" ] && docker_args+="-e BUILDNATIVE=${BUILDNATIVE} "
 
 # Should we enable the arbitrary wait flag?
 [ -n "$ARBITRARY_WAIT" ] && docker_args+="-e ARBITRARY_WAIT=${ARBITRARY_WAIT} "

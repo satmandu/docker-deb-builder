@@ -11,10 +11,10 @@
 #kernelgitrepo="https://github.com/lategoodbye/rpi-zero.git"
 # This should be the image we want to modify.
 #base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
-#base_image="eoan-preinstalled-server-arm64+raspi3.img.xz"
+#base_image="${base_dist}-preinstalled-server-arm64+raspi3.img.xz"
 base_image_url="${base_url}/${base_image}"
 # This is the base name of the image we are creating.
-new_image="eoan-preinstalled-server-arm64+raspi4"
+new_image="${base_dist}-preinstalled-server-arm64+raspi4"
 # Comment out the following if apt is throwing errors silently.
 # Note that these only work for the chroot commands.
 silence_apt_flags="-o Dpkg::Use-Pty=0 -qq < /dev/null > /dev/null "
@@ -91,6 +91,7 @@ mkdir -p $apt_cache/partial
 #env >> /output/environment
 
 echo "Starting local container software installs."
+apt-get -o dir::cache::archives=$apt_cache install curl -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install lsof -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install xdelta3 -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install e2fsprogs -y &>> /tmp/main.install.log 
@@ -99,6 +100,7 @@ echo "Starting local container software installs."
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install libc6-arm64-cross -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install pv -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install byobu -y &>> /tmp/main.install.log 
 apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/main.install.log 
 echo -e "Performing cache volume apt autoclean.\n\r"
 apt-get -o dir::cache::archives=$apt_cache autoclean -y -qq &>> /tmp/main.install.log 
@@ -221,7 +223,7 @@ local_check () {
 }
 
 
-arbitrary_wait () {
+arbitrary_wait_here () {
     # To stop here "rm /flag/done.ok_to_continue_after_here".
     # Arbitrary build pause for debugging
     if [ ! -f /flag/done.ok_to_continue_after_here ]; then
@@ -427,8 +429,10 @@ endfunc
 download_base_image () {
 startfunc
     echo "* Downloading ${base_image} ."
-    wget_fail=0
-    wget -nv ${base_image_url} -O ${base_image} || wget_fail=1
+    #wget_fail=0
+    #wget -nv ${base_image_url} -O ${base_image} || wget_fail=1
+    curl_fail=0
+    curl -o $base_image_url ${base_image} || curl_fail=1
 endfunc
 }
 
@@ -686,11 +690,28 @@ startfunc
     
     echo "* Making $KERNEL_VERS kernel debs."
     cd $workdir/rpi-linux
-    debcmd="make \
+    [[ ! $BUILDNATIVE ]] && debcmd="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    -j$(($(nproc) + 1)) O=$workdir/kernel-build \
+    -j$(($(nproc) + 1)) \
     bindeb-pkg" 
     
+    [[ $BUILDNATIVE ]] && waitfor "image_apt_installs"
+    arbitrary_wait_here
+    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-gcc \
+    /mnt/usr/local/bin/gcc
+    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld \
+    /mnt/usr/local/bin/ld
+    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld.bfd \
+    /mnt/usr/local/bin/ld.bfd
+    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld.gold \
+    /mnt/usr/local/bin/ld.gold
+    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-cpp \
+    /mnt/usr/local/bin/cpp
+    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-g++ \
+    /mnt/usr/local/bin/g++
+    [[ $BUILDNATIVE ]] && debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
+    O=$workdir/kernel-build/ \
+    bindeb-pkg"'
 
     echo $debcmd
     $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
@@ -731,7 +752,7 @@ startfunc
         echo "Cached $KERNEL_VERS kernel debs not found. Building."
         kernel_build &
         spinnerwait kernel_build
-        
+        arbitrary_wait_here
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
         rm -f $workdir/linux-libc-dev*.deb
         cp $workdir/*.deb $apt_cache/ || (echo "Kernel Build Failed!" ; pkill -F /flag/main)
@@ -758,6 +779,9 @@ startfunc
     echo "* Installing $KERNEL_VERS debs to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
     linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 -y --purge" \
+    &>> /tmp/${FUNCNAME[0]}.install.log || true
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
+    linux-image-4.15* linux-modules-4.15* -y --purge" \
     &>> /tmp/${FUNCNAME[0]}.install.log || true
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" \
     &>> /tmp/${FUNCNAME[0]}.install.log || true
@@ -793,7 +817,12 @@ non-free_firmware () {
     git_get "https://github.com/RPi-Distro/firmware-nonfree" "firmware-nonfree"
     waitfor "image_mount"
 startfunc    
-    cp -af $workdir/firmware-nonfree/* /mnt/usr/lib/firmware
+    if [[ -L "/mnt/lib" && -d "/mnt/lib" ]]
+    then
+        cp -af $workdir/firmware-nonfree/* /mnt/usr/lib/firmware
+    else
+        cp -af $workdir/firmware-nonfree/* /mnt/lib/firmware
+    fi
 endfunc
 }
 
@@ -946,10 +975,19 @@ wifi_firmware_modification () {
 startfunc    
     #echo "* Modifying wireless firmware if necessary."
     # as per https://andrei.gherzan.ro/linux/raspbian-rpi4-64/
-    if ! grep -qs 'boardflags3=0x44200100' \
+        if [[ -L "/mnt/lib" && -d "/mnt/lib" ]]
+    then
+        if ! grep -qs 'boardflags3=0x44200100' \
     /mnt/usr/lib/firmware/brcm/brcmfmac43455-sdio.txt
         then sed -i -r 's/0x48200100/0x44200100/' \
         /mnt/usr/lib/firmware/brcm/brcmfmac43455-sdio.txt
+        fi
+    else
+        if ! grep -qs 'boardflags3=0x44200100' \
+    /mnt/lib/firmware/brcm/brcmfmac43455-sdio.txt
+        then sed -i -r 's/0x48200100/0x44200100/' \
+        /mnt/lib/firmware/brcm/brcmfmac43455-sdio.txt
+        fi
     fi
 endfunc
 }
@@ -979,6 +1017,8 @@ startfunc
     #chroot /mnt /bin/bash -c "mkimage -A arm64 -O linux -T script \
     #-d /etc/flash-kernel/bootscript/bootscr.rpi \
     #/boot/firmware/boot.scr" &>> /tmp/${FUNCNAME[0]}.compile.log
+    [[ !  -f /mnt/etc/flash-kernel/bootscript/bootscr.rpi ]] && \
+    cp /source-ro/bootscr.rpi /mnt/etc/flash-kernel/bootscript/bootscr.rpi
     mkimage -A arm64 -O linux -T script \
     -d /mnt/etc/flash-kernel/bootscript/bootscr.rpi \
     /mnt/boot/firmware/boot.scr &>> /tmp/${FUNCNAME[0]}.compile.log
@@ -1015,6 +1055,7 @@ EOF
 	#
 	/usr/bin/dpkg -i /var/cache/apt/archives/*.deb
 	/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge
+	purge-old-kernels --keep 1 -qy
 	/usr/local/bin/chroot-apt-wrapper update && /usr/local/bin/chroot-apt-wrapper upgrade -y
 	/usr/local/bin/chroot-apt-wrapper install qemu-user-binfmt -qq
 	/usr/sbin/update-initramfs -c -k all
@@ -1073,7 +1114,12 @@ EOF
 	KERNEL_VERSION="$1"
 	KERNEL_INSTALLED_PATH="$2"
 	
-	mkdir -p /usr/lib/firmware/${KERNEL_VERSION}/device-tree/
+	if [[ -L "/lib" && -d "/lib" ]]
+	then
+	    mkdir -p /usr/lib/firmware/${KERNEL_VERSION}/device-tree/
+	else
+	    mkdir -p /lib/firmware/${KERNEL_VERSION}/device-tree/
+	fi
 	
 	exit 0
 EOF
@@ -1213,7 +1259,7 @@ endfunc
 
 xdelta3_image_export () {
 startfunc
-        echo "* Making xdelta3 binary diffs between current eoan base image"
+        echo "* Making xdelta3 binary diffs between current ${base_dist} base image"
         echo "* and the new images."
         xdelta3 -e -S none -I 0 -B 1812725760 -W 16777216 -fs \
         $workdir/old_image.img $workdir/${new_image}.img \
@@ -1228,11 +1274,11 @@ startfunc
              $workdir/patch.xdelta"
             $xdelta_patchout_compresscmd
             cp "$workdir/patch.xdelta.$i" \
-     "/output/eoan-daily-preinstalled-server_$KERNEL_VERS_${now}.xdelta3.$i"
+     "/output/${base_dist}-daily-preinstalled-server_$KERNEL_VERS_${now}.xdelta3.$i"
             #$xdelta_patchout_cpcmd
-            chown $USER:$GROUP /output/eoan-daily-preinstalled-server_$KERNEL_VERS_${now}.xdelta3.$i
+            chown $USER:$GROUP /output/${base_dist}-daily-preinstalled-server_$KERNEL_VERS_${now}.xdelta3.$i
             echo "Xdelta3 file exported to:"
-            echo "/output/eoan-daily-preinstalled-server_$KERNEL_VERS_${now}.xdelta3.$i"
+            echo "/output/${base_dist}-daily-preinstalled-server_$KERNEL_VERS_${now}.xdelta3.$i"
         done
 endfunc
 }
@@ -1264,8 +1310,8 @@ touch /flag/done.ok_to_umount_image_after_build
 # For debugging.
 touch /flag/done.ok_to_continue_after_mount_image
 
-# Arbitrary pause for debugging.
-touch /flag/done.ok_to_continue_after_here
+# Arbitrary_wait pause for debugging.
+[[ ! $ARBITRARY_WAIT ]] && touch /flag/done.ok_to_continue_after_here
 
 # Delete this by connecting to the container using a shell if you want to 
 # debug the container before the container is exited.
@@ -1279,10 +1325,10 @@ touch /flag/done.ok_to_exit_container_after_build
 # So we will work around it.
 #inotify_touch_events &
 
-[[ ! $JUSTDEBS ]] && utility_scripts &
-[[ ! $JUSTDEBS ]] && base_image_check
-[[ ! $JUSTDEBS ]] && image_extract &
-[[ ! $JUSTDEBS ]] && image_mount &
+[[ $BUILDNATIVE || ! $JUSTDEBS  ]] && utility_scripts &
+[[ $BUILDNATIVE || ! $JUSTDEBS ]] && base_image_check
+[[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_extract &
+[[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_mount &
 [[ ! $JUSTDEBS ]] && rpi_firmware &
 [[ ! $JUSTDEBS ]] && armstub8-gic &
 [[ ! $JUSTDEBS ]] && non-free_firmware & 
@@ -1295,9 +1341,9 @@ kernelbuild_setup &
 [[ ! $JUSTDEBS ]] && first_boot_scripts_setup &
 [[ ! $JUSTDEBS ]] && added_scripts &
 waitforstart "kernelbuild_setup" && kernel_debs &
-[[ ! $JUSTDEBS ]] && arm64_chroot_setup &
-[[ ! $JUSTDEBS ]] && image_apt_installs &
-[[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
+[[ $BUILDNATIVE || ! $JUSTDEBS ]] && arm64_chroot_setup &
+[[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_apt_installs &
+[[ $BUILDNATIVE || ! $JUSTDEBS ]] && spinnerwait image_apt_installs
 [[ ! $JUSTDEBS ]] && kernel_deb_install
 [[ ! $JUSTDEBS ]] && image_and_chroot_cleanup
 [[ ! $JUSTDEBS ]] && image_unmount
