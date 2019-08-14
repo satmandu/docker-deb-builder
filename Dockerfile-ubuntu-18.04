@@ -1,0 +1,63 @@
+FROM ubuntu:latest
+
+RUN set -ex \
+    && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+               apt-transport-https \
+               build-essential \
+               bc \
+               bison \
+               binfmt-support \
+               ca-certificates \
+               ccache \
+               cdbs \
+               cmake \
+               cpio \
+               curl \
+               devscripts \
+               dkms \
+               dosfstools \
+               dpkg-dev \
+               e2fsprogs \
+               equivs \
+               fakeroot \
+               flex \
+               gawk \
+               git \
+               kpartx \
+               libgpm2 \
+               lsof \
+               lz4 \
+               libc6-arm64-cross \
+               libelf-dev \
+               libncurses-dev \
+               libssl-dev \
+               libxdelta2 \
+               libpython3.7 \
+               patch \
+               psmisc \
+               pv \
+               qemu-user-static \
+               rsync \
+               sudo \
+               u-boot-tools \
+               vim \
+               vim-common \
+               vim-runtime \
+               wget \
+               xdelta3 \
+               xxd \
+               xz-utils \         
+    && apt-get build-dep -y linux-image-raspi2 \
+    && apt-get build-dep -y linux-image-generic \
+    && apt-get upgrade -y \
+    && (apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu \
+               cpp-aarch64-linux-gnu \
+               g++-aarch64-linux-gnu \
+#               linux-generic \
+#               linux-image-generic \
+#               linux-firmware 
+                || true ) \
+    && apt-get clean \
+    && rm -rf /tmp/* /var/tmp/*
