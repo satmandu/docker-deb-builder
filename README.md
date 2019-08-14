@@ -1,7 +1,7 @@
 
 # Creating an ARM64 boot image for a Raspberry Pi 4B in a Docker container from a current/nightly Ubuntu RPI3 boot image
 
-(Largely adapted from project at https://github.com/tsaarni/docker-deb-builder )
+(Initially adapted from project at https://github.com/tsaarni/docker-deb-builder )
 
 ## Overview
 

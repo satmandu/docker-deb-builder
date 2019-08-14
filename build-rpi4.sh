@@ -994,7 +994,7 @@ endfunc
 
 andrei_gherzan_uboot_fork () {
 startfunc
-    git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/rpi4"   
+    git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"   
     cd $workdir/u-boot
 #    curl -O https://github.com/satmandu/u-boot/commit/b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
@@ -1191,7 +1191,7 @@ startfunc
     #    echo 'Type in "touch /flag/done.ok_to_unmount_image_after_build"'
     #    echo "in a shell into this container to continue."
     #fi 
-     
+    arbitrary_wait 
     waitfor "ok_to_umount_image_after_build"
     umount /mnt/build
     umount /mnt/run
