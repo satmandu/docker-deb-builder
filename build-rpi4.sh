@@ -1111,9 +1111,9 @@ EOF
 	
 	if [[ -L "/lib" && -d "/lib" ]]
 	then
-		mkdir -p /usr/lib/firmware/${KERNEL_VERSION}/device-tree/
+	    mkdir -p /usr/lib/firmware/${KERNEL_VERSION}/device-tree/
 	else
-		mkdir -p /lib/firmware/${KERNEL_VERSION}/device-tree/
+	    mkdir -p /lib/firmware/${KERNEL_VERSION}/device-tree/
 	fi
 	
 	exit 0
