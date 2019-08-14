@@ -779,6 +779,9 @@ startfunc
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
     linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 -y --purge" \
     &>> /tmp/${FUNCNAME[0]}.install.log || true
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
+    linux-image-4.15* linux-modules-4.15* -y --purge" \
+    &>> /tmp/${FUNCNAME[0]}.install.log || true
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" \
     &>> /tmp/${FUNCNAME[0]}.install.log || true
     cp /mnt/boot/initrd.img-$KERNEL_VERS /mnt/boot/firmware/initrd.img
