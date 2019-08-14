@@ -32,8 +32,7 @@ RUN set -ex \
                libssl-dev \
                libxdelta2 \
                libpython3.7 \
-               linux-image-5.2.0-8-generic \
-               linux-modules-5.2.0-8-generic \
+               linux-generic \
                patch \
                psmisc \
                pv \
@@ -49,7 +48,7 @@ RUN set -ex \
                xxd \
                xz-utils \         
     && apt-get build-dep -y linux-image-raspi2 \
-    && apt-get build-dep -y linux-image-5.2.0-8-generic \
+    && apt-get build-dep -y linux-generic \
     && apt-get upgrade -y \
     && (apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu \
                cpp-aarch64-linux-gnu \
