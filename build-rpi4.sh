@@ -887,10 +887,12 @@ EOF
     fi
     
     
-    # 3Gb limitation because USB & devices do not work currently without this.
-     [ $(grep -cs "total_mem=" /mnt/boot/firmware/config.txt) -gt 0 ] && \
-     sed -i 's/total_mem=*$/total_mem=3072/' /mnt/boot/firmware/config.txt || \
-     echo "total_mem=3072" >> /mnt/boot/firmware/config.txt
+#   3Gb limitation supposedly fixed in 4.19 by
+# https://github.com/raspberrypi/linux/commit/ea2c11a187c0e248343452846457b94715e04969
+#    # 3Gb limitation because USB & devices do not work currently without this.
+#     [ $(grep -cs "total_mem=" /mnt/boot/firmware/config.txt) -gt 0 ] && \
+#     sed -i 's/total_mem=*$/total_mem=3072/' /mnt/boot/firmware/config.txt || \
+#     echo "total_mem=3072" >> /mnt/boot/firmware/config.txt
 
 endfunc
 }
