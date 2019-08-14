@@ -28,7 +28,7 @@ RUN set -ex \
                kpartx \
                libgpm2 \
                lsof \
-               lz4 \
+               liblz4-tool \
                libc6-arm64-cross \
                libelf-dev \
                libncurses-dev \
