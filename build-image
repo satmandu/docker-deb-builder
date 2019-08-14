@@ -264,6 +264,9 @@ docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo
 # DEBUG?
 [ -n "$DEBUG" ] && docker_args+="-e DEBUG=${DEBUG} "
 
+# Should we enable the arbitrary wait flag?
+[ -n "$ARBITRARY_WAIT" ] && docker_args+="-e ARBITRARY_WAIT=${ARBITRARY_WAIT} "
+
 # Send in columns for display.
 shopt -s checkwinsize 
 size=$(stty size) 
