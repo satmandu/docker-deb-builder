@@ -999,6 +999,8 @@ startfunc
     #chroot /mnt /bin/bash -c "mkimage -A arm64 -O linux -T script \
     #-d /etc/flash-kernel/bootscript/bootscr.rpi \
     #/boot/firmware/boot.scr" &>> /tmp/${FUNCNAME[0]}.compile.log
+    [[ !  -f /mnt/etc/flash-kernel/bootscript/bootscr.rpi ]] && \
+    cp /source-ro/bootscr.rpi /mnt/etc/flash-kernel/bootscript/bootscr.rpi
     mkimage -A arm64 -O linux -T script \
     -d /mnt/etc/flash-kernel/bootscript/bootscr.rpi \
     /mnt/boot/firmware/boot.scr &>> /tmp/${FUNCNAME[0]}.compile.log
