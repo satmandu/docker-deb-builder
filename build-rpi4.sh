@@ -1060,6 +1060,7 @@ EOF
 	/usr/local/bin/chroot-apt-wrapper install qemu-user-binfmt -qq
 	/usr/sbin/update-initramfs -c -k all
 	sed -i 's/\/etc\/rc.local.temp\ \&//' /etc/rc.local 
+	touch /etc/cloud/cloud-init.disabled
 	rm -- "$0"
 	exit 0
 EOF
