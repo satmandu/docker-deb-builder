@@ -813,7 +813,12 @@ non-free_firmware () {
     git_get "https://github.com/RPi-Distro/firmware-nonfree" "firmware-nonfree"
     waitfor "image_mount"
 startfunc    
-    cp -af $workdir/firmware-nonfree/* /mnt/usr/lib/firmware
+    if [[ -L "/mnt/lib" && -d "/mnt/lib" ]]
+    then
+        cp -af $workdir/firmware-nonfree/* /mnt/usr/lib/firmware
+    else
+        cp -af $workdir/firmware-nonfree/* /mnt/lib/firmware
+    fi
 endfunc
 }
 
@@ -966,10 +971,19 @@ wifi_firmware_modification () {
 startfunc    
     #echo "* Modifying wireless firmware if necessary."
     # as per https://andrei.gherzan.ro/linux/raspbian-rpi4-64/
-    if ! grep -qs 'boardflags3=0x44200100' \
+        if [[ -L "/mnt/lib" && -d "/mnt/lib" ]]
+    then
+        if ! grep -qs 'boardflags3=0x44200100' \
     /mnt/usr/lib/firmware/brcm/brcmfmac43455-sdio.txt
         then sed -i -r 's/0x48200100/0x44200100/' \
         /mnt/usr/lib/firmware/brcm/brcmfmac43455-sdio.txt
+        fi
+    else
+        if ! grep -qs 'boardflags3=0x44200100' \
+    /mnt/lib/firmware/brcm/brcmfmac43455-sdio.txt
+        then sed -i -r 's/0x48200100/0x44200100/' \
+        /mnt/lib/firmware/brcm/brcmfmac43455-sdio.txt
+        fi
     fi
 endfunc
 }
@@ -1095,7 +1109,12 @@ EOF
 	KERNEL_VERSION="$1"
 	KERNEL_INSTALLED_PATH="$2"
 	
-	mkdir -p /usr/lib/firmware/${KERNEL_VERSION}/device-tree/
+	if [[ -L "/lib" && -d "/lib" ]]
+	then
+		mkdir -p /usr/lib/firmware/${KERNEL_VERSION}/device-tree/
+	else
+		mkdir -p /lib/firmware/${KERNEL_VERSION}/device-tree/
+	fi
 	
 	exit 0
 EOF
