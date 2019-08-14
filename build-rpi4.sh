@@ -11,10 +11,10 @@
 #kernelgitrepo="https://github.com/lategoodbye/rpi-zero.git"
 # This should be the image we want to modify.
 #base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
-#base_image="eoan-preinstalled-server-arm64+raspi3.img.xz"
+#base_image="${base_dist}-preinstalled-server-arm64+raspi3.img.xz"
 base_image_url="${base_url}/${base_image}"
 # This is the base name of the image we are creating.
-new_image="eoan-preinstalled-server-arm64+raspi4"
+new_image="${base_dist}-preinstalled-server-arm64+raspi4"
 # Comment out the following if apt is throwing errors silently.
 # Note that these only work for the chroot commands.
 silence_apt_flags="-o Dpkg::Use-Pty=0 -qq < /dev/null > /dev/null "
@@ -1233,7 +1233,7 @@ endfunc
 
 xdelta3_image_export () {
 startfunc
-        echo "* Making xdelta3 binary diffs between current eoan base image"
+        echo "* Making xdelta3 binary diffs between current ${base_dist} base image"
         echo "* and the new images."
         xdelta3 -e -S none -I 0 -B 1812725760 -W 16777216 -fs \
         $workdir/old_image.img $workdir/${new_image}.img \
@@ -1248,11 +1248,11 @@ startfunc
              $workdir/patch.xdelta"
             $xdelta_patchout_compresscmd
             cp "$workdir/patch.xdelta.$i" \
-     "/output/eoan-daily-preinstalled-server_$KERNEL_VERS_${now}.xdelta3.$i"
+     "/output/${base_dist}-daily-preinstalled-server_$KERNEL_VERS_${now}.xdelta3.$i"
             #$xdelta_patchout_cpcmd
-            chown $USER:$GROUP /output/eoan-daily-preinstalled-server_$KERNEL_VERS_${now}.xdelta3.$i
+            chown $USER:$GROUP /output/${base_dist}-daily-preinstalled-server_$KERNEL_VERS_${now}.xdelta3.$i
             echo "Xdelta3 file exported to:"
-            echo "/output/eoan-daily-preinstalled-server_$KERNEL_VERS_${now}.xdelta3.$i"
+            echo "/output/${base_dist}-daily-preinstalled-server_$KERNEL_VERS_${now}.xdelta3.$i"
         done
 endfunc
 }
