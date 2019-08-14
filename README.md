@@ -20,7 +20,7 @@ A new kernel is compiled, and current firmware is copied into the container.
 ## Default is booting with u-boot just like a normal ubuntu image.
 
 Note that the u-boot in the ubuntu package [u-boot-rpi](https://packages.ubuntu.com/eoan/u-boot-rpi) doesn't yet support the RPI. 
-The u-boot here has been compiled from @agherzan's WIP u-boot [fork here](https://github.com/agherzan/u-boot/tree/ag/rpi4).
+The u-boot here has been compiled from @agherzan's WIP u-boot [fork here](https://github.com/agherzan/u-boot/tree/ag/v2019.07-rpi4-wip).
 
 
 ## Note that this container runs in PRIVILEGED MODE.
