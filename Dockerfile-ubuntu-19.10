@@ -25,6 +25,7 @@ RUN set -ex \
                flex \
                gawk \
                git \
+               kernel-package \
                kpartx \
                libgpm2 \
                lsof \
@@ -35,6 +36,7 @@ RUN set -ex \
                libssl-dev \
                libxdelta2 \
                libpython3.7 \
+               ncurses-dev \
                patch \
                psmisc \
                pv \
