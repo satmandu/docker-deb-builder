@@ -100,6 +100,7 @@ apt-get -o dir::cache::archives=$apt_cache install curl -y &>> /tmp/main.install
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install libc6-arm64-cross -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install pv -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install byobu -y &>> /tmp/main.install.log 
 apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/main.install.log 
 echo -e "Performing cache volume apt autoclean.\n\r"
 apt-get -o dir::cache::archives=$apt_cache autoclean -y -qq &>> /tmp/main.install.log 
@@ -1054,6 +1055,7 @@ EOF
 	#
 	/usr/bin/dpkg -i /var/cache/apt/archives/*.deb
 	/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge
+	purge-old-kernels --keep 1 -qy
 	/usr/local/bin/chroot-apt-wrapper update && /usr/local/bin/chroot-apt-wrapper upgrade -y
 	/usr/local/bin/chroot-apt-wrapper install qemu-user-binfmt -qq
 	/usr/sbin/update-initramfs -c -k all
