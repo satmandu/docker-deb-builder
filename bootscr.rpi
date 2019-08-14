@@ -1,0 +1,52 @@
+# Ubuntu Classic RPi U-Boot script (for armhf and arm64)
+
+# These values *must* be set in the global environment, not the hush
+# interpreter's environment (they're already in the global environment
+# which oddly takes precedence over hush vars)
+setenv fdt_addr_r 0x03000000
+setenv kernel_addr_r 0x01000000
+setenv ramdisk_addr_r 0x03100000
+
+# Load the flattened device tree and extract the bootargs from the /chosen
+# path into the ${bootargs} variable
+fdt addr ${fdt_addr_r}
+fdt get value bootargs /chosen bootargs
+
+# Store the gzip header (1f 8b) in the kernel area for comparison to the
+# header of the image we load. Load "vmlinuz" into the portion of memory for
+# the RAM disk (because we want to uncompress to the kernel area if it's
+# compressed) and compare the word at the start
+mw.w ${kernel_addr_r} 0x8b1f  # little endian
+load ${devtype} ${devnum}:${distro_bootpart} ${ramdisk_addr_r} vmlinuz
+kernel_size=${filesize}
+if cmp.w ${kernel_addr_r} ${ramdisk_addr_r} 1; then
+    # It's a gzip compressed image (NOTE: *not* a self-extracting gzip
+    # compressed kernel, just a kernel image that has been gzip'd). This is
+    # how all kernels *should* be shipped on Ubuntu for RPi in future,
+    # regardless of architecture.
+    #
+    # Decompress the image into the kernel area, and set us up to use booti
+    # to launch it
+    echo "Decompressing kernel..."
+    unzip ${ramdisk_addr_r} ${kernel_addr_r}
+    kernel_size=${filesize}
+    try_boot="booti"
+else
+    # The kernel *might* be a self-extracting image (former case on armhf) or
+    # an uncompressed image (former case on arm64). Copy the data into the
+    # kernel area then attempt to launch first with "bootz" (will fail on arm64
+    # with an unknown command, on armhf with compressed image will succeed)
+    # then "booti" (will succeed with uncompressed image)
+    echo "Copying kernel..."
+    cp.b ${ramdisk_addr_r} ${kernel_addr_r} ${kernel_size}
+    try_boot="bootz booti"
+fi
+
+# Load the initramfs into the initramfs area, storing the filesize in the
+# variable expected by $boot_ubuntu
+load mmc 0:1 ${ramdisk_addr_r} initrd.img
+ramdisk_size=${filesize}
+for cmd in ${try_boot}; do
+    echo "Trying boot command: ${cmd}..."
+    ${cmd} ${kernel_addr_r} ${ramdisk_addr_r}:${ramdisk_size} ${fdt_addr_r}
+done
