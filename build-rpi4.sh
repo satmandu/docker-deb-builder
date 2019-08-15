@@ -666,6 +666,7 @@ kernel_build () {
 startfunc
     KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     cd $workdir/rpi-linux
+    arbitrary_wait
     make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build \
@@ -1193,8 +1194,7 @@ startfunc
     #    echo "** Container paused before image unmount. **"
     #    echo 'Type in "touch /flag/done.ok_to_unmount_image_after_build"'
     #    echo "in a shell into this container to continue."
-    #fi 
-    arbitrary_wait 
+    #fi  
     waitfor "ok_to_umount_image_after_build"
     umount /mnt/build
     umount /mnt/run
