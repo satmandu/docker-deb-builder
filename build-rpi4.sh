@@ -666,7 +666,7 @@ kernel_build () {
 startfunc
     KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     cd $workdir/rpi-linux
-    arbitrary_wait
+    arbitrary_wait_here
     make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build \
@@ -693,7 +693,7 @@ startfunc
     cd $workdir/rpi-linux
     [[ ! $BUILDNATIVE ]] && debcmd="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    -j$(($(nproc) + 1)) \
+    -j$(($(nproc) + 1)) O=$workdir/kernel-build \
     bindeb-pkg" 
     
     [[ $BUILDNATIVE ]] && waitfor "image_apt_installs"
