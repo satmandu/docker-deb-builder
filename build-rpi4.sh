@@ -88,6 +88,10 @@ mkdir -p $src_cache
 # This is needed or apt has issues.
 mkdir -p $apt_cache/partial 
 
+# Set git hash digits. For some reason this can vary between containers.
+git config --global core.abbrev 9
+
+
 #env >> /output/environment
 
 echo "Starting local container software installs."
