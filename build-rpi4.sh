@@ -800,8 +800,8 @@ startfunc
         cd /mnt/boot/firmware/ ; gunzip -f /mnt/boot/firmware/kernel8.img.nouboot.gz \
         &>> /tmp/${FUNCNAME[0]}.install.log
     fi
-    # Make booting without uboot the default so we get the default 3Gb ram available.
-    cp /mnt/boot/firmware/kernel8.img.nouboot /mnt/boot/firmware/kernel8.img
+    # U-Boot now default since 4Gb of ram can be seen with it.
+    #cp /mnt/boot/firmware/kernel8.img.nouboot /mnt/boot/firmware/kernel8.img
 
 endfunc
 }
