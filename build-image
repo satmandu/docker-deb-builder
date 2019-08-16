@@ -80,6 +80,7 @@ srcdir="${srcdir:-.}"
 
 [ -n "$image" ] && echo "Chosen build host image is ${image}."
 image="${image:-${defaultimage}}"
+echo "Build host image is ${image}."
 
 
 #docker_args="-it "
@@ -106,9 +107,11 @@ echo "Creating Docker Image ${image} if it does not exist."
 if [ ! $(docker inspect "${image}" > /dev/null 2>&1 ) ]; then
     echo "Build host ${image} not found."
     if [ "$base_dist" == "bionic" ]; then
-    docker build -t ${image} -f Dockerfile-ubuntu-18.04 .
+        echo "Building bionic build host."
+        docker build -t ${image} -f Dockerfile-ubuntu-18.04 .
     else
-    docker build -t ${image} -f Dockerfile-ubuntu-19.10 .
+        else "Building eoan build host."
+        docker build -t ${image} -f Dockerfile-ubuntu-19.10 .
     fi
 fi
 
