@@ -38,8 +38,10 @@ unset_kernel_config() {
 # Please set modules where possible, rather than building in, and
 # provide a short rationale comment for the changes made
 
-# Enable squashfs since snap needs it, which causes errors at boot on the eoan 
-# image otherwise which disallows logins.
+# Snap needs squashfs. The ubuntu eoan-preinstalled-server image at 
+# http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/ uses snap
+# during cloud-init setup at first boot. Without this the login accounts are not
+# created and the user can not login.
 set_kernel_config CONFIG_SQUASHFS y
 
 # Add git tag to version
