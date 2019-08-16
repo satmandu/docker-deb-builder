@@ -120,7 +120,7 @@ function abspath {
 # Via https://superuser.com/a/917073
 wait_file() {
   local file="$1"; shift
-  local wait_seconds="${1:-10}"; shift # 10 seconds as default timeout
+  local wait_seconds="${1:-100000}"; shift # 100000 seconds as default timeout
 
   until test $((wait_seconds--)) -eq 0 -o -f "$file" ; do sleep 1; done
 
@@ -512,7 +512,7 @@ startfunc
     # Ubuntu after 18.04 symlinks /lib to /usr/lib
     if [[ -L "/mnt/lib" && -d "/mnt/lib" ]]
     then
-        libpath= /mnt/usr/lib
+        libpath=/mnt/usr/lib
     else
         libpath=/mnt/lib
     fi
@@ -750,18 +750,22 @@ startfunc
     else
         rm -f /tmp/nodebs || true
     fi
+    
     [[ $REBUILD ]] && rm -f /tmp/nodebs || true
+    
     if [[ -e /tmp/nodebs ]]
     then
-    echo -e "Using existing $KERNEL_VERS debs from cache volume.\n \
-    \rNo kernel needs to be built."
-    cp $apt_cache/linux-image-*${KERNEL_VERS}*arm64.deb $workdir/
-    cp $apt_cache/linux-headers-*${KERNEL_VERS}*arm64.deb $workdir/
-    cp $workdir/*.deb /output/ 
-    chown $USER:$GROUP /output/*.deb
+        echo -e "Using existing $KERNEL_VERS debs from cache volume.\n \
+        \rNo kernel needs to be built."
+        cp $apt_cache/linux-image-*${KERNEL_VERS}*arm64.deb $workdir/
+        cp $apt_cache/linux-headers-*${KERNEL_VERS}*arm64.deb $workdir/
+        cp $workdir/*.deb /output/ 
+        chown $USER:$GROUP /output/*.deb
     else
-        [[ ! $REBUILD ]] && echo "Cached $KERNEL_VERS kernel debs not found. Building."
-        [[ $REBUILD ]] && echo -e "🧐 Rebuild requested. Rebuilding $KERNEL_VERS kernel debs. \r😮\n"
+        [[ ! $REBUILD ]] && echo "Cached ${KERNEL_VERS} kernel debs not found. Building."
+        [[ $REBUILD ]] && echo -e "🧐 Rebuild requested. Rebuilding ${KERNEL_VERS} \
+        kernel debs. \r😮\n"
+        
         kernel_build &
         spinnerwait kernel_build
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
@@ -771,8 +775,6 @@ startfunc
         chown $USER:$GROUP /output/*.deb
     fi
     
-
-
  endfunc
 }   
 
