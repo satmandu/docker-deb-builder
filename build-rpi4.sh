@@ -756,6 +756,7 @@ startfunc
     else
         rm -f /tmp/nodebs || true
     fi
+    [[ $REBUILD ]] && rm -f /tmp/nodebs || true
     if [[ -e /tmp/nodebs ]]
     then
     echo -e "Using existing $KERNEL_VERS debs from cache volume.\n \
@@ -765,7 +766,8 @@ startfunc
     cp $workdir/*.deb /output/ 
     chown $USER:$GROUP /output/*.deb
     else
-        echo "Cached $KERNEL_VERS kernel debs not found. Building."
+        [[ ! $REBUILD ]] && echo "Cached $KERNEL_VERS kernel debs not found. Building."
+        [[ $REBUILD ]] && echo "Rebuild requested. Building $KERNEL_VERS kernel debs."
         kernel_build &
         spinnerwait kernel_build
         arbitrary_wait_here

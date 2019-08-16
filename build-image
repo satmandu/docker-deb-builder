@@ -99,6 +99,9 @@ SYSTEM=`uname`
 # Just make kerneldebs?
 [ -n "$JUSTDEBS" ] && docker_args+="-e JUSTDEBS=${JUSTDEBS} "
 
+# Request rebuild?
+[ -n "$REBUILD" ] && docker_args+="-e REBUILD=${REBUILD} "
+
 # Check that mandatory parameters are valid
 #[ !    "$outdir"        ] && fatal "output directory was not given (-o DIR)"
 #[ ! -d "$outdir"        ] && fatal "output directory does not exist: $outdir"
