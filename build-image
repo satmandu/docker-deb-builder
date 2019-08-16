@@ -111,25 +111,21 @@ SYSTEM=`uname`
 #[ !    "${srcdir}"        ] && fatal "source directory not given"
 #[ !    "$image"         ] && fatal "docker image name not given (-i IMAGE)"
 
-build_host_container () {
-    echo "Build host ${image} not found."
+build_container () {
+    echo "Build container ${image} not found."
     if [ "$base_dist" == "bionic" ]; then
-        echo "Building Ubuntu Bionic build host."
+        echo "Creating Ubuntu Bionic build container."
         docker build -t ${image} -f Dockerfile-ubuntu-18.04 .
     else
-        echo "Building Ubuntu Disco build host."
+        echo "Creating Ubuntu Disco build container."
         docker build -t ${image} -f Dockerfile-ubuntu-19.04 .
     fi
 }
 
 # Create Docker Image if it does not exist.
 echo "Creating Docker Image ${image} if it does not exist."
-docker inspect "${image}" || build_host_container
-docker_inspect=$( docker inspect "${image}" | awk '/RepoTags/{getline; print} /LastTagTime/{print}'  )
-docker_inspect_exit=$?
-echo ${docker_inspect}
-
-
+docker inspect "${image}" &>/dev/null || build_container
+docker inspect "${image}" 2>/dev/null | awk '/RepoTags/{getline; print} /LastTagTime/{print}'
 
 # Needed for loopback to work inside container.
 #docker_args+="--cap-add=CAP_MKNOD --device-cgroup-rule='b 7:* rmw' "
