@@ -512,10 +512,11 @@ startfunc
     # Ubuntu after 18.04 symlinks /lib to /usr/lib
     if [[ -L "/mnt/lib" && -d "/mnt/lib" ]]
     then
-        libpath=/mnt/usr/lib
+        libpath="/mnt/usr/lib"
     else
-        libpath=/mnt/lib
+        libpath="/mnt/lib"
     fi
+    echo -e "libpath has been set to ${libpath} ."
 
     # Guestmount is at least an order of magnitude slower than using loopback device.
     #guestmount -a ${new_image}.img -m /dev/sda2 -m /dev/sda1:/boot/firmware --rw /mnt -o dev
