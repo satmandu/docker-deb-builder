@@ -755,7 +755,6 @@ startfunc
         [[ $REBUILD ]] && echo -e "🧐 Rebuild requested. Rebuilding $KERNEL_VERS kernel debs. \r😮\n"
         kernel_build &
         spinnerwait kernel_build
-        arbitrary_wait_here
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
         rm -f $workdir/linux-libc-dev*.deb
         cp $workdir/*.deb $apt_cache/ || (echo "Kernel Build Failed!" ; pkill -F /flag/main)
@@ -1362,7 +1361,7 @@ kernelbuild_setup &
 [[ ! $JUSTDEBS ]] && wifi_firmware_modification &
 [[ ! $JUSTDEBS ]] && first_boot_scripts_setup &
 [[ ! $JUSTDEBS ]] && added_scripts &
-waitforstart "kernelbuild_setup" && kernel_debs &
+waitforstart "kernelbuild_setup" && kernel_debs & 2> /tmp/kernel_debs.log
 [[ $BUILDNATIVE || ! $JUSTDEBS ]] && arm64_chroot_setup &
 [[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_apt_installs &
 [[ $BUILDNATIVE || ! $JUSTDEBS ]] && spinnerwait image_apt_installs
