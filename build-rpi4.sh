@@ -101,8 +101,6 @@ apt-get -o dir::cache::archives=$apt_cache install curl -y &>> /tmp/main.install
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install libc6-arm64-cross -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install pv -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -y &>> /tmp/main.install.log 
-# This gives us purge-old-kernels
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install byobu -y &>> /tmp/main.install.log 
 apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/main.install.log 
 echo -e "Performing cache volume apt autoclean.\n\r"
 apt-get -o dir::cache::archives=$apt_cache autoclean -y -qq &>> /tmp/main.install.log 
@@ -572,13 +570,6 @@ startfunc
     -o dir::cache::archives=$apt_cache \
     -d install  \
     qemu-user qemu libc6-amd64-cross -qq &>> /tmp/${FUNCNAME[0]}.install.log || true
-    #
-    # Also install byobu which gives us purge-old-kernels
-        chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
-    -o dir::cache::archives=$apt_cache \
-    -d install  \
-    byobu -qq &>> /tmp/${FUNCNAME[0]}.install.log || true
-
 # endfunc
 # }
 # 
@@ -605,11 +596,6 @@ startfunc
     install wireless-tools wireless-regdb crda \
     net-tools network-manager -y -qq " &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Wifi & networking tools installed." 
-    # Also install byobu which gives us purge-old-kernels
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
-    install byobu \
-     -y -q" &>> /tmp/${FUNCNAME[0]}.install.log || true
-    echo "* Other software installed." 
 endfunc
 }
 
@@ -1085,7 +1071,7 @@ EOF
 	#
 	/usr/bin/dpkg -i /var/cache/apt/archives/*.deb
 	/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge
-	purge-old-kernels --keep 1 -qy
+	echo y | /usr/local/bin/kernel-purge.sh
 	/usr/local/bin/chroot-apt-wrapper update && /usr/local/bin/chroot-apt-wrapper upgrade -y
 	/usr/local/bin/chroot-apt-wrapper install qemu-user-binfmt -qq
 	/usr/sbin/update-initramfs -c -k all
@@ -1102,6 +1088,10 @@ endfunc
 added_scripts () {
     waitfor "image_mount"
 startfunc    
+    # This allows for removing old kernels.
+    mkdir -p /mnt/usr/local/bin
+    cp /source-ro/kernel-purge.sh /mnt/usr/local/bin
+    chmod +x /mnt/usr/local/bin/kernel-purge.sh
 
     ## This script allows flash-kernel to create the uncompressed kernel file
     #  on the boot partition.
