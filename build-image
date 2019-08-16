@@ -104,7 +104,7 @@ SYSTEM=`uname`
 
 # Create Docker Image if it does not exist.
 echo "Creating Docker Image ${image} if it does not exist."
-if [ ! $(docker inspect "${image}" > /dev/null 2>&1 ) ]; then
+if [ ! $( docker inspect "${image}" | awk '/RepoTags/{getline; print}  /LastTagTime/{print}' ) ]; then
     echo "Build host ${image} not found."
     if [ "$base_dist" == "bionic" ]; then
         echo "Building bionic build host."
