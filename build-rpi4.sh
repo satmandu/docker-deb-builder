@@ -520,7 +520,7 @@ startfunc
     else
         libpath="/mnt/lib"
     fi
-    echo -e "Image libpath has been detected as ${libpath} ."
+    #echo -e "* Image lib path has been detected as ${libpath} ."
 
     # Guestmount is at least an order of magnitude slower than using loopback device.
     #guestmount -a ${new_image}.img -m /dev/sda2 -m /dev/sda1:/boot/firmware --rw /mnt -o dev
