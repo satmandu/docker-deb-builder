@@ -48,8 +48,13 @@ done
 
 shift $(($OPTIND - 1))
 
-# This should be the image we want to modify.
+# This should be the image we want to modify. Note that the only options are 
+# bionic & eoan since that is what Canonical provides daily builds of.
 default_base_dist="eoan"
+# This is the default build host image. 18.04 and 19.10 have been tested.
+# However, non-19.10 images need to be built separately and invoked through 
+# for instance:
+# ./build-image -i docker-rpi4-imagebuilder:18.04
 defaultimage="docker-rpi4-imagebuilder:19.10"
 
 base_dist="${base_dist:-${default_base_dist}}"
