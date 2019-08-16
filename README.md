@@ -5,7 +5,7 @@
 
 ## Overview
 
-This creates a docker container to build an Ubuntu 19.10 server image for a Raspberry Pi 4B using unstable/current software. This is has been run successfully (self-hosting?) on docker on a RPI 4B with 4Gb of ram to generate both kernels and images.
+This creates a docker container to build an Ubuntu Eoan 19.10 or Ubuntu Bionic 18.04 server image for a Raspberry Pi 4B using unstable/current software. This is has been run successfully (self-hosting?) on docker on a RPI 4B with 4Gb of ram to generate both kernels and images.
 A new kernel is compiled, and current firmware is copied into the container.
 
 
