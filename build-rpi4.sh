@@ -752,7 +752,7 @@ startfunc
     chown $USER:$GROUP /output/*.deb
     else
         [[ ! $REBUILD ]] && echo "Cached $KERNEL_VERS kernel debs not found. Building."
-        [[ $REBUILD ]] && echo "Rebuild requested. Building $KERNEL_VERS kernel debs."
+        [[ $REBUILD ]] && echo "Rebuild requested. Rebuilding $KERNEL_VERS kernel debs. 😮 \n"
         kernel_build &
         spinnerwait kernel_build
         arbitrary_wait_here

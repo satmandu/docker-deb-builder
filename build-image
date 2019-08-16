@@ -3,9 +3,6 @@
 PROG=$(basename $0)
 PROG_DIR=$(dirname $0)
 
-
-
-
 function usage {
     cat <<EOF 1>&2
 usage: $PROG [options...] SOURCEDIR_for_scripts
