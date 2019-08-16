@@ -101,6 +101,7 @@ apt-get -o dir::cache::archives=$apt_cache install curl -y &>> /tmp/main.install
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install libc6-arm64-cross -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install pv -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -y &>> /tmp/main.install.log 
+# This gives us purge-old-kernels
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install byobu -y &>> /tmp/main.install.log 
 apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/main.install.log 
 echo -e "Performing cache volume apt autoclean.\n\r"
@@ -571,7 +572,13 @@ startfunc
     -o dir::cache::archives=$apt_cache \
     -d install  \
     qemu-user qemu libc6-amd64-cross -qq &>> /tmp/${FUNCNAME[0]}.install.log || true
-    
+    #
+    # Also install byobu which gives us purge-old-kernels
+        chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
+    -o dir::cache::archives=$apt_cache \
+    -d install  \
+    byobu -qq &>> /tmp/${FUNCNAME[0]}.install.log || true
+
 # endfunc
 # }
 # 
@@ -596,8 +603,13 @@ startfunc
   echo "* Installing wifi & networking tools to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
     install wireless-tools wireless-regdb crda \
-    net-tools network-manager -qq " &>> /tmp/${FUNCNAME[0]}.install.log || true
+    net-tools network-manager -y -qq " &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Wifi & networking tools installed." 
+    # Also install byobu which gives us purge-old-kernels
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
+    install byobu \
+     -y -q" &>> /tmp/${FUNCNAME[0]}.install.log || true
+    echo "* Other software installed." 
 endfunc
 }
 
