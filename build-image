@@ -78,9 +78,13 @@ kernelgitrepo="https://github.com/raspberrypi/linux.git"
 srcdir=${PROG_DIR}
 srcdir="${srcdir:-.}"
 
-[ -n "$image" ] && echo "Chosen build host image is ${image}."
-image="${image:-${defaultimage}}"
-echo "Build host image is ${image}."
+if [ -n "$image" ]
+    then
+        echo "Chosen build host image is ${image}."
+    else
+        image="${image:-${defaultimage}}"
+        echo "Build host image defaulting to ${image}."
+fi
 
 
 #docker_args="-it "
