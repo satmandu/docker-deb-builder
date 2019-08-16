@@ -508,6 +508,15 @@ startfunc
     
     mount /dev/mapper/${loop_device}p2 /mnt
     mount /dev/mapper/${loop_device}p1 /mnt/boot/firmware
+    
+    # Ubuntu after 18.04 symlinks /lib to /usr/lib
+    if [[ -L "/mnt/lib" && -d "/mnt/lib" ]]
+    then
+        libpath= /mnt/usr/lib
+    else
+        libpath=/mnt/lib
+    fi
+
     # Guestmount is at least an order of magnitude slower than using loopback device.
     #guestmount -a ${new_image}.img -m /dev/sda2 -m /dev/sda1:/boot/firmware --rw /mnt -o dev
     
@@ -819,12 +828,9 @@ non-free_firmware () {
     git_get "https://github.com/RPi-Distro/firmware-nonfree" "firmware-nonfree"
     waitfor "image_mount"
 startfunc    
-    if [[ -L "/mnt/lib" && -d "/mnt/lib" ]]
-    then
-        cp -af $workdir/firmware-nonfree/* /mnt/usr/lib/firmware
-    else
-        cp -af $workdir/firmware-nonfree/* /mnt/lib/firmware
-    fi
+
+    cp -af $workdir/firmware-nonfree/*  ${libpath}/firmware
+
 endfunc
 }
 
@@ -989,19 +995,11 @@ wifi_firmware_modification () {
 startfunc    
     #echo "* Modifying wireless firmware if necessary."
     # as per https://andrei.gherzan.ro/linux/raspbian-rpi4-64/
-        if [[ -L "/mnt/lib" && -d "/mnt/lib" ]]
-    then
-        if ! grep -qs 'boardflags3=0x44200100' \
-    /mnt/usr/lib/firmware/brcm/brcmfmac43455-sdio.txt
-        then sed -i -r 's/0x48200100/0x44200100/' \
-        /mnt/usr/lib/firmware/brcm/brcmfmac43455-sdio.txt
-        fi
-    else
-        if ! grep -qs 'boardflags3=0x44200100' \
-    /mnt/lib/firmware/brcm/brcmfmac43455-sdio.txt
-        then sed -i -r 's/0x48200100/0x44200100/' \
-        /mnt/lib/firmware/brcm/brcmfmac43455-sdio.txt
-        fi
+        
+    if ! grep -qs 'boardflags3=0x44200100' \
+        ${libpath}/firmware/brcm/brcmfmac43455-sdio.txt
+    then sed -i -r 's/0x48200100/0x44200100/' \
+        ${libpath}/firmware/brcm/brcmfmac43455-sdio.txt
     fi
 endfunc
 }
@@ -1024,8 +1022,8 @@ startfunc
     cp $workdir/u-boot/u-boot.bin /mnt/boot/firmware/uboot.bin
     cp $workdir/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.bin
     cp $workdir/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.img
-    mkdir -p /mnt/usr/lib/u-boot/rpi_4/
-    cp $workdir/u-boot/u-boot.bin /mnt/usr/lib/u-boot/rpi_4/
+    mkdir -p  ${libpath}/u-boot/rpi_4/
+    cp $workdir/u-boot/u-boot.bin  ${libpath}/u-boot/rpi_4/
     # This can be done without chroot by just having u-boot-tools on the build
     # container
     #chroot /mnt /bin/bash -c "mkimage -A arm64 -O linux -T script \
