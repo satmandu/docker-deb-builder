@@ -333,7 +333,7 @@ docker volume create --name $cache_volume
 #docker rm -v $build_container_name
 
 # docker create -v /mnt/ccache:/ccache --name ccache $image
-echo "Running build in docker:"
+echo -e "\nRunning build in docker:"
 echo -e "rm -f $cidfile ; docker run $docker_args $image /bin/bash -c \"$startcmd\"\n"
 rm -f $cidfile ; docker run $docker_args $image /bin/bash -c "$startcmd"
 build_cid=`cat $cidfile`
