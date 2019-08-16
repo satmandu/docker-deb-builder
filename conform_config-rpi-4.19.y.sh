@@ -162,21 +162,45 @@ set_kernel_config CONFIG_BRIDGE_NF_EBTABLES m
 set_kernel_config CONFIG_BRIDGE_EBT_BROUTE m
 set_kernel_config CONFIG_BRIDGE_EBT_T_FILTER m 
 
-# Mask this temporarily during switch to rpi-4.19.y
-# Fix SD_DRIVER upstream and downstream problem in 64bit defconfig
-# use correct driver MMC_BCM2835_MMC instead of MMC_BCM2835_SDHOST - see https://www.raspberrypi.org/forums/viewtopic.php?t=210225
-#set_kernel_config CONFIG_MMC_BCM2835 n
-#set_kernel_config CONFIG_MMC_SDHCI_IPROC n
-#set_kernel_config CONFIG_USB_DWC2 n
-#sed -i "s|depends on MMC_BCM2835_MMC && MMC_BCM2835_DMA|depends on MMC_BCM2835_MMC|" ./drivers/mmc/host/Kconfig
-
 # Enable VLAN support again (its in armv7 configs)
 set_kernel_config CONFIG_IPVLAN m
 
-# Enable SoC camera support
-# See https://www.raspberrypi.org/forums/viewtopic.php?p=1425257#p1425257
-#set_kernel_config CONFIG_VIDEO_V4L2_SUBDEV_API y
-#set_kernel_config CONFIG_VIDEO_BCM2835_UNICAM m
+set_kernel_config CONFIG_USB_UAS y
 
 # Enable RPI POE HAT fan
 set_kernel_config CONFIG_SENSORS_RPI_POE_FAN m
+
+# Enable SoC camera support
+# See https://www.raspberrypi.org/forums/viewtopic.php?p=1425257#p1425257
+set_kernel_config CONFIG_VIDEO_V4L2_SUBDEV_API y
+set_kernel_config CONFIG_VIDEO_BCM2835_UNICAM m
+
+# Enable per-interface network priority control
+# (for systemd-nspawn)
+set_kernel_config CONFIG_CGROUP_NET_PRIO y
+
+# Compile in BTRFS
+set_kernel_config CONFIG_BTRFS_FS y
+set_kernel_config CONFIG_BTRFS_FS_POSIX_ACL y
+set_kernel_config CONFIG_BTRFS_FS_REF_VERIFY y
+
+# Safer to build this in
+set_kernel_config CONFIG_BINFMT_MISC y
+
+# pulseaudio wants a buffer of at least this size
+set_kernel_config CONFIG_SND_HDA_PREALLOC_SIZE 2048
+
+# PR#3063: enable 3D acceleration with 64-bit kernel on RPi4
+# set the appropriate kernel configs unlocked by this PR
+set_kernel_config CONFIG_ARCH_BCM y
+set_kernel_config CONFIG_ARCH_BCM2835 y
+set_kernel_config CONFIG_DRM_V3D m
+set_kernel_config CONFIG_DRM_VC4 m
+set_kernel_config CONFIG_DRM_VC4_HDMI_CEC y
+
+# PR#3144: add arm64 pcie bounce buffers; enables 4GiB on RPi4
+# required by PR#3144; should already be applied, but just to be safe
+set_kernel_config CONFIG_PCIE_BRCMSTB y
+set_kernel_config CONFIG_BCM2835_MMC y
+
+
