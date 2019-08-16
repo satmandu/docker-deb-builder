@@ -1,5 +1,10 @@
 #!/bin/bash -e
 
+mkdir /flag
+echo $BASHPID > /flag/main
+mainPID=$BASHPID
+# The above is used for, amongst other things, the tail log process.
+
 # Set to "/bin/bash -e" only when debugging.
 # This script is executed within the container as root. The resulting image &
 # logs are written to /output after a succesful build.  These directories are 
@@ -23,11 +28,6 @@ silence_apt_update_flags="-o Dpkg::Use-Pty=0 < /dev/null > /dev/null "
 image_compressors=("lz4")
 [[ $XZ ]] && image_compressors=("lz4" "xz")
 
-# Let's see if the inotify issues go away by moving function status
-#  files onto /build.
-mkdir /flag
-echo $BASHPID > /flag/main
-mainPID=$BASHPID
 
 # Quick build shell exit script
 cat <<-EOF> /usr/bin/killme
@@ -35,7 +35,6 @@ cat <<-EOF> /usr/bin/killme
 	pkill -F /flag/main
 EOF
 chmod +x /usr/bin/killme
-
 
 #DEBUG=1
 GIT_DISCOVERY_ACROSS_FILESYSTEM=1
