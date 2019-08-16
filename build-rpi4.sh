@@ -614,6 +614,7 @@ rpi_firmware () {
 startfunc    
     cd $workdir/rpi-firmware
     echo "* Installing current RPI firmware."
+    
     cp bootcode.bin /mnt/boot/firmware/
     cp *.elf /mnt/boot/firmware/
     cp *.dat /mnt/boot/firmware/
@@ -831,6 +832,7 @@ non-free_firmware () {
     waitfor "image_mount"
 startfunc    
 
+    mkdir -p ${libpath}/firmware
     cp -af $workdir/firmware-nonfree/*  ${libpath}/firmware
 
 endfunc
