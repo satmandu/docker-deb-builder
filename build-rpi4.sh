@@ -1,5 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash 
 
+# Set to "/bin/bash -e" only when debugging.
 # This script is executed within the container as root. The resulting image &
 # logs are written to /output after a succesful build.  These directories are 
 # mounted as docker volumes to allow files to be exchanged between the host and 
