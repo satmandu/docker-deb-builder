@@ -1,13 +1,11 @@
 
-# Creating an ARM64 boot image for a Raspberry Pi 4B in a Docker container from a current/nightly Ubuntu RPI3 boot image
+# Creating an ARM64 boot image for a Raspberry Pi 4B in a Docker container from a either a Ubuntu Bionic or Ubuntu Eoan (current/dev) RPI3 boot image
 
 (Initially adapted from project at https://github.com/tsaarni/docker-deb-builder )
 
 ## Overview
 
-This creates a docker container to build an Ubuntu 19.10 server image for a Raspberry Pi 4B using unstable/current software. This is has been run successfully (self-hosting?) on docker on a RPI 4B with 4Gb of ram to generate both kernels and images.
-A new kernel is compiled, and current firmware is copied into the container.
-
+This creates a docker container to build an Ubuntu Eoan 19.10 or Ubuntu Bionic 18.04 server image for a Raspberry Pi 4B using a Ubuntu Disco 19.04 build container. This is has been run successfully (self-hosting?) with docker on a RPI 4B with 4Gb of ram to generate both kernels and images. This setup will compile a current RPI kernel, current RPI userland, get current RPI firmware, and copy them all to the ubuntu image.
 
 ### Current capatiblity options on the 4Gb RPI4:
 
@@ -28,7 +26,7 @@ Feel free to offer suggestions on how to make this setup safer without making th
 
  ## To build an Ubuntu Eoan Raspberry Pi 4B image run following commands:
 
-## 1. Make sure you have a recent install of Docker.
+## 1. Make sure you have a recent install of Docker. (There is no Docker Host OS version requirement.) Tested using Docker running on Ubuntu Eoan & macos Mojave, but this should also work fine in Ubuntu Disco and maybe also Ubuntu Bionic.
 Installation instructions for Ubuntu: https://docs.docker.com/install/linux/docker-ce/ubuntu/
 
 ## 1.5. Some have reported that qemu-user-static needs to be installed on your HOST system before this setup works:
