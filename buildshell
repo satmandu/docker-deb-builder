@@ -1,2 +1,2 @@
 #!/bin/bash
-docker exec -it ` docker ps | grep docker-rpi4-imagebuilder | awk '{print $1}'` /bin/bash
+docker exec -it ` docker ps | grep docker-rpi4-imagebuilder | head -n 1 | awk '{print $1}'` /bin/bash
