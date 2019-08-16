@@ -334,10 +334,10 @@ docker volume create --name $cache_volume
 
 # docker create -v /mnt/ccache:/ccache --name ccache $image
 echo "Running build in docker:"
-echo "rm -f $cidfile ; docker run $docker_args $image /bin/bash -c \"$startcmd\""
+echo -e "rm -f $cidfile ; docker run $docker_args $image /bin/bash -c \"$startcmd\"\n"
 rm -f $cidfile ; docker run $docker_args $image /bin/bash -c "$startcmd"
 build_cid=`cat $cidfile`
-echo ""
+echo -e "\n"
 
 # Now lower priority of container.
 # From https://unix.stackexchange.com/posts/317605/revisions
