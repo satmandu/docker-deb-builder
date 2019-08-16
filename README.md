@@ -13,7 +13,7 @@ A new kernel is compiled, and current firmware is copied into the container.
 
 | Boot Option | How to Enable | Maximum Accessible RAM |
 | --- | --- | --- |
-| u-boot at /boot/firmware/kernel8.img | sudo cp /boot/firmware/uboot.bin /boot/firmware/kernel8.img ; sudo reboot | 1 Gb | 
+| u-boot at /boot/firmware/kernel8.img | sudo cp /boot/firmware/uboot.bin /boot/firmware/kernel8.img ; sudo reboot | **4 Gb** (Default) | 
 | uncompressed linux kernel at /boot/firmware/kernel8.img | sudo cp /boot/firmware/kernel8.img.nouboot /boot/firmware/kernel8.img ; sudo reboot | **4Gb** |
 
 
