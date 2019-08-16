@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash -e
 
 # Set to "/bin/bash -e" only when debugging.
 # This script is executed within the container as root. The resulting image &
