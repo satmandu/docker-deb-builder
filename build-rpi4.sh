@@ -976,6 +976,12 @@ EOF
 	Defaults secure_path=$SUDOPATH
 EOF
 	chmod 0440 /mnt/etc/sudoers.d/rpi
+    # Add display forwarding to sudo as per https://askubuntu.com/a/414810/844422
+    echo "* Adding X Display forwarding to sudo."
+    cat <<-EOF >> /mnt/etc/sudoers.d/display
+	Defaults env_keep+="XAUTHORIZATION XAUTHORITY TZ PS2 PS1 PATH LS_COLORS KRB5CCNAME HOSTNAME HOME DISPLAY COLORS"
+EOF
+	chmod 0440 /mnt/etc/sudoers.d/display
 endfunc
 }
 
