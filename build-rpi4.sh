@@ -613,6 +613,8 @@ startfunc
     cp *.dat /mnt/boot/firmware/
     cp *.dat /mnt/boot/firmware/
     cp *.dtb /mnt/boot/firmware/
+    mkdir -p /mnt/boot/firmware/broadcom/
+    cp *.dtb /mnt/boot/firmware/broadcom/
     cp *.dtb /mnt/etc/flash-kernel/dtbs/
     cp overlays/*.dtbo /mnt/boot/firmware/overlays/
 endfunc
