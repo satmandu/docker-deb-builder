@@ -113,10 +113,12 @@ SYSTEM=`uname`
 
 # Create Docker Image if it does not exist.
 echo "Creating Docker Image ${image} if it does not exist."
+docker inspect "${image}" || build_host_container
 docker_inspect=$( docker inspect "${image}" | awk '/RepoTags/{getline; print} /LastTagTime/{print}'  )
 docker_inspect_exit=$?
 echo ${docker_inspect}
-if [ ! ${docker_inspect_exit} ]; then
+
+build_host_container () {
     echo "Build host ${image} not found."
     if [ "$base_dist" == "bionic" ]; then
         echo "Building Ubuntu Bionic build host."
@@ -125,7 +127,7 @@ if [ ! ${docker_inspect_exit} ]; then
         echo "Building Ubuntu Disco build host."
         docker build -t ${image} -f Dockerfile-ubuntu-19.04 .
     fi
-fi
+}
 
 
 # Needed for loopback to work inside container.
