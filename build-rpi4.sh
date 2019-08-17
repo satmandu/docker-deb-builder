@@ -1024,6 +1024,10 @@ startfunc
     echo "CONFIG_BZIP2=y" >> $workdir/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_SYS_LONGHELP=y" >> $workdir/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_REGEX=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_USB=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_STORAGE=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    echo "CONFIG_CMD_ZFS=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    arbitrary_wait
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make rpi_4_defconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make -j $(($(nproc) + 1)) &>> /tmp/${FUNCNAME[0]}.compile.log
     waitfor "image_mount"
