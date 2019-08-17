@@ -1022,10 +1022,36 @@ startfunc
     echo "CONFIG_BZIP2=y" >> $workdir/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_SYS_LONGHELP=y" >> $workdir/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_REGEX=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_USB=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_STORAGE=y" >> $workdir/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_CMD_ZFS=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    arbitrary_wait_here
+    #echo "CONFIG_CMD_PART=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_PCI=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_USB=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_BTRFS=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_EXT4=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_EXT4_WRITE=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_FAT=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_FS_GENERIC=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_PARTITION_TYPE_GUID=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_ENV_IS_IN_EXT4=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_PCI=y   " >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_DM_PCI=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_PCI_PNP=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_PCIE_ECAM_GENERIC=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_DM_USB=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_HOST=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_XHCI_HCD=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_XHCI_PCI=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_UHCI_HCD=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_DWC2=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_STORAGE=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_KEYBOARD=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_SYS_USB_EVENT_POLL=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_FS_BTRFS=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_FS_EXT4=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_EXT4_WRITE=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_FS_FAT=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_FAT_WRITE=y" >> $workdir/u-boot/configs/rpi_4_defconfig
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make rpi_4_defconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make -j $(($(nproc) + 1)) &>> /tmp/${FUNCNAME[0]}.compile.log
     waitfor "image_mount"
