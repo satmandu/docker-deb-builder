@@ -637,6 +637,7 @@ endfunc
 
 kernelbuild_setup () {
     git_get "$kernelgitrepo" "rpi-linux" "$kernel_branch"
+startfunc    
     majorversion=$(grep VERSION $src_cache/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
     patchlevel=$(grep PATCHLEVEL $src_cache/rpi-linux/Makefile | \
@@ -653,10 +654,8 @@ kernelbuild_setup () {
     
     #echo "PKGVER: $PKGVER"
     kernelrev=$(git -C $src_cache/rpi-linux rev-parse --short HEAD) > /dev/null
-    KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${kernelrev}"
-    echo "** Current Kernel Version: $KERNEL_VERS" 
-    echo $KERNEL_VERS > /tmp/KERNEL_VERS
-startfunc    
+    echo $kernelrev > /tmp/kernelrev
+
     cd $workdir/rpi-linux
         # Get rid of dirty localversion as per https://stackoverflow.com/questions/25090803/linux-kernel-kernel-version-string-appended-with-either-or-dirty
     #touch $workdir/rpi-linux/.scmversion
@@ -676,6 +675,22 @@ startfunc
     [ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
     wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.3.y/arch/arm64/configs/bcm2711_defconfig \
     -O arch/arm64/configs/bcm2711_defconfig
+    
+    # Use kernel patch script from sakaki- found at 
+    # https://github.com/sakaki-/bcm2711-kernel-bis
+    [[ -e /source-ro/patch_kernel-${kernel_branch}.sh ]] && { /source-ro/patch_kernel-${kernel_branch}.sh ;true; } || \
+    { /source-ro/patch_kernel.sh ; true; }
+    if [[ -e /tmp/APPLIED_KERNEL_PATCHES ]]
+        then
+            KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${kernelrev}$(< /tmp/APPLIED_KERNEL_PATCHES)"
+        else
+            KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${kernelrev}"
+    fi
+    echo "** Current Kernel Version: $KERNEL_VERS" 
+    echo $KERNEL_VERS > /tmp/KERNEL_VERS
+
+    
+    
 endfunc
 }
     
@@ -684,10 +699,6 @@ kernel_build () {
 startfunc
     KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     cd $workdir/rpi-linux
-    # Use kernel patch script from sakaki- found at 
-    # https://github.com/sakaki-/bcm2711-kernel-bis
-    [[ -e /source-ro/patch_kernel-${kernel_branch}.sh ]] && { /source-ro/patch_kernel-${kernel_branch}.sh ;true; } || \
-    { /source-ro/patch_kernel.sh ; true; }
 
     make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
@@ -697,9 +708,24 @@ startfunc
     cd $workdir/kernel-build
     # Use kernel config modification script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
+    if [[ ! -e /tmp/APPLIED_KERNEL_PATCHES ]]
+        then
     [[ -e /source-ro/conform_config-${kernel_branch}.sh ]] && { /source-ro/conform_config-${kernel_branch}.sh ;true; } || \
     { /source-ro/conform_config.sh ; true; }
-    yes "" | make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+        else
+        [[ -e /source-ro/conform_config-${kernel_branch}.sh ]] && cp \
+        conform_config-${kernel_branch}.sh $workdir/kernel-build/
+        [[ -e /source-ro/conform_config.sh ]] && cp conform_config.sh \
+        $workdir/kernel-build/
+        sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' $workdir/kernel-build/conform_config-${kernel_branch}.sh || true
+        sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' $workdir/kernel-build/conform_config.sh || true
+        [[ -e $workdir/kernel-build/conform_config-${kernel_branch}.sh ]] && { $workdir/kernel-build/conform_config-${kernel_branch}.sh ;true; } || \
+    { $workdir/kernel-build/conform_config.sh ; true; }
+        LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
+    fi
+    
+    yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
+    CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build/ \
     olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     
@@ -710,7 +736,13 @@ startfunc
     
     echo "* Making $KERNEL_VERS kernel debs."
     cd $workdir/rpi-linux
-    [[ ! $BUILDNATIVE ]] && debcmd="make \
+    [[ ! $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
+    ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+    -j$(($(nproc) + 1)) O=$workdir/kernel-build \
+    bindeb-pkg" 
+    
+    [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
+    LOCALVERSION=${LOCALVERSION} \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     -j$(($(nproc) + 1)) O=$workdir/kernel-build \
     bindeb-pkg" 
@@ -728,7 +760,14 @@ startfunc
     /mnt/usr/local/bin/cpp
     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-g++ \
     /mnt/usr/local/bin/g++
-    [[ $BUILDNATIVE ]] && debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
+    [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
+    debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
+    O=$workdir/kernel-build/ \
+    bindeb-pkg"'
+    
+    [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
+    debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
+    LOCALVERSION=${LOCALVERSION} \
     O=$workdir/kernel-build/ \
     bindeb-pkg"'
 
@@ -737,8 +776,8 @@ startfunc
     # If there were kernel patches, the version may change, so let's check 
     # and overwrite if necessary.
     DEB_KERNEL_VERSION=`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`
+    echo -e "** Expected Kernel Version: ${KERNEL_VERS}\n**    Built Kernel Version: ${DEB_KERNEL_VERSION}"   
     echo ${DEB_KERNEL_VERSION} > /tmp/KERNEL_VERS
-    
 endfunc
 }
 
