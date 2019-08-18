@@ -50,13 +50,13 @@ apply_pr() {
 # Make bcm2835-mmc compatible with swiotlb that is used on ARM64
 # This resolves swiotlb buffer full errors on Wi-Fi bursts on
 # Raspberry PI4 in 64-bit mode.
-#apply_pr 3159 "Resolves swiotlb buffer full errors on Wi-Fi bursts in 64-bit mode."
+apply_pr 3159 "Resolves swiotlb buffer full errors on Wi-Fi bursts in 64-bit mode."
 
 
-# If any patches are applied then note it since 
-# compiled kernel version will be marked as dirty.
-# if (( ${#applied_prs[@]} ))
-#     then
-#         APPLIED_KERNEL_PATCHES=$(IFS="+"; echo "-pr${applied_prs[*]}")
-#         echo $APPLIED_KERNEL_PATCHES > /tmp/APPLIED_KERNEL_PATCHES
-# fi
+#If any patches are applied then note it since 
+#compiled kernel version will be marked as dirty.
+if [[ ${applied_prs[@]} ]]
+    then
+        APPLIED_KERNEL_PATCHES=$(IFS="+"; echo "-pr${applied_prs[*]}")
+        echo $APPLIED_KERNEL_PATCHES > /tmp/APPLIED_KERNEL_PATCHES
+fi
