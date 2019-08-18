@@ -734,6 +734,10 @@ startfunc
 
     echo $debcmd
     $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
+    # If there were kernel patches, the version may change, so let's check 
+    # and overwrite if necessary.
+    DEB_KERNEL_VERSION=`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`
+    echo ${DEB_KERNEL_VERSION} > /tmp/KERNEL_VERS
     
 endfunc
 }
@@ -777,6 +781,8 @@ startfunc
         
         kernel_build &
         spinnerwait kernel_build
+        # This may have changed, so reload:
+        KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
         rm -f $workdir/linux-libc-dev*.deb
         arbitrary_wait_here
