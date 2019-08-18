@@ -55,8 +55,8 @@ apply_pr() {
 
 # If any patches are applied then note it since 
 # compiled kernel version will be marked as dirty.
-if (( ${#applied_prs[@]} ))
-    then
-        APPLIED_KERNEL_PATCHES=$(IFS="+"; echo "-pr${applied_prs[*]}")
-        echo $APPLIED_KERNEL_PATCHES > /tmp/APPLIED_KERNEL_PATCHES
-fi
+# if (( ${#applied_prs[@]} ))
+#     then
+#         APPLIED_KERNEL_PATCHES=$(IFS="+"; echo "-pr${applied_prs[*]}")
+#         echo $APPLIED_KERNEL_PATCHES > /tmp/APPLIED_KERNEL_PATCHES
+# fi
