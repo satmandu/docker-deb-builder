@@ -13,6 +13,8 @@ set -e
 set -u
 shopt -s nullglob
 
+#PRs apply status counts:
+declare -a applied_prs
 # Utility functions
 
 apply_pr() {
@@ -31,6 +33,7 @@ apply_pr() {
         >&2 echo "  PR#{1} failed to apply - source tree may be corrupt!"
     else
         echo "  PR#${1} applied successfully!"
+        applied_prs+="${1}"
     fi
     echo
     return 0
@@ -48,3 +51,12 @@ apply_pr() {
 # This resolves swiotlb buffer full errors on Wi-Fi bursts on
 # Raspberry PI4 in 64-bit mode.
 apply_pr 3159 "Resolves swiotlb buffer full errors on Wi-Fi bursts in 64-bit mode."
+
+
+# If any patches are applied then note it since 
+# compiled kernel version will be marked as dirty.
+if (( ${#applied_prs[@]} ))
+    then
+        APPLIED_KERNEL_PATCHES=$(IFS="+"; echo "-PR${applied_prs[*]}")
+        echo $APPLIED_KERNEL_PATCHES > /tmp/APPLIED_KERNEL_PATCHES
+fi
