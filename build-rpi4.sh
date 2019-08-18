@@ -699,7 +699,6 @@ startfunc
     # https://github.com/sakaki-/bcm2711-kernel-bis
     [[ -e /source-ro/conform_config-${kernel_branch}.sh ]] && { /source-ro/conform_config-${kernel_branch}.sh ;true; } || \
     { /source-ro/conform_config.sh ; true; }
-    arbitrary_wait_here
     yes "" | make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build/ \
     olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
