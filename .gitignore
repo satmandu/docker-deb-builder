@@ -12,3 +12,4 @@ build-image~
 *.sh#
 Dockerfile-ubuntu-18.04~
 buildshell~
+README.md~
