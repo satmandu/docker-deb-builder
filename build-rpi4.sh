@@ -195,10 +195,7 @@ startfunc () {
 endfunc () {
     local proc_name=${FUNCNAME[1]}
     [[ -z ${proc_name} ]] && proc_name=main
-   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.compile.log ]] && rm /tmp/${proc_name}.compile.log || true
-   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.install.log ]] && rm /tmp/${proc_name}.install.log || true
-   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.git.log ]] && rm /tmp/${proc_name}.git.log || true
-   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.cleanup.log ]] && rm /tmp/${proc_name}.cleanup.log || true
+   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.*.log ]] && rm /tmp/${proc_name}.*.log || true
     mv -f /flag/start.${proc_name} /flag/done.${proc_name}
     if [ ! "${proc_name}" == "spinnerwait" ]
         then printf "%${COLUMNS}s\n" "Done: ${proc_name} [X] "
@@ -671,7 +668,7 @@ startfunc
     
     
     [ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
-    wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.2.y/arch/arm64/configs/bcm2711_defconfig \
+    wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.3.y/arch/arm64/configs/bcm2711_defconfig \
     -O arch/arm64/configs/bcm2711_defconfig
 endfunc
 }
@@ -681,6 +678,11 @@ kernel_build () {
 startfunc
     KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     cd $workdir/rpi-linux
+    # Use kernel patch script from sakaki- found at 
+    # https://github.com/sakaki-/bcm2711-kernel-bis
+    [[ -e /source-ro/patch_kernel-${kernel_branch}.sh ]] && { /source-ro/patch_kernel-${kernel_branch}.sh ;true; } || \
+    { /source-ro/patch_kernel.sh ; true; }
+
     make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build \
@@ -689,13 +691,8 @@ startfunc
     cd $workdir/kernel-build
     # Use kernel config modification script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
-    # This is needed to enable squashfs - which snapd requires, since otherwise
-    # login at boot fails on the ubuntu server image.
-    # This also enables the BPF syscall for systemd-journald firewalling
     [[ -e /source-ro/conform_config-${kernel_branch}.sh ]] && { /source-ro/conform_config-${kernel_branch}.sh ;true; } || \
     { /source-ro/conform_config.sh ; true; }
-    #[[ -e /source-ro/patch-kernel-${kernel_branch}.sh ]] && { /source-ro/patch-kernel-${kernel_branch}.sh ;true; } || \
-    #{ /source-ro/patch-kernel.sh ; true; }
     arbitrary_wait_here
     yes "" | make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build/ \
@@ -1392,7 +1389,7 @@ kernelbuild_setup &
 [[ ! $JUSTDEBS ]] && wifi_firmware_modification &
 [[ ! $JUSTDEBS ]] && first_boot_scripts_setup &
 [[ ! $JUSTDEBS ]] && added_scripts &
-waitforstart "kernelbuild_setup" && kernel_debs & 2> /tmp/kernel_debs.log
+waitforstart "kernelbuild_setup" && kernel_debs &
 [[ $BUILDNATIVE || ! $JUSTDEBS ]] && arm64_chroot_setup &
 [[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_apt_installs &
 [[ $BUILDNATIVE || ! $JUSTDEBS ]] && spinnerwait image_apt_installs
