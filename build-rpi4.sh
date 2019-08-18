@@ -1135,6 +1135,21 @@ startfunc
 	# See discussion here: https://github.com/raspberrypi/linux/issues/3127
 	iwconfig wlan0 power off
 	#
+	if [ ! -e "/lib/firmware/brcm/brcmfmac43455-sdio.clm_blob" ]
+	then
+		set +o noclobber
+		curl https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm/brcmfmac43455-sdio.clm_blob > /lib/firmware/brcm/brcmfmac43455-sdio.clm_blob
+	fi
+	if [ ! -e "/lib/firmware/brcm/brcmfmac43455-sdio.txt" ]
+	then
+		set +o noclobber
+		curl https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm/brcmfmac43455-sdio.txt > /lib/firmware/brcm/brcmfmac43455-sdio.txt
+	fi 
+	if [ ! -e "/lib/firmware/brcm/brcmfmac43455-sdio.bin" ]
+	then
+		set +o noclobber
+		curl https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm/brcmfmac43455-sdio.bin > /lib/firmware/brcm/brcmfmac43455-sdio.bin
+	fi
 	/etc/rc.local.temp &
 	exit 0
 EOF
