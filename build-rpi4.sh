@@ -714,8 +714,8 @@ startfunc
     { /source-ro/conform_config.sh ; true; }
         else
         [[ -e /source-ro/conform_config-${kernel_branch}.sh ]] && cp \
-        conform_config-${kernel_branch}.sh $workdir/kernel-build/
-        [[ -e /source-ro/conform_config.sh ]] && cp conform_config.sh \
+        /source-ro/conform_config-${kernel_branch}.sh $workdir/kernel-build/
+        [[ -e /source-ro/conform_config.sh ]] && cp /source-ro/conform_config.sh \
         $workdir/kernel-build/
         sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' $workdir/kernel-build/conform_config-${kernel_branch}.sh || true
         sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' $workdir/kernel-build/conform_config.sh || true
