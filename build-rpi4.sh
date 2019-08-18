@@ -195,7 +195,13 @@ startfunc () {
 endfunc () {
     local proc_name=${FUNCNAME[1]}
     [[ -z ${proc_name} ]] && proc_name=main
-   [[ ! $DEBUG ]] && [[ -f /tmp/${proc_name}.*.log ]] && rm /tmp/${proc_name}.*.log || true
+   if [[ ! $DEBUG ]]
+        then 
+        if test -n "$(find /tmp -maxdepth 1 -name ${proc_name}.*.log -print -quit)"
+            then
+                rm /tmp/${proc_name}.*.log || true
+        fi
+    fi
     mv -f /flag/start.${proc_name} /flag/done.${proc_name}
     if [ ! "${proc_name}" == "spinnerwait" ]
         then printf "%${COLUMNS}s\n" "Done: ${proc_name} [X] "
