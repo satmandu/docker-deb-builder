@@ -57,6 +57,6 @@ apply_pr 3159 "Resolves swiotlb buffer full errors on Wi-Fi bursts in 64-bit mod
 # compiled kernel version will be marked as dirty.
 if (( ${#applied_prs[@]} ))
     then
-        APPLIED_KERNEL_PATCHES=$(IFS="+"; echo "_pr${applied_prs[*]}")
+        APPLIED_KERNEL_PATCHES=$(IFS="+"; echo "-pr${applied_prs[*]}")
         echo $APPLIED_KERNEL_PATCHES > /tmp/APPLIED_KERNEL_PATCHES
 fi
