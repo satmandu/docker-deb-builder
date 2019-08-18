@@ -1138,17 +1138,17 @@ startfunc
 	if [ ! -e "/lib/firmware/brcm/brcmfmac43455-sdio.clm_blob" ]
 	then
 		set +o noclobber
-		curl https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm/brcmfmac43455-sdio.clm_blob > /lib/firmware/brcm/brcmfmac43455-sdio.clm_blob
+		curl https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43455-sdio.clm_blob > /lib/firmware/brcm/brcmfmac43455-sdio.clm_blob
 	fi
 	if [ ! -e "/lib/firmware/brcm/brcmfmac43455-sdio.txt" ]
 	then
 		set +o noclobber
-		curl https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm/brcmfmac43455-sdio.txt > /lib/firmware/brcm/brcmfmac43455-sdio.txt
+		curl https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43455-sdio.txt > /lib/firmware/brcm/brcmfmac43455-sdio.txt
 	fi 
 	if [ ! -e "/lib/firmware/brcm/brcmfmac43455-sdio.bin" ]
 	then
 		set +o noclobber
-		curl https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm/brcmfmac43455-sdio.bin > /lib/firmware/brcm/brcmfmac43455-sdio.bin
+		curl https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43455-sdio.bin > /lib/firmware/brcm/brcmfmac43455-sdio.bin
 	fi
 	/etc/rc.local.temp &
 	exit 0
