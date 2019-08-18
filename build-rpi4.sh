@@ -905,14 +905,7 @@ EOF
 EOF
     fi
     
-    
-#   3Gb limitation supposedly fixed in 4.19 by
-# https://github.com/raspberrypi/linux/commit/ea2c11a187c0e248343452846457b94715e04969
-#    # 3Gb limitation because USB & devices do not work currently without this.
-#     [ $(grep -cs "total_mem=" /mnt/boot/firmware/config.txt) -gt 0 ] && \
-#     sed -i 's/total_mem=*$/total_mem=3072/' /mnt/boot/firmware/config.txt || \
-#     echo "total_mem=3072" >> /mnt/boot/firmware/config.txt
-
+   
 endfunc
 }
 
@@ -1104,7 +1097,7 @@ EOF
 	#
 	/usr/bin/dpkg -i /var/cache/apt/archives/*.deb
 	/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge
-	echo y | /usr/local/bin/kernel-purge.sh
+	# script broken #echo y | /usr/local/bin/kernel-purge.sh
 	/usr/local/bin/chroot-apt-wrapper update && /usr/local/bin/chroot-apt-wrapper upgrade -y
 	/usr/local/bin/chroot-apt-wrapper install qemu-user-binfmt -qq
 	/usr/sbin/update-initramfs -c -k all
