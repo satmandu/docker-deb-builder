@@ -779,6 +779,7 @@ startfunc
         spinnerwait kernel_build
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
         rm -f $workdir/linux-libc-dev*.deb
+        arbitrary_wait_here
         cp $workdir/*.deb $apt_cache/ || (echo -e "Kernel Build Failed! 😬" ; pkill -F /flag/main)
         cp $workdir/*.deb /output/ 
         chown $USER:$GROUP /output/*.deb
