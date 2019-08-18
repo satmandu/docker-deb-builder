@@ -576,7 +576,7 @@ startfunc
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives=$apt_cache \
     -d install wireless-tools wireless-regdb crda \
-    net-tools network-manager rng-tools -qq &>> /tmp/${FUNCNAME[0]}.install.log || true
+    net-tools network-manager rng-tools connman -qq &>> /tmp/${FUNCNAME[0]}.install.log || true
     # This setup DOES get around the issues with kernel
     # module support binaries built in amd64 instead of arm64.
     #echo "* Downloading qemu-user-static"
@@ -610,7 +610,7 @@ startfunc
   echo "* Installing wifi & networking tools to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
     install wireless-tools wireless-regdb crda \
-    net-tools network-manager rng-tools -y -qq " &>> /tmp/${FUNCNAME[0]}.install.log || true
+    net-tools network-manager rng-tools connman -y -qq " &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Wifi & networking tools installed." 
 endfunc
 }
