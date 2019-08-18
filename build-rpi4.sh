@@ -1145,6 +1145,11 @@ EOF
 	#!/bin/sh -e
 	# 1st Boot Cleanup Script
 	#
+	# make flash-kernel force install kernels
+	sed -i 's/exec flash-kernel/exec flash-kernel --force/' \
+	/etc/kernel/postrm.d/zz-flash-kernel
+	sed -i 's/exec flash-kernel/exec flash-kernel --force/' \
+	/etc/kernel/postinst.d/zz-flash-kernel
 	/usr/bin/dpkg -i /var/cache/apt/archives/*.deb
 	/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge
 	# Modifying instruction at https://launchpad.net/linux-purge/+announcement/15313
