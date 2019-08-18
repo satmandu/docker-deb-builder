@@ -1097,7 +1097,11 @@ EOF
 	#
 	/usr/bin/dpkg -i /var/cache/apt/archives/*.deb
 	/usr/local/bin/chroot-apt-wrapper remove linux-image-raspi2 linux-image*-raspi2 -y --purge
-	# script broken #echo y | /usr/local/bin/kernel-purge.sh
+	# Modifying instruction at https://launchpad.net/linux-purge/+announcement/15313
+	cd /tmp && wget -N https://git.launchpad.net/linux-purge/plain/install-linux-purge.sh && chmod +x ./install-linux-purge.sh && ./install-linux-purge.sh && /usr/local/bin/linux-purge -k 1 -y
+	# Note that linux-purge can be removed through this step as per 
+	# https://launchpad.net/linux-purge/+announcement/15314
+	# cd $(xdg-user-dir DOWNLOAD) && wget -N https://git.launchpad.net/linux-purge/plain/remove-linux-purge.sh && chmod +x ./remove-linux-purge.sh && sudo ./remove-linux-purge.sh
 	/usr/local/bin/chroot-apt-wrapper update && /usr/local/bin/chroot-apt-wrapper upgrade -y
 	/usr/local/bin/chroot-apt-wrapper install qemu-user-binfmt -qq
 	/usr/sbin/update-initramfs -c -k all
@@ -1114,10 +1118,6 @@ endfunc
 added_scripts () {
     waitfor "image_mount"
 startfunc    
-    # This allows for removing old kernels.
-    mkdir -p /mnt/usr/local/bin
-    cp /source-ro/kernel-purge.sh /mnt/usr/local/bin
-    chmod +x /mnt/usr/local/bin/kernel-purge.sh
 
     ## This script allows flash-kernel to create the uncompressed kernel file
     #  on the boot partition.
