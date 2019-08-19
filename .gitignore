@@ -13,3 +13,5 @@ build-image~
 Dockerfile-ubuntu-18.04~
 buildshell~
 README.md~
+Dockerfile-ubuntu-19.04-test~
+Dockerfile-ubuntu-arm64v8-19.04~

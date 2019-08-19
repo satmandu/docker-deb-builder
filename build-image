@@ -11,6 +11,10 @@ Options (These are optional):
            Default: ${defaultimage} .
   -o DIR    Destination directory to store packages to. 
            Default: ${outdir}.
+  -n NATIVEIMAGE Name of the docker image (including tag) to use as a arm64 package 
+            build environment.
+           Default: ${defaultnativeimage} .
+
 EOF
     exit 1
 }
@@ -29,13 +33,16 @@ function abspath {
 
 #[ "$#" -eq "0" ] && usage
 
-while getopts "i:o:h" opt; do
+while getopts "i:o:n:h" opt; do
     case $opt in
         i)
             image="$OPTARG"
             ;;
         o)
             outdir="$OPTARG"
+            ;;
+        n)
+            nativeimage="$OPTARG"
             ;;
         h)
             usage
@@ -57,6 +64,7 @@ default_base_dist="eoan"
 #  invoked through for instance:
 # ./build-image -i docker-rpi4-imagebuilder:18.04
 defaultimage="docker-rpi4-imagebuilder:19.04"
+defaultnativeimage="docker-rpi4-native-imagebuilder:19.04"
 outdir="${outdir:-output}"
 
 base_dist="${base_dist:-${default_base_dist}}"
@@ -88,6 +96,15 @@ if [ -n "$image" ]
         echo "Build host image defaulting to ${image}."
 fi
 
+if [ -n "$nativeimage" ]
+    then
+        #echo "Chosen build host image is ${nativeimage}."
+    else
+        image="${nativeimage:-${defaultnativeimage}}"
+        #echo "Natie build host image defaulting to ${nativeimage}."
+fi
+
+
 
 #docker_args="-it "
 # The bash script & copy log if failure setup doesn't work without the "-dt" docker argument.
@@ -97,6 +114,7 @@ docker_args="-dt "
 
 # Are we mac or are we linux?
 SYSTEM=`uname`
+HOST_ARCH=`uname -m`
 
 # Just make kerneldebs?
 [ -n "$JUSTDEBS" ] && docker_args+="-e JUSTDEBS=${JUSTDEBS} "
@@ -122,10 +140,33 @@ build_container () {
     fi
 }
 
+build_arm64v8_container () {
+    echo "Arm64 Build container ${nativeimage} not found."
+    if [ "$base_dist" == "bionic" ]; then
+        echo "Creating Ubuntu Bionic build container."
+        docker build -t ${nativeimage} -f Dockerfile-ubuntu-arm64v8-18.04 .
+    else
+        echo "Creating Ubuntu Disco build container."
+        docker build -t ${nativeimage} -f Dockerfile-ubuntu-arm64v8-19.04 .
+    fi
+}
+
 # Create Docker Image if it does not exist.
 echo "Creating Docker Image ${image} if it does not exist."
 docker inspect "${image}" &>/dev/null || build_container
 docker inspect "${image}" 2>/dev/null | awk '/RepoTags/{getline; print} /LastTagTime/{print}'
+
+arm64v8_container () {
+# Create Docker Image if it does not exist.
+echo "Creating Docker Image ${image} if it does not exist."
+docker inspect "${nativeimage}" &>/dev/null || build_arm64v8_container
+docker inspect "${nativeimage}" 2>/dev/null | awk '/RepoTags/{getline; print} /LastTagTime/{print}'
+}
+
+# if [ -n "$BUILDNATIVE"  ] && [ ! "${HOST_ARCH}" = "aarch64" ]
+#     then
+#     arm64v8_container
+# fi
 
 # Needed for loopback to work inside container.
 #docker_args+="--cap-add=CAP_MKNOD --device-cgroup-rule='b 7:* rmw' "
@@ -185,8 +226,6 @@ EOF
     download_base_image
     fi
 }
-
-
 
 
 download_base_image () {
