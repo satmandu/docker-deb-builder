@@ -50,7 +50,7 @@ apply_pr() {
 # Make bcm2835-mmc compatible with swiotlb that is used on ARM64
 # This resolves swiotlb buffer full errors on Wi-Fi bursts on
 # Raspberry PI4 in 64-bit mode.
-apply_pr 3159 "Resolves swiotlb buffer full errors on Wi-Fi bursts in 64-bit mode."
+apply_pr 3164 "fix DMA leaks that lead to swiotlb buffer overflow errors on bcm2835-mmc under ARM64."
 
 
 #If any patches are applied then note it since 
