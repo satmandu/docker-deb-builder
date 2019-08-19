@@ -6,7 +6,6 @@ RUN mkdir /arm64 && set -ex \
     			libncurses-dev \
     			flex \
     			bison \
-    			openssl-dev \
     			libssl-dev \
     			dkms \
     			libelf-dev \
