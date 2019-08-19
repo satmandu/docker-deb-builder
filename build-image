@@ -63,7 +63,7 @@ default_base_dist="eoan"
 #  have been tested. However, non-19.04 images need to be built separately and 
 #  invoked through for instance:
 # ./build-image -i docker-rpi4-imagebuilder:18.04
-defaultimage="docker-rpi4-imagebuilder:19.04"
+defaultimage="docker-rpi4-imagebuilder-v2:19.04"
 defaultnativeimage="docker-rpi4-native-imagebuilder:19.04"
 outdir="${outdir:-output}"
 
