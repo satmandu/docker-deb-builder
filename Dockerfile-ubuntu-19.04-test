@@ -83,13 +83,9 @@ RUN set -ex \
     && apt-get build-dep -y linux-image-raspi2 \
     && apt-get build-dep -y linux-image-generic \
     && apt-get upgrade -y
-RUN set -ex \
- && (apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu \
+RUN [[ ! $(uname -m) = aarch64 ]] && (apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu \
                cpp-aarch64-linux-gnu \
                g++-aarch64-linux-gnu \
-#               linux-generic \
-#               linux-image-generic \
-#               linux-firmware 
                 || true ) \
 RUN set -ex && apt-get clean && rm -rf /tmp/* /var/tmp/*
 
