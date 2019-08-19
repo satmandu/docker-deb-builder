@@ -11,7 +11,7 @@ RUN mkdir /arm64 && set -ex \
     			libelf-dev \
     			qemu-user-static \
     			libc6-amd64-cross \
-    && apt-get build-dep -y linux-image-$(uname -r) \
+    && apt-get build-dep -y linux-image-generic \
     && apt-get install -y build-essential autoconf automake \
     libtool gawk alien fakeroot ksh \
     && apt-get install -y zlib1g-dev uuid-dev libattr1-dev libblkid-dev \
