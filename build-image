@@ -141,28 +141,28 @@ build_container () {
     fi
 }
 
-build_arm64v8_container () {
-    echo "Arm64 Build container ${nativeimage} not found."
-    if [ "$base_dist" == "bionic" ]; then
-        echo "Creating Ubuntu Bionic build container."
-        docker build -t ${nativeimage} -f Dockerfile-ubuntu-arm64v8-18.04 .
-    else
-        echo "Creating Ubuntu Disco build container."
-        docker build -t ${nativeimage} -f Dockerfile-ubuntu-arm64v8-19.04 .
-    fi
-}
+# build_arm64v8_container () {
+#     echo "Arm64 Build container ${nativeimage} not found."
+#     if [ "$base_dist" == "bionic" ]; then
+#         echo "Creating Ubuntu Bionic build container."
+#         docker build -t ${nativeimage} -f Dockerfile-ubuntu-arm64v8-18.04 .
+#     else
+#         echo "Creating Ubuntu Disco build container."
+#         docker build -t ${nativeimage} -f Dockerfile-ubuntu-arm64v8-19.04 .
+#     fi
+# }
 
 # Create Docker Image if it does not exist.
 echo "Creating Docker Image ${image} if it does not exist."
 docker inspect "${image}" &>/dev/null || build_container
 docker inspect "${image}" 2>/dev/null | awk '/RepoTags/{getline; print} /LastTagTime/{print}'
 
-arm64v8_container () {
-    # Create Docker Image if it does not exist.
-    echo "Creating Docker Image ${image} if it does not exist."
-    docker inspect "${nativeimage}" &>/dev/null || build_arm64v8_container
-    docker inspect "${nativeimage}" 2>/dev/null | awk '/RepoTags/{getline; print} /LastTagTime/{print}'
-}
+# arm64v8_container () {
+#     # Create Docker Image if it does not exist.
+#     echo "Creating Docker Image ${image} if it does not exist."
+#     docker inspect "${nativeimage}" &>/dev/null || build_arm64v8_container
+#     docker inspect "${nativeimage}" 2>/dev/null | awk '/RepoTags/{getline; print} /LastTagTime/{print}'
+# }
 
 # if [ -n "$BUILDNATIVE"  ] && [ ! "${HOST_ARCH}" = "aarch64" ]
 #     then
