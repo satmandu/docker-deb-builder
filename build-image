@@ -101,7 +101,7 @@ if [ -n "$nativeimage" ]
         echo ""
         #echo "Native build host image is ${nativeimage}."
     else
-        image="${nativeimage:-${defaultnativeimage}}"
+        nativeimage="${nativeimage:-${defaultnativeimage}}"
         #echo "Native build host image defaulting to ${nativeimage}."
 fi
 
