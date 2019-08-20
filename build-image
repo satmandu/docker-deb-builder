@@ -119,7 +119,7 @@ HOST_ARCH=`uname -m`
 
 if [ "${HOST_ARCH}" = "aarch64" ]
     then
-    unset NATIVEBUILD
+    unset BUILDNATIVE
 fi
 
 # Just make kerneldebs?
