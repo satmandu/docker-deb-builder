@@ -837,7 +837,7 @@ startfunc
         [[ $REBUILD ]] && echo -e "🧐 Rebuild requested.\r😮Building ${KERNEL_VERS} ."
         
         kernel_build &
-        spinnerwait kernel_build
+        #spinnerwait kernel_build
         # This may have changed, so reload:
         KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
