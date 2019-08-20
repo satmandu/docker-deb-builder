@@ -88,7 +88,7 @@ RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] && (apt-get install -y --
                g++-aarch64-linux-gnu \
                 || true )"]
 RUN set -ex && apt-get clean && rm -rf /tmp/* /var/tmp/*
-RUN set -ex && cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp /usr/aarch64-linux-gnu/lib/libc.so.6 /usr/lib/aarch64-linux-gnu/ && echo "/usr/lib/aarch64-linux-gnu" >> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
+RUN set -ex && cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/ && echo "/usr/lib/aarch64-linux-gnu" >> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
 
 
     

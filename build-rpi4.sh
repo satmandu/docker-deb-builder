@@ -767,7 +767,8 @@ startfunc
     $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
     unset runthis
     
-    [[ $BUILDNATIVE ]] && (mv /usr/bin/gcc-8 /usr/bin/gcc-8.x86_x64 && cp /arm64_chroot/usr/bin/gcc-8 /usr/bin/gcc-8) 
+    [[ $BUILDNATIVE ]] && (mv /usr/bin/gcc-8 /usr/bin/gcc-8.x86_x64 && cp /arm64_chroot/usr/bin/gcc-8 /usr/bin/gcc-8 && cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/)
+    [[ $BUILDNATIVE ]] && ( mkdir -p /usr/lib/gcc/aarch64-linux-gnu/8/ && cp -r /arm64_chroot/usr/lib/gcc/aarch64-linux-gnu/8/* /usr/lib/gcc/aarch64-linux-gnu/8/ ) 
     cd $workdir/rpi-linux
     
     [[ ! $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
