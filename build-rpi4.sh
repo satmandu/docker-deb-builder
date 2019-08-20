@@ -133,7 +133,7 @@ wait_file() {
 
 
 spinnerwait () {
-        local start_timeout=10000
+        local start_timeout=100000
         if [[ -f "/flag/start.spinnerwait" ]]
         then
             echo "${1} waiting" >> /tmp/spinnerwait
