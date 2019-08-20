@@ -741,7 +741,7 @@ startfunc
         LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
         echo ${LOCALVERSION} > /tmp/LOCALVERSION
     fi
-    
+
     yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
     CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build/ \
@@ -802,7 +802,8 @@ startfunc
 
     echo $debcmd
     arbitrary_wait_here
-    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
+#    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
+    cd $workdir/rpi-linux ; $debcmd | tee -a /tmp/${FUNCNAME[0]}.compile.log
     # If there were kernel patches, the version may change, so let's check 
     # and overwrite if necessary.
     DEB_KERNEL_VERSION=`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`
