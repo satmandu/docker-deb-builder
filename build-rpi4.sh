@@ -1471,7 +1471,8 @@ touch /flag/done.ok_to_exit_container_after_build
 [[ ! $JUSTDEBS ]] && non-free_firmware & 
 [[ ! $JUSTDEBS ]] && rpi_userland &
 [[ ! $JUSTDEBS ]] && andrei_gherzan_uboot_fork &
-kernelbuild_setup && kernel_debs &
+kernelbuild_setup
+kernel_debs &
 [[ ! $JUSTDEBS ]] && rpi_config_txt_configuration &
 [[ ! $JUSTDEBS ]] && rpi_cmdline_txt_configuration &
 [[ ! $JUSTDEBS ]] && wifi_firmware_modification &
