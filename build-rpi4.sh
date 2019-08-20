@@ -765,15 +765,18 @@ startfunc
     runthis='echo "* Making $KERNEL_VERS kernel debs."'
     PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log
     $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
+    unset runthis
     
     [[ $BUILDNATIVE ]] && (mv /usr/bin/gcc-8 /usr/bin/gcc-8.x86_x64 && cp /arm64_chroot/usr/bin/gcc-8 /usr/bin/gcc-8) 
     cd $workdir/rpi-linux
+    [[ ! $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && PrintLog "No LOCALVERSION, No BUILDNATIVE" /tmp/${FUNCNAME[0]}.compile.log
     [[ ! $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg" 
     
+    [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && PrintLog "LOCALVERSION, no BUILDNATIVE" /tmp/${FUNCNAME[0]}.compile.log
     [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
     LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg" 
-    
+
 #     [[ $BUILDNATIVE ]] && waitfor "image_apt_installs"
 #     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-gcc \
 #     /mnt/usr/local/bin/gcc
@@ -787,14 +790,17 @@ startfunc
 #     /mnt/usr/local/bin/cpp
 #     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-g++ \
 #     /mnt/usr/local/bin/g++
+    [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "no LOCALVERSION, BUILDNATIVE" /tmp/${FUNCNAME[0]}.compile.log
     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
     debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) O=$workdir/kernel-build/ bindeb-pkg"'
 #     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
 #     O=$workdir/kernel-build/ \
 #     bindeb-pkg"'
     
+    [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "LOCALVERSION, BUILDNATIVE" /tmp/${FUNCNAME[0]}.compile.log
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
     debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg"'
+
 #     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
 #     LOCALVERSION=${LOCALVERSION} \
 #     O=$workdir/kernel-build/ \
