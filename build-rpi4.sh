@@ -779,8 +779,7 @@ startfunc
 #     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-g++ \
 #     /mnt/usr/local/bin/g++
     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-    debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 \
-    CROSS_COMPILE=aarch64-linux-gnu- \
+    debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) \
     O=$workdir/kernel-build/ \
     bindeb-pkg"'
@@ -789,8 +788,7 @@ startfunc
 #     bindeb-pkg"'
     
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-    debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 \
-    CROSS_COMPILE=aarch64-linux-gnu- \
+    debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) \
     LOCALVERSION=${LOCALVERSION} \
     O=$workdir/kernel-build/ \
