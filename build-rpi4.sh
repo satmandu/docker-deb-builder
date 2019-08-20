@@ -755,15 +755,10 @@ startfunc
     echo "* Making $KERNEL_VERS kernel debs."
     cd $workdir/rpi-linux
     [[ ! $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
-    ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    -j$(($(nproc) + 1)) O=$workdir/kernel-build \
-    bindeb-pkg" 
+    ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg" 
     
     [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
-    LOCALVERSION=${LOCALVERSION} \
-    ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    -j$(($(nproc) + 1)) O=$workdir/kernel-build \
-    bindeb-pkg" 
+    LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg" 
     
 #     [[ $BUILDNATIVE ]] && waitfor "image_apt_installs"
 #     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-gcc \
@@ -779,20 +774,13 @@ startfunc
 #     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-g++ \
 #     /mnt/usr/local/bin/g++
     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-    debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) \
-    O=$workdir/kernel-build/ \
-    bindeb-pkg"'
+    debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) O=$workdir/kernel-build/ bindeb-pkg"'
 #     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
 #     O=$workdir/kernel-build/ \
 #     bindeb-pkg"'
     
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-    debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) \
-    LOCALVERSION=${LOCALVERSION} \
-    O=$workdir/kernel-build/ \
-    bindeb-pkg"'
+    debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg"'
 #     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
 #     LOCALVERSION=${LOCALVERSION} \
 #     O=$workdir/kernel-build/ \
@@ -1472,10 +1460,14 @@ touch /flag/done.ok_to_exit_container_after_build
 # So we will work around it.
 #inotify_touch_events &
 
-[[ $BUILDNATIVE || ! $JUSTDEBS  ]] && utility_scripts &
-[[ $BUILDNATIVE || ! $JUSTDEBS ]] && base_image_check
-[[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_extract &
-[[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_mount &
+# [[ $BUILDNATIVE || ! $JUSTDEBS  ]] && utility_scripts &
+# [[ $BUILDNATIVE || ! $JUSTDEBS ]] && base_image_check
+# [[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_extract &
+# [[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_mount &
+[[ ! $JUSTDEBS  ]] && utility_scripts &
+[[ ! $JUSTDEBS  ]] && base_image_check
+[[ ! $JUSTDEBS  ]] && image_extract &
+[[ ! $JUSTDEBS  ]] && image_mount &
 [[ ! $JUSTDEBS ]] && rpi_firmware &
 [[ ! $JUSTDEBS ]] && armstub8-gic &
 [[ ! $JUSTDEBS ]] && non-free_firmware & 
@@ -1488,9 +1480,12 @@ kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && first_boot_scripts_setup &
 [[ ! $JUSTDEBS ]] && added_scripts &
 #waitforstart "kernelbuild_setup" && kernel_debs &
-[[ $BUILDNATIVE || ! $JUSTDEBS ]] && arm64_chroot_setup &
-[[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_apt_installs &
-[[ $BUILDNATIVE || ! $JUSTDEBS ]] && spinnerwait image_apt_installs
+# [[ $BUILDNATIVE || ! $JUSTDEBS ]] && arm64_chroot_setup &
+# [[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_apt_installs &
+# [[ $BUILDNATIVE || ! $JUSTDEBS ]] && spinnerwait image_apt_installs
+[[ ! $JUSTDEBS ]] && arm64_chroot_setup &
+[[ ! $JUSTDEBS ]] && image_apt_installs &
+[[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
 [[ ! $JUSTDEBS ]] && kernel_deb_install
 [[ ! $JUSTDEBS ]] && image_and_chroot_cleanup
 [[ ! $JUSTDEBS ]] && image_unmount
