@@ -169,7 +169,7 @@ waitfor () {
     # waitforit file is written in the function "endfunc"
     touch /flag/wait.${proc_name}_for_${1}
     printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${1} [/] "
-    local start_timeout=10000
+    local start_timeout=100000
     wait_file "/flag/done.${1}" $start_timeout
     printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${1} [X] " && \
     rm -f /flag/wait.${proc_name}_for_${1}
