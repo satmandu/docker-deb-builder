@@ -716,11 +716,14 @@ kernel_build () {
 startfunc
     KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     cd $workdir/rpi-linux
-
-    make \
+    
+    runthis="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build \
-    bcm2711_defconfig &>> /tmp/${FUNCNAME[0]}.compile.log
+    bcm2711_defconfig"
+    PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log
+    $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
+    
     
     cd $workdir/kernel-build
     # Use kernel config modification script from sakaki- found at 
@@ -742,17 +745,26 @@ startfunc
         echo ${LOCALVERSION} > /tmp/LOCALVERSION
     fi
 
-    yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
+    runthis="yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
     CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build/ \
-    olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
+    olddefconfig"
+    PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log
+    $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
+#     yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
+#     CROSS_COMPILE=aarch64-linux-gnu- \
+#     O=$workdir/kernel-build/ \
+#     olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     
     
     KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     #make -j$(($(nproc) + 1)) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     #O=$workdir/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
     
-    echo "* Making $KERNEL_VERS kernel debs."
+    runthis='echo "* Making $KERNEL_VERS kernel debs."'
+    PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log
+    $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
+    
     [[ $BUILDNATIVE ]] && (mv /usr/bin/gcc-8 /usr/bin/gcc-8.x86_x64 && cp /arm64_chroot/usr/bin/gcc-8 /usr/bin/gcc-8) 
     cd $workdir/rpi-linux
     [[ ! $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
