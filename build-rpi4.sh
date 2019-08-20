@@ -836,7 +836,7 @@ startfunc
         [[ ! $REBUILD ]] && echo "Cached ${KERNEL_VERS} kernel debs not found. Building."
         [[ $REBUILD ]] && echo -e "🧐 Rebuild requested.\r😮Building ${KERNEL_VERS} ."
         
-        kernel_build &
+        kernel_build & || echo "kernel_build died"
         spinnerwait kernel_build  || echo "spinnerwait kernel_build died"
         # This may have changed, so reload:
         KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
