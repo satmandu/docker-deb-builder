@@ -739,6 +739,7 @@ startfunc
         [[ -e $workdir/kernel-build/conform_config-${kernel_branch}.sh ]] && { $workdir/kernel-build/conform_config-${kernel_branch}.sh ;true; } || \
     { $workdir/kernel-build/conform_config.sh ; true; }
         LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
+        echo ${LOCALVERSION} > /tmp/LOCALVERSION
     fi
     
     yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
