@@ -144,18 +144,18 @@ spinnerwait () {
         local start_timeout=100000
         if [[ -f "/flag/start.spinnerwait" ]]
         then
-            echo "${1} waiting" >> /tmp/spinnerwait.log
+            echo "${1} waiting" | ts >> /tmp/spinnerwait.log
             wait_file "/flag/done.spinnerwait" ${start_timeout}
-            echo "${1} done waiting" >> /tmp/spinnerwait.log
+            echo "${1} done waiting" | ts >> /tmp/spinnerwait.log
             rm -f "/flag/done.spinnerwait"
         fi
 startfunc
-        echo "start.${1}" >> /tmp/spinnerwait.log
+        echo "start.${1}" | ts >> /tmp/spinnerwait.log
         wait_file "/flag/start.${1}" ${start_timeout} || \
-        echo "${1} didn't start in $? seconds." >> /tmp/spinnerwait.log
-        echo "Starting ${1}" >> /tmp/spinnerwait.log
+        echo "${1} didn't start in $? seconds." | ts >> /tmp/spinnerwait.log
+        echo "Starting ${1}" | ts >> /tmp/spinnerwait.log
         local job_id=$(cat /flag/start.${1})
-        echo "Waiting for ${1}: ${job_id} to end." >> /tmp/spinnerwait.log
+        echo "Waiting for ${1}: ${job_id} to end." | ts >> /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP ${job_id} &>/dev/null)
         do for s in / - \\ \|
@@ -165,7 +165,7 @@ startfunc
             sleep .1
             done
         done
-        echo "${1}: ${job_id} done." >> /tmp/spinnerwait.log
+        echo "${1}: ${job_id} done." | ts >> /tmp/spinnerwait.log
 endfunc
 }
 
