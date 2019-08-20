@@ -723,6 +723,7 @@ startfunc
     bcm2711_defconfig"
     PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log
     $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
+    unset runthis
     
     
     cd $workdir/kernel-build
@@ -745,12 +746,14 @@ startfunc
         echo ${LOCALVERSION} > /tmp/LOCALVERSION
     fi
 
-    runthis="yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
+    runthis='yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
     CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build/ \
-    olddefconfig"
-    PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log
-    $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
+    olddefconfig'
+    PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log 
+    $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log 
+    unset runthis
+    
 #     yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
 #     CROSS_COMPILE=aarch64-linux-gnu- \
 #     O=$workdir/kernel-build/ \
