@@ -152,7 +152,7 @@ startfunc
         echo "${1} didn't start in $? seconds." >> /tmp/spinnerwait.log
         echo "Starting ${1}" >> /tmp/spinnerwait.log
         local job_id=$(cat /flag/start.${1})
-        echo "Waiting for ${job_id} to end." >> /tmp/spinnerwait.log
+        echo "Waiting for ${1}: ${job_id} to end." >> /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP ${job_id} &>/dev/null)
         do for s in / - \\ \|
@@ -162,7 +162,7 @@ startfunc
             sleep .1
             done
         done
-        echo "${job_id} done." >> /tmp/spinnerwait.log
+        echo "${1}: ${job_id} done." >> /tmp/spinnerwait.log
 endfunc
 }
 
