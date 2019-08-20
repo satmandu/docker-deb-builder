@@ -131,8 +131,8 @@ wait_file() {
             echo "file: ${file}, seconds: ${wait_seconds}" >> /tmp/wait_file.log
             sleep 1
         done
-  [[ -f "${file}" ]] && echo "${file} found at ${wait_seconds}"  >> /tmp/wait_file.log
-  [[ ${wait_seconds} -eq 0 ]] && echo "${file} time limit at ${wait_seconds}" >> /tmp/wait_file.log
+  [[ -f "${file}" ]] && echo "${file} found at T-${wait_seconds} seconds."  >> /tmp/wait_file.log
+  [[ ${wait_seconds} -eq 0 ]] && echo "${file} hit time limit at ${wait_seconds} seconds." >> /tmp/wait_file.log
   ((++wait_seconds))
 }
 
