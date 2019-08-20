@@ -121,21 +121,26 @@ function abspath {
     echo $(cd "$1" && pwd)
 }
 
+# via https://serverfault.com/a/905345
+PrintLog(){
+  information=${1}
+  logFile=${2}
+  echo ${information} | ts >> $logFile
+}
+
 # Via https://superuser.com/a/917073
 wait_file() {
   local file="$1"; shift
   local wait_seconds="${1:-100000}"; shift # 100000 seconds as default timeout
-    echo \
-    "file: ${file}, seconds: ${wait_seconds}" | ts >> /tmp/wait.log
+    PrintLog "file: ${file}, seconds: ${wait_seconds}" /tmp/wait.log
   until test $((wait_seconds--)) -eq 0 -o -f "${file}"
         do 
-            echo "file: ${file}, seconds: ${wait_seconds}" | ts >> /tmp/wait_file.log
+            PrintLog "file: ${file}, seconds: ${wait_seconds}" /tmp/wait_file.log
             sleep 1
         done
-  [[ -f "${file}" ]] && echo \
-  "${file} found at T-${wait_seconds} seconds." | ts >> /tmp/wait_file.log
-  [[ ${wait_seconds} -eq 0 ]] && echo \
-  "${file} hit time limit at ${wait_seconds} seconds." | ts >> /tmp/wait_file.log
+  [[ -f "${file}" ]] && PrintLog "${file} found at T-${wait_seconds} seconds." /tmp/wait_file.log
+  [[ ${wait_seconds} -eq 0 ]] && PrintLog \
+  "${file} hit time limit at ${wait_seconds} seconds." /tmp/wait_file.log
   ((++wait_seconds))
 }
 
@@ -144,18 +149,18 @@ spinnerwait () {
         local start_timeout=100000
         if [[ -f "/flag/start.spinnerwait" ]]
         then
-            echo "${1} waiting" | ts >> /tmp/spinnerwait.log
+            PrintLog "${1} waiting" /tmp/spinnerwait.log
             wait_file "/flag/done.spinnerwait" ${start_timeout}
-            echo "${1} done waiting" | ts >> /tmp/spinnerwait.log
+            PrintLog "${1} done waiting" /tmp/spinnerwait.log
             rm -f "/flag/done.spinnerwait"
         fi
 startfunc
-        echo "start.${1}" | ts >> /tmp/spinnerwait.log
+        PrintLog "start.${1}" /tmp/spinnerwait.log
         wait_file "/flag/start.${1}" ${start_timeout} || \
-        echo "${1} didn't start in $? seconds." | ts >> /tmp/spinnerwait.log
-        echo "Starting ${1}" | ts >> /tmp/spinnerwait.log
+        PrintLog "${1} didn't start in $? seconds." /tmp/spinnerwait.log
+        PrintLog "Starting ${1}" /tmp/spinnerwait.log
         local job_id=$(cat /flag/start.${1})
-        echo "Waiting for ${1}: ${job_id} to end." | ts >> /tmp/spinnerwait.log
+        PrintLog "Waiting for ${1}: ${job_id} to end." /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP ${job_id} &>/dev/null)
         do for s in / - \\ \|
@@ -165,9 +170,9 @@ startfunc
             sleep .1
             done
         done
-        echo "${1}: ${job_id} done." | ts >> /tmp/spinnerwait.log
-        echo "${1}: $(pgrep -cxP ${job_id})" | ts >> /tmp/spinnerwait.log
-        echo "${1}:${job_id} $(pstree -p)" | ts >> /tmp/spinnerwait.log
+        PrintLog "${1}: ${job_id} done." /tmp/spinnerwait.log
+        PrintLog "${1}: $(pgrep -cxP ${job_id})" /tmp/spinnerwait.log
+        PrintLog "${1}:${job_id} $(pstree -p)" /tmp/spinnerwait.log
 endfunc
 }
 
