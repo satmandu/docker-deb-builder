@@ -126,12 +126,13 @@ wait_file() {
   local file="$1"; shift
   local wait_seconds="${1:-100000}"; shift # 100000 seconds as default timeout
     echo "file: ${file}, seconds: ${wait_seconds}" >> /tmp/wait.log
-  until test $((wait_seconds--)) -eq 0 -o -f "$file"
+  until test $((wait_seconds--)) -eq 0 -o -f "${file}"
         do 
             echo "file: ${file}, seconds: ${wait_seconds}" >> /tmp/wait_file.log
             sleep 1
         done
-
+  [[ -f "${file}" ]] && echo "${file} found after ${wait_seconds}"  >> /tmp/wait_file.log
+  [[ ${wait_seconds} -eq 0 ]] && echo "${file} time limit at ${wait_seconds}" >> /tmp/wait_file.log
   ((++wait_seconds))
 }
 
