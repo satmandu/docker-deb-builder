@@ -158,9 +158,9 @@ startfunc
         PrintLog "start.${1}" /tmp/spinnerwait.log
         wait_file "/flag/start.${1}" ${start_timeout} || \
         PrintLog "${1} didn't start in $? seconds." /tmp/spinnerwait.log
-        PrintLog "Starting ${1}" /tmp/spinnerwait.log
         local job_id=$(cat /flag/start.${1})
-        PrintLog "Waiting for ${1}: ${job_id} to end." /tmp/spinnerwait.log
+        PrintLog "Start wait for ${1}:${job_id} end." /tmp/spinnerwait.log
+        #PrintLog "Waiting for ${1}: ${job_id} to end." /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP ${job_id} &>/dev/null)
         do for s in / - \\ \|
@@ -170,8 +170,8 @@ startfunc
             sleep .1
             done
         done
-        PrintLog "${1}: ${job_id} done." /tmp/spinnerwait.log
-        PrintLog "${1}: $(pgrep -cxP ${job_id})" /tmp/spinnerwait.log
+        PrintLog "${1}:${job_id} done." /tmp/spinnerwait.log
+        PrintLog "${1}:${job_id} pgrep exit:$(pgrep -cxP ${job_id})" /tmp/spinnerwait.log
         PrintLog "${1}:${job_id} $(pstree -p)" /tmp/spinnerwait.log
 endfunc
 }
