@@ -735,6 +735,7 @@ startfunc
     #O=$workdir/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
     
     echo "* Making $KERNEL_VERS kernel debs."
+    arbitrary_wait_here
     cd $workdir/rpi-linux
     [[ ! $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
@@ -823,7 +824,6 @@ startfunc
         KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
         rm -f $workdir/linux-libc-dev*.deb
-        arbitrary_wait_here
         cp $workdir/*.deb $apt_cache/ || (echo -e "Kernel Build Failed! 😬" ; pkill -F /flag/main)
         cp $workdir/*.deb /output/ 
         chown $USER:$GROUP /output/*.deb
