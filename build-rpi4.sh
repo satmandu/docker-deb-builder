@@ -752,7 +752,6 @@ startfunc
     #O=$workdir/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
     
     echo "* Making $KERNEL_VERS kernel debs."
-    arbitrary_wait_here
     cd $workdir/rpi-linux
     [[ ! $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
@@ -765,19 +764,19 @@ startfunc
     -j$(($(nproc) + 1)) O=$workdir/kernel-build \
     bindeb-pkg" 
     
-    [[ $BUILDNATIVE ]] && waitfor "image_apt_installs"
-    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-gcc \
-    /mnt/usr/local/bin/gcc
-    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld \
-    /mnt/usr/local/bin/ld
-    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld.bfd \
-    /mnt/usr/local/bin/ld.bfd
-    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld.gold \
-    /mnt/usr/local/bin/ld.gold
-    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-cpp \
-    /mnt/usr/local/bin/cpp
-    [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-g++ \
-    /mnt/usr/local/bin/g++
+#     [[ $BUILDNATIVE ]] && waitfor "image_apt_installs"
+#     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-gcc \
+#     /mnt/usr/local/bin/gcc
+#     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld \
+#     /mnt/usr/local/bin/ld
+#     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld.bfd \
+#     /mnt/usr/local/bin/ld.bfd
+#     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld.gold \
+#     /mnt/usr/local/bin/ld.gold
+#     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-cpp \
+#     /mnt/usr/local/bin/cpp
+#     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-g++ \
+#     /mnt/usr/local/bin/g++
     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
     debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 \
     CROSS_COMPILE=aarch64-linux-gnu- \
@@ -801,6 +800,7 @@ startfunc
 #     bindeb-pkg"'
 
     echo $debcmd
+    arbitrary_wait_here
     $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
     # If there were kernel patches, the version may change, so let's check 
     # and overwrite if necessary.
