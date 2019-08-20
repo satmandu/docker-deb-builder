@@ -117,6 +117,11 @@ docker_args="-dt "
 SYSTEM=`uname`
 HOST_ARCH=`uname -m`
 
+if [ "${HOST_ARCH}" = "aarch64" ]
+    then
+    unset NATIVEBUILD
+fi
+
 # Just make kerneldebs?
 [ -n "$JUSTDEBS" ] && docker_args+="-e JUSTDEBS=${JUSTDEBS} "
 
