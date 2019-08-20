@@ -162,7 +162,6 @@ startfunc
         PrintLog "${1} didn't start in $? seconds." /tmp/spinnerwait.log
         local job_id=$(cat /flag/start.${1})
         PrintLog "Start wait for ${1}:${job_id} end." /tmp/spinnerwait.log
-        #PrintLog "Waiting for ${1}: ${job_id} to end." /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP ${job_id} &>/dev/null)
         do for s in / - \\ \|
@@ -780,15 +779,24 @@ startfunc
     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-g++ \
     /mnt/usr/local/bin/g++
     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-    debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
+    debcmd='CC=/usr/bin/aarch64-linux-gnu-gcc ARCH=arm64 \
+    /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) \
     O=$workdir/kernel-build/ \
     bindeb-pkg"'
+#     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
+#     O=$workdir/kernel-build/ \
+#     bindeb-pkg"'
     
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-    debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
+    debcmd='CC=/usr/bin/aarch64-linux-gnu-gcc ARCH=arm64 \
+    /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) \
     LOCALVERSION=${LOCALVERSION} \
     O=$workdir/kernel-build/ \
     bindeb-pkg"'
+#     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
+#     LOCALVERSION=${LOCALVERSION} \
+#     O=$workdir/kernel-build/ \
+#     bindeb-pkg"'
 
     echo $debcmd
     $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
