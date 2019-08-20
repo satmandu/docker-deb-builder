@@ -138,7 +138,7 @@ wait_file() {
 #             PrintLog "file: ${file}, seconds: ${wait_seconds}" /tmp/wait_file.log
 #             sleep 1
 #         done
-    timeout ${wait_seconds} tail -f --retry ${file} &> /dev/null
+    timeout ${wait_seconds} tail -f --retry ${file} 2> /dev/null | { grep -q -m1 ""  && pkill -P $$ -x tail;}
   # [[ -f "${file}" ]] && PrintLog "${file} found at T-${wait_seconds} seconds." /tmp/wait_file.log
 #   [[ ${wait_seconds} -eq 0 ]] && PrintLog \
 #   "${file} hit time limit at ${wait_seconds} seconds." /tmp/wait_file.log
