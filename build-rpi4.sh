@@ -746,13 +746,11 @@ startfunc
         echo ${LOCALVERSION} > /tmp/LOCALVERSION
     fi
 
-    runthis='yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
+    yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
     CROSS_COMPILE=aarch64-linux-gnu- \
     O=$workdir/kernel-build/ \
-    olddefconfig'
-    PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log 
-    $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log 
-    unset runthis
+    olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log  || true
+
     
 #     yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
 #     CROSS_COMPILE=aarch64-linux-gnu- \
