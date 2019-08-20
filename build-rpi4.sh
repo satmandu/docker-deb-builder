@@ -133,20 +133,22 @@ wait_file() {
   local file="$1"; shift
   local wait_seconds="${1:-100000}"; shift # 100000 seconds as default timeout
     PrintLog "file: ${file}, seconds: ${wait_seconds}" /tmp/wait.log
-  until test $((wait_seconds--)) -eq 0 -o -f "${file}"
-        do 
-            PrintLog "file: ${file}, seconds: ${wait_seconds}" /tmp/wait_file.log
-            sleep 1
-        done
-  [[ -f "${file}" ]] && PrintLog "${file} found at T-${wait_seconds} seconds." /tmp/wait_file.log
-  [[ ${wait_seconds} -eq 0 ]] && PrintLog \
-  "${file} hit time limit at ${wait_seconds} seconds." /tmp/wait_file.log
-  ((++wait_seconds))
+#   until test $((wait_seconds--)) -eq 0 -o -f "${file}"
+#         do 
+#             PrintLog "file: ${file}, seconds: ${wait_seconds}" /tmp/wait_file.log
+#             sleep 1
+#         done
+    timeout ${wait_seconds} tail -F ${file}
+  # [[ -f "${file}" ]] && PrintLog "${file} found at T-${wait_seconds} seconds." /tmp/wait_file.log
+#   [[ ${wait_seconds} -eq 0 ]] && PrintLog \
+#   "${file} hit time limit at ${wait_seconds} seconds." /tmp/wait_file.log
+#   ((++wait_seconds))
+    [[ -f "${file}" ]] && PrintLog "${file} found" /tmp/wait_file.log
 }
 
 
 spinnerwait () {
-        local start_timeout=100000
+        local start_timeout=10000
         if [[ -f "/flag/start.spinnerwait" ]]
         then
             PrintLog "${1} waiting" /tmp/spinnerwait.log
