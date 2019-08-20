@@ -753,6 +753,7 @@ startfunc
     #O=$workdir/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
     
     echo "* Making $KERNEL_VERS kernel debs."
+    [[ $BUILDNATIVE ]] && (mv /usr/bin/gcc-8 /usr/bin/gcc-8.x86_x64 && cp /arm64_chroot/usr/bin/gcc-8 /usr/bin/gcc-8) 
     cd $workdir/rpi-linux
     [[ ! $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg" 
