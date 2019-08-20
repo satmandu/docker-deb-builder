@@ -237,7 +237,8 @@ arbitrary_wait_here () {
         echo 'Type in "touch /flag/done.ok_to_continue_after_here"'
         echo "in a shell into this container to continue."
     fi 
-    waitfor "ok_to_continue_after_here"
+    #waitfor "ok_to_continue_after_here"
+    wait_file "/flag/done.ok_to_continue_after_here"
 }
 
 
