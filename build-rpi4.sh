@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-mkdir /flag
+mkdir -p /flag
 echo $BASHPID > /flag/main
 mainPID=$BASHPID
 # The above is used for, amongst other things, the tail log process.
