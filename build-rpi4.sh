@@ -166,6 +166,8 @@ startfunc
             done
         done
         echo "${1}: ${job_id} done." | ts >> /tmp/spinnerwait.log
+        echo "${1}: $(pgrep -cxP ${job_id})" | ts >> /tmp/spinnerwait.log
+        echo "${1}:${job_id} $(pstree -p)" | ts >> /tmp/spinnerwait.log
 endfunc
 }
 
