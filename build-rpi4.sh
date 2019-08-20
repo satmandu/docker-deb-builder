@@ -125,14 +125,17 @@ function abspath {
 wait_file() {
   local file="$1"; shift
   local wait_seconds="${1:-100000}"; shift # 100000 seconds as default timeout
-    echo "file: ${file}, seconds: ${wait_seconds}" >> /tmp/wait.log
+    echo \
+    "file: ${file}, seconds: ${wait_seconds}" | ts >> /tmp/wait.log
   until test $((wait_seconds--)) -eq 0 -o -f "${file}"
         do 
-            echo "file: ${file}, seconds: ${wait_seconds}" >> /tmp/wait_file.log
+            echo "file: ${file}, seconds: ${wait_seconds}" | ts >> /tmp/wait_file.log
             sleep 1
         done
-  [[ -f "${file}" ]] && echo "${file} found at T-${wait_seconds} seconds."  >> /tmp/wait_file.log
-  [[ ${wait_seconds} -eq 0 ]] && echo "${file} hit time limit at ${wait_seconds} seconds." >> /tmp/wait_file.log
+  [[ -f "${file}" ]] && echo \
+  "${file} found at T-${wait_seconds} seconds." | ts >> /tmp/wait_file.log
+  [[ ${wait_seconds} -eq 0 ]] && echo \
+  "${file} hit time limit at ${wait_seconds} seconds." | ts >> /tmp/wait_file.log
   ((++wait_seconds))
 }
 
