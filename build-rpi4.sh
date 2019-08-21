@@ -530,7 +530,7 @@ startfunc
 PrintLog  "compilers installed" /tmp/${FUNCNAME[0]}.install.log
 #arbitrary_wait_here
 PrintLog " post-wait" /tmp/${FUNCNAME[0]}.install.log
-The following is needed for multiarch support during build.
+#The following is needed for multiarch support during build.
 [[ $BUILDNATIVE ]] && (
 (ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu \
  &>> /tmp/${FUNCNAME[0]}.install.log || true) \
