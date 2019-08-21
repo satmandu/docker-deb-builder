@@ -773,7 +773,7 @@ startfunc
     [[ $BUILDNATIVE ]] && (cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/ && mkdir -p /usr/include/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/include/aarch64-linux-gnu/* /usr/include/aarch64-linux-gnu/)
 
 mv_arch () {
-        echo ${1} to ${1}:${2}
+        echo ${1} to ${1}:${2}-cross
         dest_arch=${2}
         local dest_arch_prefix="${dest_arch}-linux-gnu-"
         local host_arch_prefix="${BUILDHOST_ARCH}-linux-gnu-"
@@ -840,7 +840,7 @@ mv_arch () {
 #     O=$workdir/kernel-build/ \
 #     bindeb-pkg"'
 
-    echo $debcmd
+    eval echo $debcmd
 
 #    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
     cd $workdir/rpi-linux
