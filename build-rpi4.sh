@@ -364,18 +364,18 @@ mv_arch () {
         dest_arch=${2}
         local dest_arch_prefix="${dest_arch}-linux-gnu-"
         local host_arch_prefix="${BUILDHOST_ARCH}-linux-gnu-"
-        local file_out=$(file ${1})
+        local file_out=$(file /usr/bin/${1})
         # Exit if dest arch file isn't available.
-        [[ ! -f ${dest_arch_prefix}${1} ]] && echo "Missing ${dest_arch_prefix}${1}" && exit 1
+        [[ ! -f /usr/bin/${dest_arch_prefix}${1} ]] && echo "Missing ${dest_arch_prefix}${1}" && exit 1
         # If host arch backup file isn't available make backup.
         # This doesn't dereference symlinks!
-        [[ ! -f ${host_arch_prefix}${1} && $(echo ${file_out} | grep -m1 ${BUILDHOST_ARCH}) ]] && (
-         cp ${1} ${host_arch_prefix}${1}
+        [[ ! -f /usr/bin/${host_arch_prefix}${1} && $(echo ${file_out} | grep -m1 ${BUILDHOST_ARCH}) ]] && (
+         cp /usr/bin/${1} /usr/bin/${host_arch_prefix}${1}
          )
         if [[ $(echo ${file_out} | grep -m1 "symbolic") ]]
             then
-            rm ${1} && ln -s ${dest_arch_prefix}${1} ${1}
-        elif [[ -f ${dest_arch_prefix}${1} ]]
+            rm /usr/bin/${1} && ln -s /usr/bin/${dest_arch_prefix}${1} /usr/bin/${1}
+        elif [[ -f /usr/bin/${dest_arch_prefix}${1} ]]
             then
             #cp ${dest_arch_prefix}${1} ${1}
             update-alternatives --install /usr/bin/${1} ${1} /usr/bin/${dest_arch_prefix}${1} 10
