@@ -785,7 +785,7 @@ cp_arch () {
                 file_arch="x86_64"
                 cp ${1} ${1}.${file_arch} && cp ${arch_prefix}${1} {1}
         fi
-        [[ ! $file_arch ]] && echo "unknown arch" && exit 1
+        #[[ ! $file_arch ]] && echo "unknown arch" && exit 1
         
 }
     
