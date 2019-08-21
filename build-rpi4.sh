@@ -773,7 +773,7 @@ startfunc
     [[ $BUILDNATIVE ]] && (cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/ && mkdir -p /usr/include/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/include/aarch64-linux-gnu/* /usr/include/aarch64-linux-gnu/)
 
 mv_arch () {
-        echo ${1} to {2}
+        echo ${1} to ${1}:${2}
         dest_arch=${2}
         local dest_arch_prefix="${dest_arch}-linux-gnu-"
         local host_arch_prefix="${BUILDHOST_ARCH}-linux-gnu-"
@@ -832,7 +832,7 @@ mv_arch () {
     
 
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-    debcmd='/arm64_chroot/bin/bash-static -c "make -j${nprocs} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg" &>> /tmp/${FUNCNAME[0]}.compile.log'
+    debcmd='/arm64_chroot/bin/bash-static -c "make -j$nprocs CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg" &>> /tmp/${FUNCNAME[0]}.compile.log'
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
 
 #     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
