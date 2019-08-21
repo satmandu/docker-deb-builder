@@ -485,10 +485,7 @@ startfunc
 
 [[ $BUILDNATIVE ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends gcc-aarch64-linux-gnu \
                cpp-aarch64-linux-gnu \
-               g++-aarch64-linux-gnu \
-               gcc-aarch64-linux-gnu-base \
-               libgcc-dev-arm64-cross \
-               libstdc++-dev-arm64-cross &>> ${FUNCNAME[0]}.install.log )
+               g++-aarch64-linux-gnu &>> ${FUNCNAME[0]}.install.log )
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends \
                gcc-9-aarch64-linux-gnu \
                cpp-9-aarch64-linux-gnu \
