@@ -787,7 +787,7 @@ startfunc
     git diff-index --quiet HEAD &>> /tmp/${FUNCNAME[0]}.compile.log || true
     
 
-    mkdir $workdir/kernel-build
+    mkdir -p $workdir/kernel-build
     cd $workdir/rpi-linux
     
     
