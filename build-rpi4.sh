@@ -512,7 +512,8 @@ startfunc
 	/usr/local/lib/aarch64-linux-gnu
 	/lib/aarch64-linux-gnu
 	/usr/lib/aarch64-linux-gnu
-EOF)
+EOF
+)
 
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch gcc-9 aarch64 &>> /tmp/main.install.log || true
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch g++-9 aarch64 &>> /tmp/main.install.log || true
@@ -523,7 +524,6 @@ EOF)
 [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ar aarch64 &>> /tmp/main.install.log 
 [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld.bfd aarch64 &>> /tmp/main.install.log 
 [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld aarch64 &>> /tmp/main.install.log 
-
 
 endfunc
 }
