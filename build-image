@@ -115,9 +115,10 @@ docker_args="-dt "
 
 # Are we mac or are we linux?
 SYSTEM=`uname`
-HOST_ARCH=`uname -m`
+BUILDHOST_ARCH=`uname -m`
+docker_args+="-e BUILDHOST_ARCH=${BUILDHOST_ARCH} "
 
-if [ "${HOST_ARCH}" = "aarch64" ]
+if [ "${BUILDHOST_ARCH}" = "aarch64" ]
     then
     unset BUILDNATIVE
 fi

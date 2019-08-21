@@ -768,10 +768,23 @@ startfunc
     unset runthis
     
     [[ $BUILDNATIVE ]] && (cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/)
-     [[ $BUILDNATIVE ]] && cp aarch64-linux-gnu-gcc-8 gcc
-     [[ $BUILDNATIVE ]] && cp aarch64-linux-gnu-gcc-ar ar
-     [[ $BUILDNATIVE ]] && cp aarch64-linux-gnu-ld.bfd ld
-     [[ $BUILDNATIVE ]] && cp aarch64-linux-gnu-cpp-8 cpp
+
+cp_arch () {
+        local arch_prefix="/usr/bin/aarch64-linux-gnu-"
+        echo ${1}
+        local file_out=$(file ${1})
+        [[ $(echo ${file_out} | grep -m1 "symbolic") ]] && echo symbolic && exit 1
+        [[ $(echo ${file_out} | grep -m1 "aarch64") ]] && file_arch="aarch64"
+        [[ $(echo ${file_out} | grep -m1 'x86-64' ) ]] && file_arch="x86_64"
+        [[ ! $file_arch ]] && echo "unknown arch" && exit 1
+        cp ${1} ${1}.${file_arch} && cp ${arch_prefix}${1} {1}
+}
+    
+    
+     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch gcc-8
+     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch ar
+     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch ld.bfd
+     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch cpp-8
     #[[ $BUILDNATIVE ]] && ( mkdir -p /usr/lib/gcc/aarch64-linux-gnu/8/ && cp -r /arm64_chroot/usr/lib/gcc/aarch64-linux-gnu/8/* /usr/lib/gcc/aarch64-linux-gnu/8/ ) 
     #[[ $BUILDNATIVE ]] && ( mkdir -p /usr/lib/gcc/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/gcc/aarch64-linux-gnu/* /usr/lib/gcc/aarch64-linux-gnu/ )
     cd $workdir/rpi-linux
