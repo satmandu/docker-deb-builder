@@ -494,7 +494,7 @@ startfunc
         g++-aarch64-linux-gnu \
         &>> /tmp/${FUNCNAME[0]}.install.log || true
     )
-arbitrary_wait_here
+#arbitrary_wait_here
 VERSION_CODENAME=$(grep VERSION_CODENAME /etc/os-release | head -1 | awk -F '=' '{print $2}')
 
 # [[ $BUILDNATIVE ]] && (
