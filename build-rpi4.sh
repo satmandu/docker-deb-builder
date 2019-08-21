@@ -348,6 +348,26 @@ recreate_git () {
 #endfunc
 }
 
+mv_arch () {
+        echo Replacing ${1} with ${1}:${2}-cross.
+        dest_arch=${2}
+        local dest_arch_prefix="${dest_arch}-linux-gnu-"
+        local host_arch_prefix="${BUILDHOST_ARCH}-linux-gnu-"
+        local file_out=$(file ${1})
+        # Exit if dest arch file isn't available.
+        [[ ! -f ${dest_arch_prefix}${1} ]] && echo "Missing ${dest_arch_prefix}${1}" && exit 1
+        # If host arch backup file isn't available make backup.
+        # This doesn't dereference symlinks!
+        [[ ! -f ${host_arch_prefix}${1} && $(echo ${file_out} | grep -m1 ${BUILDHOST_ARCH}) ]] && cp ${1} ${host_arch_prefix}${1}
+        if [[ $(echo ${file_out} | grep -m1 "symbolic") ]]
+            then
+            rm ${1} && ln -s ${dest_arch_prefix}${1} ${1}
+        elif [[ -f ${dest_arch_prefix}${1} ]]
+            then
+            cp ${dest_arch_prefix}${1} ${1}
+        fi
+}
+
 # Main functions
 
 utility_scripts () {
@@ -720,9 +740,19 @@ endfunc
 kernel_build () {
     waitfor "kernelbuild_setup"
 startfunc
-    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
+    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     LOCALVERSION=$(cat /tmp/LOCALVERSION)
     cd $workdir/rpi-linux
+
+     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-8 aarch64 || true
+     #[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-7 aarch64 || true
+     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ar aarch64
+     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld.bfd aarch64
+     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld aarch64
+     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-8 aarch64 || true
+     #[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-7 aarch64 || true
+ 
+ 
     
     make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$workdir/kernel-build \
     bcm2711_defconfig &>> /tmp/${FUNCNAME[0]}.compile.log
@@ -743,12 +773,12 @@ startfunc
         cp /source-ro/conform_config.sh $workdir/kernel-build/
     fi
 
-    if [[ ! -e /tmp/APPLIED_KERNEL_PATCHES ]]
-        then
-            sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' $workdir/kernel-build/conform_config.sh || true
-#             LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
-#             echo ${LOCALVERSION} > /tmp/LOCALVERSION
-    fi
+#     if [[ ! -e /tmp/APPLIED_KERNEL_PATCHES ]]
+#         then
+#             sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' $workdir/kernel-build/conform_config.sh || true
+# #             LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
+# #             echo ${LOCALVERSION} > /tmp/LOCALVERSION
+#     fi
 
     yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
     CROSS_COMPILE=aarch64-linux-gnu- \
@@ -762,7 +792,7 @@ startfunc
 #     olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     
     
-    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
+    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     #make -j$(($(nproc) + 1)) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     #O=$workdir/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
     
@@ -773,32 +803,6 @@ startfunc
     
     [[ $BUILDNATIVE ]] && (cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/ && mkdir -p /usr/include/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/include/aarch64-linux-gnu/* /usr/include/aarch64-linux-gnu/)
 
-mv_arch () {
-        echo Replacing ${1} with ${1}:${2}-cross.
-        dest_arch=${2}
-        local dest_arch_prefix="${dest_arch}-linux-gnu-"
-        local host_arch_prefix="${BUILDHOST_ARCH}-linux-gnu-"
-        local file_out=$(file ${1})
-        # Exit if dest arch file isn't available.
-        [[ ! -f ${dest_arch_prefix}${1} ]] && echo "Missing ${dest_arch_prefix}${1}" && exit 1
-        # If host arch backup file isn't available make backup.
-        # This doesn't dereference symlinks!
-        [[ ! -f ${host_arch_prefix}${1} && $(echo ${file_out} | grep -m1 ${BUILDHOST_ARCH}) ]] && cp ${1} ${host_arch_prefix}${1}
-        if [[ $(echo ${file_out} | grep -m1 "symbolic") ]]
-            then
-            rm ${1} && ln -s ${dest_arch_prefix}${1} ${1}
-        elif [[ -f ${dest_arch_prefix}${1} ]]
-            then
-            cp ${dest_arch_prefix}${1} ${1}
-        fi
-}
-     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-8 aarch64 || true
-     #[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-7 aarch64 || true
-     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ar aarch64
-     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld.bfd aarch64
-     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld aarch64
-     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-8 aarch64 || true
-     #[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-7 aarch64 || true
     cd $workdir/rpi-linux
     
     [[ ! $BUILDNATIVE ]] &&  cat <<-EOF> $workdir/kernel_compile.sh
@@ -861,7 +865,7 @@ kernel_debs () {
 startfunc
 
    # Don't remake debs if they already exist in output.
-   KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
+   KERNEL_VERS=$(< /tmp/KERNEL_VERS)
    if test -n "$(find $apt_cache -maxdepth 1 -name linux-image-*${KERNEL_VERS}* -print -quit)"
    then
         echo -e "${KERNEL_VERS} linux image on cache volume. 😎\n"
@@ -894,7 +898,7 @@ startfunc
         (kernel_build &) || echo "kernel_build died"
         spinnerwait kernel_build  || echo "spinnerwait kernel_build died"
         # This may have changed, so reload:
-        KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
+        KERNEL_VERS=$(< /tmp/KERNEL_VERS)
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
         rm -f $workdir/linux-libc-dev*.deb
         cp $workdir/*.deb $apt_cache/ || (echo -e "Kernel Build Failed! 😬" ; pkill -F /flag/main)
@@ -911,7 +915,7 @@ kernel_deb_install () {
     waitfor "added_scripts"
     waitfor "image_apt_installs"
 startfunc
-    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
+    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     # Try installing the generated debs in chroot before we do anything else.
     cp $workdir/*.deb /mnt/tmp/
     waitfor "added_scripts"
@@ -1427,7 +1431,7 @@ endfunc
 compressed_image_export () {
 startfunc
 
-    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
+    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     # Note that lz4 is much much faster than using xz.
     chown -R $USER:$GROUP /build
     cd $workdir
@@ -1456,7 +1460,7 @@ startfunc
         xdelta3 -e -S none -I 0 -B 1812725760 -W 16777216 -fs \
         $workdir/old_image.img $workdir/${new_image}.img \
         $workdir/patch.xdelta
-        KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
+        KERNEL_VERS=$(< /tmp/KERNEL_VERS)
         for i in "${image_compressors[@]}"
         do
             echo "* Compressing patch.xdelta with $i and exporting."
@@ -1484,7 +1488,7 @@ if [[ ! $JUSTDEBS ]];
 fi
 
 startfunc
-    KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
+    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     echo "* Build log at: build-log-$KERNEL_VERS_${now}.log"
     cat $TMPLOG > /output/build-log-$KERNEL_VERS_${now}.log
     chown $USER:$GROUP /output/build-log-$KERNEL_VERS_${now}.log
