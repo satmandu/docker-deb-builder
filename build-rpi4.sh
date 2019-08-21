@@ -773,7 +773,7 @@ startfunc
     [[ $BUILDNATIVE ]] && (cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/ && mkdir -p /usr/include/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/include/aarch64-linux-gnu/* /usr/include/aarch64-linux-gnu/)
 
 mv_arch () {
-        echo Replacing ${1} to ${1}:${2}-cross.
+        echo Replacing ${1} with ${1}:${2}-cross.
         dest_arch=${2}
         local dest_arch_prefix="${dest_arch}-linux-gnu-"
         local host_arch_prefix="${BUILDHOST_ARCH}-linux-gnu-"
@@ -809,20 +809,6 @@ mv_arch () {
     LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg" 
     [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && PrintLog "LOCALVERSION, no BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
 
-#     [[ $BUILDNATIVE ]] && waitfor "image_apt_installs"
-#     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-gcc \
-#     /mnt/usr/local/bin/gcc
-#     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld \
-#     /mnt/usr/local/bin/ld
-#     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld.bfd \
-#     /mnt/usr/local/bin/ld.bfd
-#     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-ld.gold \
-#     /mnt/usr/local/bin/ld.gold
-#     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-cpp \
-#     /mnt/usr/local/bin/cpp
-#     [[ $BUILDNATIVE ]] && cp /usr/bin/aarch64-linux-gnu-g++ \
-#     /mnt/usr/local/bin/g++
-
     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
     debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) O=$workdir/kernel-build/ bindeb-pkg"'
     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "no LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
@@ -832,7 +818,7 @@ mv_arch () {
     
 
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-    debcmd='/arm64_chroot/bin/bash-static -c "make -j$nprocs CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg"' 
+    debcmd='echo ${nprocs} | xargs -I % /arm64_chroot/bin/bash-static -c "make -j% CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg"' 
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
 
 #     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
