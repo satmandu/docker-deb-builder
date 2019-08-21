@@ -508,14 +508,14 @@ arbitrary_wait_here
  &>> /tmp/${FUNCNAME[0]}.install.log || true) \
 && \
 (ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 \
- &>> /tmp/${FUNCNAME[0]}.install.log || true)
+ &>> /tmp/${FUNCNAME[0]}.install.log || true) \
 && \
 (cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
 	# Multiarch support
 	/usr/local/lib/aarch64-linux-gnu
 	/lib/aarch64-linux-gnu
 	/usr/lib/aarch64-linux-gnu
-EOF &>> /tmp/${FUNCNAME[0]}.install.log || true)
+EOF &>> /tmp/${FUNCNAME[0]}.install.log || true) \
 )
 echo "* setup multiarch."
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch gcc-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
