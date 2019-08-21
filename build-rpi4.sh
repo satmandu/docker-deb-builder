@@ -509,7 +509,7 @@ echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME}-
  dpkg --add-architecture arm64 
         &>> /tmp/${FUNCNAME[0]}.install.log 
         )
-[[ $BUILDNATIVE ]] && ( apt update || true ) 
+[[ $BUILDNATIVE ]] && ( apt update -qq &>> /tmp/${FUNCNAME[0]}.install.log || true ) 
 [[ $BUILDNATIVE ]] && (
     apt -o dir::cache::archives=${apt_cache} \
     -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
