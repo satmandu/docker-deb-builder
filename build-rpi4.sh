@@ -741,8 +741,8 @@ kernel_build () {
     waitfor "kernelbuild_setup"
 startfunc
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
-    LOCALVERSION=$(cat /tmp/LOCALVERSION)
-    cd $workdir/rpi-linux
+    LOCALVERSION=$(< /tmp/LOCALVERSION)
+
 
      [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-8 aarch64 || true
      #[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-7 aarch64 || true
@@ -753,9 +753,9 @@ startfunc
      #[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-7 aarch64 || true
  
  
-    
+    cd $workdir/rpi-linux
     make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$workdir/kernel-build \
-    bcm2711_defconfig &>> /tmp/${FUNCNAME[0]}.compile.log
+    LOCALVERSION=${LOCALVERSION} bcm2711_defconfig &>> /tmp/${FUNCNAME[0]}.compile.log
 #     PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log
 #     $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
 #     unset runthis
@@ -772,6 +772,7 @@ startfunc
         then
         cp /source-ro/conform_config.sh $workdir/kernel-build/
     fi
+    $workdir/kernel-build/conform_config.sh
 
 #     if [[ ! -e /tmp/APPLIED_KERNEL_PATCHES ]]
 #         then
