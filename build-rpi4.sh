@@ -783,8 +783,8 @@ mv_arch () {
         if [[ $(echo ${file_out} | grep -m1 "symbolic") ]]
             then
             rm ${1} && ln -s ${dest_arch_prefix}${1} ${1}
-        elif 
-            [[ -f ${dest_arch_prefix}${1} ]] && cp ${dest_arch_prefix}${1} ${1}
+        elif [[ -f ${dest_arch_prefix}${1} ]]
+            cp ${dest_arch_prefix}${1} ${1}
         fi
 }
      [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-8 aarch64
