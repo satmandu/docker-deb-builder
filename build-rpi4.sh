@@ -500,8 +500,9 @@ startfunc
                gcc-8-aarch64-linux-gnu-base \
                libgcc-8-dev-arm64-cross \
                libstdc++-8-dev-arm64-cross &>> /tmp/${FUNCNAME[0]}.install.log || true)
-echo "* compilers installed."
+PrintLog  "* compilers installed." /tmp/${FUNCNAME[0]}.install.log
 arbitrary_wait_here
+PrintLog " post-wait" /tmp/${FUNCNAME[0]}.install.log
 # The following is needed for multiarch support during build.
 # [[ $BUILDNATIVE ]] && (
 # (ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu \
@@ -517,18 +518,36 @@ arbitrary_wait_here
 # 	/usr/lib/aarch64-linux-gnu
 # EOF &>> /tmp/${FUNCNAME[0]}.install.log || true \
 # )
-echo "* setup multiarch."
-[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch gcc-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
-[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch g++-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
-[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch cpp-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
-[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-8 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
-[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch g++-8 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
-[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-8 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
-[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ar aarch64 &>> /tmp/${FUNCNAME[0]}.install.log 
-[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld.bfd aarch64 &>> /tmp/${FUNCNAME[0]}.install.log 
-[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld aarch64 &>> /tmp/${FUNCNAME[0]}.install.log 
+PrintLog "* setup multiarch."  /tmp/${FUNCNAME[0]}.install.log
+[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+cd /usr/bin && mv_arch gcc-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
+)
+[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+cd /usr/bin && mv_arch g++-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
+)
+[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+cd /usr/bin && mv_arch cpp-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
+)
+[[ $BUILDNATIVE ]] && (
+cd /usr/bin && mv_arch gcc-8 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
+)
+[[ $BUILDNATIVE ]] && (
+cd /usr/bin && mv_arch g++-8 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
+)
+[[ $BUILDNATIVE ]] && (
+cd /usr/bin && mv_arch cpp-8 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
+)
+[[ $BUILDNATIVE ]] && (
+cd /usr/bin && mv_arch ar aarch64 &>> /tmp/${FUNCNAME[0]}.install.log 
+)
+[[ $BUILDNATIVE ]] && (
+cd /usr/bin && mv_arch ld.bfd aarch64 &>> /tmp/${FUNCNAME[0]}.install.log 
+)
+[[ $BUILDNATIVE ]] && (
+cd /usr/bin && mv_arch ld aarch64 &>> /tmp/${FUNCNAME[0]}.install.log 
+)
 
-echo "* set compiler priorities."
+PrintLog "* set compiler priorities." /tmp/${FUNCNAME[0]}.install.log
 [[ ! ${base_dist} = "bionic" ]] && (
 (update-alternatives --set gcc "/usr/bin/gcc-9" &>> /tmp/${FUNCNAME[0]}.install.log || true )\
 && \
