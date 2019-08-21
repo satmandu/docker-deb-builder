@@ -498,6 +498,7 @@ startfunc
     dpkg --add-architecture arm64 \
         &>> /tmp/${FUNCNAME[0]}.install.log || true
     )
+arbitrary_wait_here
 [[ $BUILDNATIVE ]] && (
     apt -o dir::cache::archives=$apt_cache \
     install -y --no-install-recommends \
@@ -527,7 +528,7 @@ startfunc
        &>> /tmp/${FUNCNAME[0]}.install.log || true
    )
 PrintLog  "compilers installed" /tmp/${FUNCNAME[0]}.install.log
-#arbitrary_wait_here
+
 PrintLog " post-wait" /tmp/${FUNCNAME[0]}.install.log
 #The following is needed for multiarch support during build.
 [[ $BUILDNATIVE ]] && (
