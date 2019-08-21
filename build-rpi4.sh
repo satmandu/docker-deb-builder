@@ -775,15 +775,15 @@ cp_arch () {
         local file_out=$(file ${1})
         if [[ $(echo ${file_out} | grep -m1 "symbolic") ]]
             then 
-                rm ${1} && ln -s ${arch_prefix}${1} {1}
+                rm ${1} && ln -s ${arch_prefix}${1} ${1}
             elif [[ $(echo ${file_out} | grep -m1 "aarch64") ]]
             then 
                 file_arch="aarch64"
-                cp ${1} ${1}.${file_arch} && cp ${arch_prefix}${1} {1}
+                cp ${1} ${1}.${file_arch} && cp ${arch_prefix}${1} ${1}
             elif [[ $(echo ${file_out} | grep -m1 'x86-64' ) ]]
             then
                 file_arch="x86_64"
-                cp ${1} ${1}.${file_arch} && cp ${arch_prefix}${1} {1}
+                cp ${1} ${1}.${file_arch} && cp ${arch_prefix}${1} ${1}
         fi
         #[[ ! $file_arch ]] && echo "unknown arch" && exit 1
         
