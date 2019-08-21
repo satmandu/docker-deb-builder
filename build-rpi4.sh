@@ -494,16 +494,19 @@ startfunc
         g++-aarch64-linux-gnu \
         &>> /tmp/${FUNCNAME[0]}.install.log || true
     )
-[[ $BUILDNATIVE ]] && (
-    dpkg --add-architecture arm64 \
-        &>> /tmp/${FUNCNAME[0]}.install.log || true
-    )
 arbitrary_wait_here
 VERSION_CODENAME=$(grep VERSION_CODENAME /etc/os-release | head -1 | awk -F '=' '{print $2}')
 
+# [[ $BUILDNATIVE ]] && (
+#     dpkg --add-architecture arm64 \
+#         &>> /tmp/${FUNCNAME[0]}.install.log || true
+#     )
+# 
+
 [[ $BUILDNATIVE ]] && (
 echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} main restricted universe multiverse" >> /etc/apt/sources.list \
-&& apt update && \
+&& dpkg --add-architecture arm64 \
+        &>> /tmp/${FUNCNAME[0]}.install.log && apt update && \
     apt -o dir::cache::archives=${apt_cache} \
     install -y \
         libssl-dev:arm64 \
