@@ -509,9 +509,11 @@ update-alternatives --set c++ "/usr/bin/g++-9" &>> ${FUNCNAME[0]}.install.log \
 && \
 update-alternatives --set cpp "/usr/bin/cpp-9" &>> ${FUNCNAME[0]}.install.log
 )
-[[ ${base_dist} = "bionic" ]] && (
-update-alternatives --set gcc "/usr/bin/gcc-8" &>> ${FUNCNAME[0]}.install.log
-update-alternatives --set c++ "/usr/bin/g++-8" &>> ${FUNCNAME[0]}.install.log
+[[ ! ${base_dist} = "bionic" ]] && (
+update-alternatives --set gcc "/usr/bin/gcc-8" &>> ${FUNCNAME[0]}.install.log \
+&& \
+update-alternatives --set c++ "/usr/bin/g++-8" &>> ${FUNCNAME[0]}.install.log \
+&& \
 update-alternatives --set cpp "/usr/bin/cpp-8" &>> ${FUNCNAME[0]}.install.log
 )
 echo "* set compiler priorities."
