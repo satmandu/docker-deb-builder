@@ -844,7 +844,7 @@ mv_arch () {
 
 #    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
     cd $workdir/rpi-linux
-    ${debcmd} || true
+    ${debcmd}
     # If there were kernel patches, the version may change, so let's check 
     # and overwrite if necessary.
     DEB_KERNEL_VERSION=`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`
