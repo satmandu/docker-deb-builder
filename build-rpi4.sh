@@ -773,11 +773,20 @@ cp_arch () {
         local arch_prefix="/usr/bin/aarch64-linux-gnu-"
         echo ${1}
         local file_out=$(file ${1})
-        [[ $(echo ${file_out} | grep -m1 "symbolic") ]] && rm ${1} && ln -s ${arch_prefix}${1} {1} && exit 0
-        [[ $(echo ${file_out} | grep -m1 "aarch64") ]] && file_arch="aarch64"
-        [[ $(echo ${file_out} | grep -m1 'x86-64' ) ]] && file_arch="x86_64"
+        if [[ $(echo ${file_out} | grep -m1 "symbolic") ]]
+            then 
+                rm ${1} && ln -s ${arch_prefix}${1} {1}
+            elif [[ $(echo ${file_out} | grep -m1 "aarch64") ]]
+            then 
+                file_arch="aarch64"
+                cp ${1} ${1}.${file_arch} && cp ${arch_prefix}${1} {1}
+            elif [[ $(echo ${file_out} | grep -m1 'x86-64' ) ]]
+            then
+                file_arch="x86_64"
+                cp ${1} ${1}.${file_arch} && cp ${arch_prefix}${1} {1}
+        fi
         [[ ! $file_arch ]] && echo "unknown arch" && exit 1
-        cp ${1} ${1}.${file_arch} && cp ${arch_prefix}${1} {1}
+        
 }
     
     
