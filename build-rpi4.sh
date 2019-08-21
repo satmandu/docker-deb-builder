@@ -815,6 +815,7 @@ endfunc
     
 kernel_build () {
     waitfor "kernelbuild_setup"
+    waitfor "compiler_setup"
 startfunc
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     LOCALVERSION=$(< /tmp/LOCALVERSION)
