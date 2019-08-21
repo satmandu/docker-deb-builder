@@ -674,7 +674,6 @@ startfunc
     head -1 | awk -F '=' '{print $2}' | sed 's/"//g')
     PKGVER="$majorversion.$patchlevel.$sublevel"
     
-    #echo "PKGVER: $PKGVER"
     kernelrev=$(git -C $src_cache/rpi-linux rev-parse --short HEAD) > /dev/null
     echo $kernelrev > /tmp/kernelrev
 
@@ -711,7 +710,8 @@ startfunc
     
     echo "** Current Kernel Version: $KERNEL_VERS" 
     echo $KERNEL_VERS > /tmp/KERNEL_VERS
-
+    LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
+    echo ${LOCALVERSION} > /tmp/LOCALVERSION
     
     
 endfunc
@@ -721,6 +721,7 @@ kernel_build () {
     waitfor "kernelbuild_setup"
 startfunc
     KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
+    LOCALVERSION=$(cat /tmp/LOCALVERSION)
     cd $workdir/rpi-linux
     
     make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$workdir/kernel-build \
@@ -745,8 +746,8 @@ startfunc
     if [[ ! -e /tmp/APPLIED_KERNEL_PATCHES ]]
         then
             sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' $workdir/kernel-build/conform_config.sh || true
-            LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
-            echo ${LOCALVERSION} > /tmp/LOCALVERSION
+#             LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
+#             echo ${LOCALVERSION} > /tmp/LOCALVERSION
     fi
 
     yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
