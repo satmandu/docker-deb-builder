@@ -800,48 +800,50 @@ mv_arch () {
     #[[ $BUILDNATIVE ]] && ( mkdir -p /usr/lib/gcc/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/gcc/aarch64-linux-gnu/* /usr/lib/gcc/aarch64-linux-gnu/ )
     cd $workdir/rpi-linux
     
-    [[ ! $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
-    ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg" 
-    [[ ! $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && PrintLog "No LOCALVERSION, No BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
-    
-    
-    [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
-    LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg" 
-    [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && PrintLog "LOCALVERSION, no BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
+    [[ ! $BUILDNATIVE ]] &&  cat <<-EOF> $workdir/kernel_compile.sh
+	#!/bin/bash
+	cd $workdir/rpi-linux
+	make LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg
+EOF
 
-    [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-    debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) O=$workdir/kernel-build/ bindeb-pkg"'
-    [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "no LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
+#     [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
+#     LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg" 
+#     [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && PrintLog "LOCALVERSION, no BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
+
+#     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
+#     debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) O=$workdir/kernel-build/ bindeb-pkg"'
+#     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "no LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
 #     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
 #     O=$workdir/kernel-build/ \
 #     bindeb-pkg"'
     
 
-    [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-    debcmd='/arm64_chroot/bin/bash-static -c "nproc | xargs -I % make -j% CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg"' 
-    [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
+#     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
+#     debcmd='/arm64_chroot/bin/bash-static -c "nproc | xargs -I % make -j% CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg"' 
+#     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
 
 #     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
 #     LOCALVERSION=${LOCALVERSION} \
 #     O=$workdir/kernel-build/ \
 #     bindeb-pkg"'
 
-    [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && cat <<-EOF> $workdir/kernel_compile.sh
+[[ $BUILDNATIVE ]] && cat <<-EOF> $workdir/kernel_compile.sh
 	#!/bin/bash
 	cd $workdir/rpi-linux
 	/arm64_chroot/bin/bash-static -c "make -j${nprocs} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg"
 EOF
-    [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && chmod +x $workdir/kernel_compile.sh
+#[[ $BUILDNATIVE ]] && chmod +x $workdir/kernel_compile.sh
 
 
 
 
 
-    echo $debcmd
+#    echo $debcmd
 
 #    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
     cd $workdir/rpi-linux
-    [[ -f $workdir/kernel_compile.sh ]] && $workdir/kernel_compile.sh &>> /tmp/${FUNCNAME[0]}.compile.log || ${debcmd} &>> /tmp/${FUNCNAME[0]}.compile.log
+    [[ -f $workdir/kernel_compile.sh ]] && chmod +x $workdir/kernel_compile.sh && $workdir/kernel_compile.sh &>> /tmp/${FUNCNAME[0]}.compile.log 
+    #|| ${debcmd} &>> /tmp/${FUNCNAME[0]}.compile.log
    # ${debcmd} &>> /tmp/${FUNCNAME[0]}.compile.log
     # If there were kernel patches, the version may change, so let's check 
     # and overwrite if necessary.

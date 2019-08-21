@@ -351,7 +351,9 @@ docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo
 [ -n "$ARBITRARY_WAIT" ] && docker_args+="-e ARBITRARY_WAIT=${ARBITRARY_WAIT} "
 
 # Make some tmpfs mounts for obvious temp folders
-docker_args+="--tmpfs /flag --tmpfs /tmp "
+docker_args+="--tmpfs /flag --tmpfs /tmp --tmpfs "
+# If lucky
+[ -n "$MOAR_RAM" ] && docker_args+="--tmpfs /build/source/rpi-linux --tmpfs /build/source/kernel-build "
 
 # Send in columns for display.
 shopt -s checkwinsize 
