@@ -501,11 +501,12 @@ startfunc
                libgcc-8-dev-arm64-cross \
                libstdc++-8-dev-arm64-cross &>> ${FUNCNAME[0]}.install.log )
 echo "* compilers installed."
+arbitrary_wait_here
 [[ ! ${base_dist} = "bionic" ]] && (
-update-alternatives --set gcc "/usr/bin/gcc-9" &>> ${FUNCNAME[0]}.install.log
-&&
-update-alternatives --set g++ "/usr/bin/g++-9" &>> ${FUNCNAME[0]}.install.log
-&&
+update-alternatives --set gcc "/usr/bin/gcc-9" &>> ${FUNCNAME[0]}.install.log \
+&& \
+update-alternatives --set g++ "/usr/bin/g++-9" &>> ${FUNCNAME[0]}.install.log \
+&& \
 update-alternatives --set cpp "/usr/bin/cpp-9" &>> ${FUNCNAME[0]}.install.log
 )
 [[ ${base_dist} = "bionic" ]] && (
