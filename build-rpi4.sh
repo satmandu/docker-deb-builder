@@ -503,20 +503,20 @@ startfunc
 echo "* compilers installed."
 arbitrary_wait_here
 # The following is needed for multiarch support during build.
-[[ $BUILDNATIVE ]] && (
-(ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu \
- &>> /tmp/${FUNCNAME[0]}.install.log || true) \
-&& \
-(ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 \
- &>> /tmp/${FUNCNAME[0]}.install.log || true) \
-&& \
-cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
-	# Multiarch support
-	/usr/local/lib/aarch64-linux-gnu
-	/lib/aarch64-linux-gnu
-	/usr/lib/aarch64-linux-gnu
-EOF &>> /tmp/${FUNCNAME[0]}.install.log || true \
-)
+# [[ $BUILDNATIVE ]] && (
+# (ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu \
+#  &>> /tmp/${FUNCNAME[0]}.install.log || true) \
+# && \
+# (ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 \
+#  &>> /tmp/${FUNCNAME[0]}.install.log || true) \
+# && \
+# cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
+# 	# Multiarch support
+# 	/usr/local/lib/aarch64-linux-gnu
+# 	/lib/aarch64-linux-gnu
+# 	/usr/lib/aarch64-linux-gnu
+# EOF &>> /tmp/${FUNCNAME[0]}.install.log || true \
+# )
 echo "* setup multiarch."
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch gcc-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch g++-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
