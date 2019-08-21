@@ -975,7 +975,8 @@ EOF
 
 #    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
     cd "$workdir"/rpi-linux
-    [[ -f $workdir/kernel_compile.sh ]] && chmod +x "$workdir"/kernel_compile.sh && "$workdir"/kernel_compile.sh | tee -a /tmp/"${FUNCNAME[0]}".compile.log 
+    [[ -f $workdir/kernel_compile.sh ]] && chmod +x "$workdir"/kernel_compile.sh && "$workdir"/kernel_compile.sh | tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
+    grep -v libfakeroot-sysv.so
     #|| ${debcmd} &>> /tmp/${FUNCNAME[0]}.compile.log
    # ${debcmd} &>> /tmp/${FUNCNAME[0]}.compile.log
     # If there were kernel patches, the version may change, so let's check 
