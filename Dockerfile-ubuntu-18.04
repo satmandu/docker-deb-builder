@@ -81,6 +81,17 @@ RUN set -ex \
 RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] && (apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu \
                cpp-aarch64-linux-gnu \
                g++-aarch64-linux-gnu \
-                || true )"]
+               gcc-9-aarch64-linux-gnu \
+               cpp-9-aarch64-linux-gnu \
+               g++-9-aarch64-linux-gnu \
+               gcc-9-aarch64-linux-gnu-base \
+               libgcc-9-dev-arm64-cross \
+               libstdc++-9-dev-arm64-cross)"]
+RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] && (ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu && ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 && cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
+	# Multiarch support
+	/usr/local/lib/aarch64-linux-gnu
+	/lib/aarch64-linux-gnu
+	/usr/lib/aarch64-linux-gnu
+EOF
+)"]
 RUN set -ex && apt-get clean && rm -rf /tmp/* /var/tmp/*
-RUN set -ex && cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/ && echo "/usr/lib/aarch64-linux-gnu" >> /etc/ld.so.conf.d/aarch64-linux-gnu.conf

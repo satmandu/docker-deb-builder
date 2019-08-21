@@ -540,7 +540,7 @@ echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME}-
        libstdc++-8-dev-arm64-cross \
        &>> /tmp/${FUNCNAME[0]}.install.log || true
    )
-PrintLog  "compilers installed" /tmp/${FUNCNAME[0]}.install.log
+PrintLog  "compilers updated" /tmp/${FUNCNAME[0]}.install.log
 
 PrintLog " post-wait" /tmp/${FUNCNAME[0]}.install.log
 #The following is needed for multiarch support during build.
@@ -587,15 +587,15 @@ mv_arch g++-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
 mv_arch cpp-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
 )
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
-update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 \
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 &>> /tmp/${FUNCNAME[0]}.install.log\
 && \
-update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 \
+update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 &>> /tmp/${FUNCNAME[0]}.install.log\
 )
 
 [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
-update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10 \
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10 &>> /tmp/${FUNCNAME[0]}.install.log\
 && \
-update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-8 10 \
+update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-8 10 &>> /tmp/${FUNCNAME[0]}.install.log\
 )
 #arbitrary_wait_here
 
