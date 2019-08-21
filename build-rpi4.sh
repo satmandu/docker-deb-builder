@@ -163,7 +163,7 @@ startfunc
         PrintLog "start.${1}" /tmp/spinnerwait.log
         wait_file "/flag/start.${1}" ${start_timeout} || \
         PrintLog "${1} didn't start in $? seconds." /tmp/spinnerwait.log
-        local job_id=$(cat /flag/start.${1})
+        local job_id=$(< /flag/start.${1})
         PrintLog "Start wait for ${1}:${job_id} end." /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP ${job_id} &>/dev/null)
@@ -523,7 +523,7 @@ endfunc
 image_mount () {
     waitfor "image_extract"
 startfunc 
-    [[ -f "/output/loop_device" ]] && ( old_loop_device=$(cat /output/loop_device) ; \
+    [[ -f "/output/loop_device" ]] && ( old_loop_device=$(< /output/loop_device) ; \
     dmsetup remove -f /dev/mapper/${old_loop_device}p2 &> /dev/null || true; \
     dmsetup remove -f /dev/mapper/${old_loop_device}p1 &> /dev/null || true; \
     losetup -d /dev/${old_loop_device} &> /dev/null || true)
@@ -752,6 +752,8 @@ startfunc
      [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-8 aarch64 || true
      #[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-7 aarch64 || true
  
+     [[ $BUILDNATIVE ]] && (cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/ && mkdir -p /usr/include/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/include/aarch64-linux-gnu/* /usr/include/aarch64-linux-gnu/)
+
  
     cd $workdir/rpi-linux
     make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$workdir/kernel-build \
@@ -802,7 +804,6 @@ startfunc
     $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
     unset runthis
     
-    [[ $BUILDNATIVE ]] && (cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/ && mkdir -p /usr/include/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/include/aarch64-linux-gnu/* /usr/include/aarch64-linux-gnu/)
 
     cd $workdir/rpi-linux
     
@@ -1405,7 +1406,7 @@ endfunc
 image_unmount () {
 startfunc
     echo "* Unmounting modified ${new_image}.img"
-    loop_device=$(cat /tmp/loop_device)
+    loop_device=$(< /tmp/loop_device)
     umount -l /mnt/boot/firmware || (lsof +f -- /mnt/boot/firmware ; sleep 60 ; \
     umount -l /mnt/boot/firmware) || true
     #umount /mnt || (mount | grep /mnt)
