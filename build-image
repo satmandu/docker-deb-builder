@@ -353,7 +353,7 @@ docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo
 # Make some tmpfs mounts for obvious temp folders
 docker_args+="--tmpfs /flag --tmpfs /tmp "
 # If lucky
-[ -n "$MOAR_RAM" ] && docker_args+="--tmpfs /build/source/rpi-linux --tmpfs /build/source/kernel-build "
+[ -n "$MOAR_RAM" ] && docker_args+="--tmpfs /build/source/rpi-linux:exec --tmpfs /build/source/kernel-build:exec "
 
 # Send in columns for display.
 shopt -s checkwinsize 
