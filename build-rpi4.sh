@@ -494,7 +494,7 @@ startfunc
         g++-aarch64-linux-gnu \
         &>> /tmp/${FUNCNAME[0]}.install.log || true
     )
-#arbitrary_wait_here
+
 VERSION_CODENAME=$(grep VERSION_CODENAME /etc/os-release | head -1 | awk -F '=' '{print $2}')
 
 # [[ $BUILDNATIVE ]] && (
@@ -510,6 +510,7 @@ echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME}-
         &>> /tmp/${FUNCNAME[0]}.install.log 
         )
 [[ $BUILDNATIVE ]] && ( apt update -qq &>> /tmp/${FUNCNAME[0]}.install.log || true ) 
+# Local install needed due to kernel wanting header file.
 [[ $BUILDNATIVE ]] && (
     apt -o dir::cache::archives=${apt_cache} \
     -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
@@ -586,23 +587,7 @@ mv_arch g++-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
 mv_arch cpp-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
 )
 
-PrintLog "set compiler priorities." /tmp/${FUNCNAME[0]}.install.log
-# [[ ! ${base_dist} = "bionic" ]] && (
-# (update-alternatives --set cc "/usr/bin/gcc-9" &>> /tmp/${FUNCNAME[0]}.install.log || true )\
-# && \
-# (update-alternatives --set c++ "/usr/bin/g++-9" &>> /tmp/${FUNCNAME[0]}.install.log || true)\
-# && \
-# (update-alternatives --set cpp "/usr/bin/cpp-9" &>> /tmp/${FUNCNAME[0]}.install.log || true)
-# )
-# [[ ! ${base_dist} = "bionic" ]] && (
-# update-alternatives --set gcc "/usr/bin/gcc-8" &>> /tmp/${FUNCNAME[0]}.install.log \
-# && \
-# update-alternatives --set c++ "/usr/bin/g++-8" &>> /tmp/${FUNCNAME[0]}.install.log \
-# && \
-# update-alternatives --set cpp "/usr/bin/cpp-8" &>> /tmp/${FUNCNAME[0]}.install.log
-# )
-
-
+arbitrary_wait_here
 
 
 endfunc
