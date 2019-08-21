@@ -586,8 +586,18 @@ mv_arch g++-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
 mv_arch cpp-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
 )
+[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 \
+&& \
+update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 \
+)
 
-arbitrary_wait_here
+[[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10 \
+&& \
+update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-8 10 \
+)
+#arbitrary_wait_here
 
 
 endfunc
