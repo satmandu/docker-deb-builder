@@ -501,8 +501,8 @@ startfunc
                libgcc-8-dev-arm64-cross \
                libstdc++-8-dev-arm64-cross &>> ${FUNCNAME[0]}.install.log )
 
-[[ ! ${base_dist} = "bionic" ]] && (update-alternatives --set gcc "/usr/bin/gcc-9" && update-alternatives --set g++ "/usr/bin/g++-9" && update-alternatives --set cpp "/usr/bin/cpp-9")
-[[ ! ${base_dist} = "bionic" ]] && (update-alternatives --set gcc "/usr/bin/gcc-8" && update-alternatives --set g++ "/usr/bin/g++-8" && update-alternatives --set cpp "/usr/bin/cpp-8")
+[[ ! ${base_dist} = "bionic" ]] && (update-alternatives --set gcc "/usr/bin/gcc-9" &>> ${FUNCNAME[0]}.install.log && update-alternatives --set g++ "/usr/bin/g++-9" && update-alternatives --set cpp "/usr/bin/cpp-9" &>> ${FUNCNAME[0]}.install.log)
+[[ ! ${base_dist} = "bionic" ]] && (update-alternatives --set gcc "/usr/bin/gcc-8" &>> ${FUNCNAME[0]}.install.log && update-alternatives --set g++ "/usr/bin/g++-8" && update-alternatives --set cpp "/usr/bin/cpp-8" &>> ${FUNCNAME[0]}.install.log)
 # The following is needed for multiarch support during build.
 [[ $BUILDNATIVE ]] && (ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu && ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 && cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
 	# Multiarch support
