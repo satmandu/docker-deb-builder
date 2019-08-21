@@ -92,7 +92,7 @@ mkdir -p $apt_cache/partial
 git config --global core.abbrev 9
 
 # Set this once:
-nprocs=$(($(nproc) + 1))
+nprocs=$((nproc) + 1)
 
 
 #env >> /output/environment
