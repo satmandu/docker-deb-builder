@@ -773,7 +773,7 @@ cp_arch () {
         local arch_prefix="/usr/bin/aarch64-linux-gnu-"
         echo ${1}
         local file_out=$(file ${1})
-        [[ $(echo ${file_out} | grep -m1 "symbolic") ]] && echo symbolic && exit 1
+        [[ $(echo ${file_out} | grep -m1 "symbolic") ]] && rm ${1} && ln -s ${arch_prefix}${1} {1}
         [[ $(echo ${file_out} | grep -m1 "aarch64") ]] && file_arch="aarch64"
         [[ $(echo ${file_out} | grep -m1 'x86-64' ) ]] && file_arch="x86_64"
         [[ ! $file_arch ]] && echo "unknown arch" && exit 1
@@ -782,9 +782,9 @@ cp_arch () {
     
     
      [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch gcc-8
-     [[ $BUILDNATIVE ]] && cd /usr/bin && rm ar && ln -s aarch64-linux-gnu-ar ar
-     [[ $BUILDNATIVE ]] && cd /usr/bin && rm ld.bfd && ln -s aarch64-linux-gnu-ld.bfd ld.bfd
-     [[ $BUILDNATIVE ]] && cd /usr/bin && rm ld && ln -s aarch64-linux-gnu-ld ld
+     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch ar
+     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch ld.bfd
+     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch ld
      [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch cpp-8
     #[[ $BUILDNATIVE ]] && ( mkdir -p /usr/lib/gcc/aarch64-linux-gnu/8/ && cp -r /arm64_chroot/usr/lib/gcc/aarch64-linux-gnu/8/* /usr/lib/gcc/aarch64-linux-gnu/8/ ) 
     #[[ $BUILDNATIVE ]] && ( mkdir -p /usr/lib/gcc/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/gcc/aarch64-linux-gnu/* /usr/lib/gcc/aarch64-linux-gnu/ )
