@@ -488,21 +488,21 @@ startfunc
                g++-aarch64-linux-gnu \
                gcc-aarch64-linux-gnu-base \
                libgcc-dev-arm64-cross \
-               libstdc++-dev-arm64-cross &>> /tmp/main.install.log )
+               libstdc++-dev-arm64-cross &>> ${FUNCNAME[0]}.install.log )
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends \
                gcc-9-aarch64-linux-gnu \
                cpp-9-aarch64-linux-gnu \
                g++-9-aarch64-linux-gnu \
                gcc-9-aarch64-linux-gnu-base \
                libgcc-9-dev-arm64-cross \
-               libstdc++-9-dev-arm64-cross &>> /tmp/main.install.log )
+               libstdc++-9-dev-arm64-cross &>> ${FUNCNAME[0]}.install.log )
 [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends \
                gcc-8-aarch64-linux-gnu \
                cpp-8-aarch64-linux-gnu \
                g++-8-aarch64-linux-gnu \
                gcc-8-aarch64-linux-gnu-base \
                libgcc-8-dev-arm64-cross \
-               libstdc++-8-dev-arm64-cross &>> /tmp/main.install.log )
+               libstdc++-8-dev-arm64-cross &>> ${FUNCNAME[0]}.install.log )
 
 [[ ! ${base_dist} = "bionic" ]] && (update-alternatives --set gcc "/usr/bin/gcc-9" && update-alternatives --set g++ "/usr/bin/g++-9" && update-alternatives --set cpp "/usr/bin/cpp-9")
 [[ ! ${base_dist} = "bionic" ]] && (update-alternatives --set gcc "/usr/bin/gcc-8" && update-alternatives --set g++ "/usr/bin/g++-8" && update-alternatives --set cpp "/usr/bin/cpp-8")
@@ -515,15 +515,15 @@ startfunc
 EOF
 )
 
-[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch gcc-9 aarch64 &>> /tmp/main.install.log || true
-[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch g++-9 aarch64 &>> /tmp/main.install.log || true
-[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch cpp-9 aarch64 &>> /tmp/main.install.log || true
-[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-8 aarch64 &>> /tmp/main.install.log || true
-[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch g++-8 aarch64 &>> /tmp/main.install.log || true
-[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-8 aarch64 &>> /tmp/main.install.log || true
-[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ar aarch64 &>> /tmp/main.install.log 
-[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld.bfd aarch64 &>> /tmp/main.install.log 
-[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld aarch64 &>> /tmp/main.install.log 
+[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch gcc-9 aarch64 &>> ${FUNCNAME[0]}.install.log || true
+[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch g++-9 aarch64 &>> ${FUNCNAME[0]}.install.log || true
+[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch cpp-9 aarch64 &>> ${FUNCNAME[0]}.install.log || true
+[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-8 aarch64 &>> ${FUNCNAME[0]}.install.log || true
+[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch g++-8 aarch64 &>> ${FUNCNAME[0]}.install.log || true
+[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-8 aarch64 &>> ${FUNCNAME[0]}.install.log || true
+[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ar aarch64 &>> ${FUNCNAME[0]}.install.log 
+[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld.bfd aarch64 &>> ${FUNCNAME[0]}.install.log 
+[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld aarch64 &>> ${FUNCNAME[0]}.install.log 
 
 endfunc
 }
