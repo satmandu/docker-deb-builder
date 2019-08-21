@@ -503,7 +503,9 @@ startfunc
 echo "* compilers installed."
 [[ ! ${base_dist} = "bionic" ]] && (
 update-alternatives --set gcc "/usr/bin/gcc-9" &>> ${FUNCNAME[0]}.install.log
+&&
 update-alternatives --set g++ "/usr/bin/g++-9" &>> ${FUNCNAME[0]}.install.log
+&&
 update-alternatives --set cpp "/usr/bin/cpp-9" &>> ${FUNCNAME[0]}.install.log
 )
 [[ ${base_dist} = "bionic" ]] && (
