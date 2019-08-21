@@ -826,11 +826,22 @@ mv_arch () {
 #     O=$workdir/kernel-build/ \
 #     bindeb-pkg"'
 
+    [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && cat <<-EOF> $workdir/kernel_compile.sh
+	#!/bin/bash
+	/arm64_chroot/bin/bash-static -c "make -j${nprocs} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg
+EOF
+    [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && chmod +x $workdir/kernel_compile.sh
+
+
+
+
+
     echo $debcmd
 
 #    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
     cd $workdir/rpi-linux
-    ${debcmd} &>> /tmp/${FUNCNAME[0]}.compile.log
+    [[ -f $workdir/kernel_compile.sh ]] && $workdir/kernel_compile.sh &>> /tmp/${FUNCNAME[0]}.compile.log || ${debcmd} &>> /tmp/${FUNCNAME[0]}.compile.log
+   # ${debcmd} &>> /tmp/${FUNCNAME[0]}.compile.log
     # If there were kernel patches, the version may change, so let's check 
     # and overwrite if necessary.
     DEB_KERNEL_VERSION=`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`
