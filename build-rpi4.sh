@@ -486,41 +486,65 @@ endfunc
 compiler_setup () {
 startfunc
 
-[[ $BUILDNATIVE ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends gcc-aarch64-linux-gnu \
-               cpp-aarch64-linux-gnu \
-               g++-aarch64-linux-gnu &>> /tmp/${FUNCNAME[0]}.install.log || true)
-[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends \
-               gcc-9-aarch64-linux-gnu \
-               cpp-9-aarch64-linux-gnu \
-               g++-9-aarch64-linux-gnu \
-               gcc-9-aarch64-linux-gnu-base \
-               libgcc-9-dev-arm64-cross \
-               libstdc++-9-dev-arm64-cross &>> /tmp/${FUNCNAME[0]}.install.log || true)
-[[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends \
-               gcc-8-aarch64-linux-gnu \
-               cpp-8-aarch64-linux-gnu \
-               g++-8-aarch64-linux-gnu \
-               gcc-8-aarch64-linux-gnu-base \
-               libgcc-8-dev-arm64-cross \
-               libstdc++-8-dev-arm64-cross &>> /tmp/${FUNCNAME[0]}.install.log || true)
+[[ $BUILDNATIVE ]] && (
+    /usr/bin/chroot-apt-wrapper -o dir::cache::archives=$apt_cache \
+    install -y --no-install-recommends \
+        gcc-aarch64-linux-gnu \
+        cpp-aarch64-linux-gnu \
+        g++-aarch64-linux-gnu \
+        &>> /tmp/${FUNCNAME[0]}.install.log || true
+    )
+[[ $BUILDNATIVE ]] && (
+    /usr/bin/chroot-dpkg-wrapper \
+        --add-architecture arm64 \
+        &>> /tmp/${FUNCNAME[0]}.install.log || true
+    )
+[[ $BUILDNATIVE ]] && (
+    /usr/bin/chroot-apt-wrapper -o dir::cache::archives=$apt_cache \
+    install -y --no-install-recommends \
+        libssl-dev:arm64 \
+        &>> /tmp/${FUNCNAME[0]}.install.log || true
+    )
+[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+    /usr/bin/chroot-apt-wrapper -o dir::cache::archives=$apt_cache \
+    install -y --no-install-recommends \
+       gcc-9-aarch64-linux-gnu \
+       cpp-9-aarch64-linux-gnu \
+       g++-9-aarch64-linux-gnu \
+       gcc-9-aarch64-linux-gnu-base \
+       libgcc-9-dev-arm64-cross \
+       libstdc++-9-dev-arm64-cross \
+       &>> /tmp/${FUNCNAME[0]}.install.log || true
+   )
+[[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
+    /usr/bin/chroot-apt-wrapper -o dir::cache::archives=$apt_cache \
+    install -y --no-install-recommends \
+       gcc-8-aarch64-linux-gnu \
+       cpp-8-aarch64-linux-gnu \
+       g++-8-aarch64-linux-gnu \
+       gcc-8-aarch64-linux-gnu-base \
+       libgcc-8-dev-arm64-cross \
+       libstdc++-8-dev-arm64-cross \
+       &>> /tmp/${FUNCNAME[0]}.install.log || true
+   )
 PrintLog  "compilers installed" /tmp/${FUNCNAME[0]}.install.log
 #arbitrary_wait_here
 PrintLog " post-wait" /tmp/${FUNCNAME[0]}.install.log
-# The following is needed for multiarch support during build.
-# [[ $BUILDNATIVE ]] && (
-# (ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu \
-#  &>> /tmp/${FUNCNAME[0]}.install.log || true) \
-# && \
-# (ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 \
-#  &>> /tmp/${FUNCNAME[0]}.install.log || true) \
-# && \
-# cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
-# 	# Multiarch support
-# 	/usr/local/lib/aarch64-linux-gnu
-# 	/lib/aarch64-linux-gnu
-# 	/usr/lib/aarch64-linux-gnu
-# EOF &>> /tmp/${FUNCNAME[0]}.install.log || true \
-# )
+The following is needed for multiarch support during build.
+[[ $BUILDNATIVE ]] && (
+(ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu \
+ &>> /tmp/${FUNCNAME[0]}.install.log || true) \
+&& \
+(ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 \
+ &>> /tmp/${FUNCNAME[0]}.install.log || true) \
+&& \
+cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
+	# Multiarch support
+	/usr/local/lib/aarch64-linux-gnu
+	/lib/aarch64-linux-gnu
+	/usr/lib/aarch64-linux-gnu
+EOF &>> /tmp/${FUNCNAME[0]}.install.log || true \
+)
 PrintLog "setup multiarch"  /tmp/${FUNCNAME[0]}.install.log
 [[ $BUILDNATIVE ]] && (
 mv_arch ar aarch64 &>> /tmp/${FUNCNAME[0]}.install.log 
@@ -565,6 +589,9 @@ PrintLog "set compiler priorities." /tmp/${FUNCNAME[0]}.install.log
 # && \
 # update-alternatives --set cpp "/usr/bin/cpp-8" &>> /tmp/${FUNCNAME[0]}.install.log
 # )
+
+
+
 
 endfunc
 }
