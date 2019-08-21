@@ -91,6 +91,9 @@ mkdir -p $apt_cache/partial
 # Set git hash digits. For some reason this can vary between containers.
 git config --global core.abbrev 9
 
+# Set this once:
+nprocs=$(($(nproc) + 1))
+
 
 #env >> /output/environment
 
@@ -829,7 +832,7 @@ mv_arch () {
     
 
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-    debcmd='/arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg" &>> /tmp/${FUNCNAME[0]}.compile.log'
+    debcmd='/arm64_chroot/bin/bash-static -c "make -j${nprocs} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg" &>> /tmp/${FUNCNAME[0]}.compile.log'
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
 
 #     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
