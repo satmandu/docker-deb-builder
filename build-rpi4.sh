@@ -706,6 +706,7 @@ startfunc
         else
             KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${kernelrev}"
     fi
+    
     echo "** Current Kernel Version: $KERNEL_VERS" 
     echo $KERNEL_VERS > /tmp/KERNEL_VERS
 
@@ -720,33 +721,29 @@ startfunc
     KERNEL_VERS=$(cat /tmp/KERNEL_VERS)
     cd $workdir/rpi-linux
     
-    runthis="make \
-    ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    O=$workdir/kernel-build \
-    bcm2711_defconfig"
-    PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log
-    $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
-    unset runthis
+    make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=$workdir/kernel-build \
+    bcm2711_defconfig &>> /tmp/${FUNCNAME[0]}.compile.log
+#     PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log
+#     $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
+#     unset runthis
     
     
     cd $workdir/kernel-build
     # Use kernel config modification script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
+    if [[ -e /source-ro/conform_config-${kernel_branch}.sh ]]
+        then 
+            cp /source-ro/conform_config-${kernel_branch}.sh \
+            $workdir/kernel-build/conform_config.sh
+        elif [[ -e /source-ro/conform_config.sh ]]
+            cp /source-ro/conform_config.sh $workdir/kernel-build/
+    fi
+
     if [[ ! -e /tmp/APPLIED_KERNEL_PATCHES ]]
         then
-    [[ -e /source-ro/conform_config-${kernel_branch}.sh ]] && { /source-ro/conform_config-${kernel_branch}.sh ;true; } || \
-    { /source-ro/conform_config.sh ; true; }
-        else
-        [[ -e /source-ro/conform_config-${kernel_branch}.sh ]] && cp \
-        /source-ro/conform_config-${kernel_branch}.sh $workdir/kernel-build/
-        [[ -e /source-ro/conform_config.sh ]] && cp /source-ro/conform_config.sh \
-        $workdir/kernel-build/
-        sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' $workdir/kernel-build/conform_config-${kernel_branch}.sh || true
-        sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' $workdir/kernel-build/conform_config.sh || true
-        [[ -e $workdir/kernel-build/conform_config-${kernel_branch}.sh ]] && { $workdir/kernel-build/conform_config-${kernel_branch}.sh ;true; } || \
-    { $workdir/kernel-build/conform_config.sh ; true; }
-        LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
-        echo ${LOCALVERSION} > /tmp/LOCALVERSION
+            sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' $workdir/kernel-build/conform_config.sh || true
+            LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
+            echo ${LOCALVERSION} > /tmp/LOCALVERSION
     fi
 
     yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
