@@ -503,7 +503,12 @@ startfunc
 echo "* compilers installed."
 arbitrary_wait_here
 # The following is needed for multiarch support during build.
-[[ $BUILDNATIVE ]] && (ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu && ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 && cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
+[[ $BUILDNATIVE ]] && (
+ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu \
+&& \
+ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 \
+&& \
+cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
 	# Multiarch support
 	/usr/local/lib/aarch64-linux-gnu
 	/lib/aarch64-linux-gnu
