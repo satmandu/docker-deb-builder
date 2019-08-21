@@ -500,7 +500,7 @@ startfunc
                gcc-8-aarch64-linux-gnu-base \
                libgcc-8-dev-arm64-cross \
                libstdc++-8-dev-arm64-cross &>> /tmp/${FUNCNAME[0]}.install.log || true)
-PrintLog  "* compilers installed." /tmp/${FUNCNAME[0]}.install.log
+PrintLog  "compilers installed" /tmp/${FUNCNAME[0]}.install.log
 arbitrary_wait_here
 PrintLog " post-wait" /tmp/${FUNCNAME[0]}.install.log
 # The following is needed for multiarch support during build.
@@ -518,7 +518,7 @@ PrintLog " post-wait" /tmp/${FUNCNAME[0]}.install.log
 # 	/usr/lib/aarch64-linux-gnu
 # EOF &>> /tmp/${FUNCNAME[0]}.install.log || true \
 # )
-PrintLog "* setup multiarch."  /tmp/${FUNCNAME[0]}.install.log
+PrintLog "setup multiarch"  /tmp/${FUNCNAME[0]}.install.log
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
 cd /usr/bin && mv_arch gcc-9 aarch64 &>> /tmp/${FUNCNAME[0]}.install.log || true
 )
