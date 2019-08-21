@@ -328,7 +328,9 @@ docker_args+="-e apt_cache=/cache/apt_cache "
 docker_args+="-e workdir=/build/source "
 
 # Send in base image environment variables:
-[ ! -n "$JUSTDEBS" ] && docker_args+="-e base_url=${base_url} -e base_image=${base_image} -e base_dist=${base_dist} "
+docker_args+="-e base_url=${base_url} "
+docker_args+="-e base_image=${base_image} "
+docker_args+="-e base_dist=${base_dist} "
 
 #Send in linux repo environment variables:
 docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo} "
