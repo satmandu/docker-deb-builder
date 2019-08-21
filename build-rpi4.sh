@@ -1514,10 +1514,7 @@ touch /flag/done.ok_to_exit_container_after_build
 # So we will work around it.
 #inotify_touch_events &
 
-# [[ $BUILDNATIVE || ! $JUSTDEBS  ]] && utility_scripts &
-# [[ $BUILDNATIVE || ! $JUSTDEBS ]] && base_image_check
-# [[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_extract &
-# [[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_mount &
+
 [[ ! $JUSTDEBS  ]] && utility_scripts &
 [[ ! $JUSTDEBS  ]] && base_image_check
 [[ ! $JUSTDEBS  ]] && image_extract &
@@ -1533,10 +1530,6 @@ kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && wifi_firmware_modification &
 [[ ! $JUSTDEBS ]] && first_boot_scripts_setup &
 [[ ! $JUSTDEBS ]] && added_scripts &
-#waitforstart "kernelbuild_setup" && kernel_debs &
-# [[ $BUILDNATIVE || ! $JUSTDEBS ]] && arm64_chroot_setup &
-# [[ $BUILDNATIVE || ! $JUSTDEBS ]] && image_apt_installs &
-# [[ $BUILDNATIVE || ! $JUSTDEBS ]] && spinnerwait image_apt_installs
 [[ ! $JUSTDEBS ]] && arm64_chroot_setup &
 [[ ! $JUSTDEBS ]] && image_apt_installs &
 [[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
