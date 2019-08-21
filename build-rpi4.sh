@@ -782,7 +782,7 @@ cp_arch () {
     
     
      [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch gcc-8
-     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch ar
+     [[ $BUILDNATIVE ]] && cd /usr/bin && rm ar && ln -s aarch64-linux-gnu-ar ar
      [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch ld.bfd
      [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch cpp-8
     #[[ $BUILDNATIVE ]] && ( mkdir -p /usr/lib/gcc/aarch64-linux-gnu/8/ && cp -r /arm64_chroot/usr/lib/gcc/aarch64-linux-gnu/8/* /usr/lib/gcc/aarch64-linux-gnu/8/ ) 
