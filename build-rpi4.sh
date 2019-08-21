@@ -505,13 +505,13 @@ arbitrary_wait_here
 [[ ! ${base_dist} = "bionic" ]] && (
 update-alternatives --set gcc "/usr/bin/gcc-9" &>> ${FUNCNAME[0]}.install.log \
 && \
-update-alternatives --set g++ "/usr/bin/g++-9" &>> ${FUNCNAME[0]}.install.log \
+update-alternatives --set c++ "/usr/bin/g++-9" &>> ${FUNCNAME[0]}.install.log \
 && \
 update-alternatives --set cpp "/usr/bin/cpp-9" &>> ${FUNCNAME[0]}.install.log
 )
 [[ ${base_dist} = "bionic" ]] && (
 update-alternatives --set gcc "/usr/bin/gcc-8" &>> ${FUNCNAME[0]}.install.log
-update-alternatives --set g++ "/usr/bin/g++-8" &>> ${FUNCNAME[0]}.install.log
+update-alternatives --set c++ "/usr/bin/g++-8" &>> ${FUNCNAME[0]}.install.log
 update-alternatives --set cpp "/usr/bin/cpp-8" &>> ${FUNCNAME[0]}.install.log
 )
 echo "* set compiler priorities."
@@ -1578,7 +1578,7 @@ echo 1 > /flag/done.ok_to_continue_after_mount_image
 echo 1 > /flag/done.ok_to_exit_container_after_build
 
 
-compiler_setup
+compiler_setup &
 [[ ! $JUSTDEBS  ]] && utility_scripts &
 [[ ! $JUSTDEBS  ]] && base_image_check
 [[ ! $JUSTDEBS  ]] && image_extract &

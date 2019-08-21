@@ -92,7 +92,7 @@ RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] && (apt-get install -y --
                gcc-9-aarch64-linux-gnu-base \
                libgcc-9-dev-arm64-cross \
                libstdc++-9-dev-arm64-cross)"]
-RUN set -ex && update-alternatives --set gcc "/usr/bin/gcc-9" && update-alternatives --set g++ "/usr/bin/g++-9" && update-alternatives --set cpp "/usr/bin/cpp-9"
+RUN set -ex && update-alternatives --set gcc "/usr/bin/gcc-9" && update-alternatives --set c++ "/usr/bin/g++-9" && update-alternatives --set cpp "/usr/bin/cpp-9"
 RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] && (ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu && ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 && cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
 	# Multiarch support
 	/usr/local/lib/aarch64-linux-gnu
