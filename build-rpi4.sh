@@ -784,6 +784,7 @@ mv_arch () {
             then
             rm ${1} && ln -s ${dest_arch_prefix}${1} ${1}
         elif [[ -f ${dest_arch_prefix}${1} ]]
+            then
             cp ${dest_arch_prefix}${1} ${1}
         fi
 }
