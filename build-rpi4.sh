@@ -828,7 +828,8 @@ mv_arch () {
 
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && cat <<-EOF> $workdir/kernel_compile.sh
 	#!/bin/bash
-	/arm64_chroot/bin/bash-static -c "make -j${nprocs} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg
+	cd $workdir/rpi-linux
+	/arm64_chroot/bin/bash-static -c "make -j${nprocs} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg"
 EOF
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && chmod +x $workdir/kernel_compile.sh
 
