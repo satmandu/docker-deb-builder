@@ -253,7 +253,7 @@ arbitrary_wait_here () {
     # Arbitrary build pause for debugging
     if [ ! -f /flag/done.ok_to_continue_after_here ]; then
         echo "** Build Paused. **"
-        echo 'Type in "echo 0 > /flag/done.ok_to_continue_after_here"'
+        echo 'Type in "echo 1 > /flag/done.ok_to_continue_after_here"'
         echo "in a shell into this container to continue."
     fi 
     #waitfor "ok_to_continue_after_here"
@@ -548,7 +548,7 @@ startfunc
     # To stop here "rm /flag/done.ok_to_continue_after_mount_image".
     if [ ! -f /flag/done.ok_to_continue_after_mount_image ]; then
         echo "** Image mount done & container paused. **"
-        echo 'Type in "echo 0 > /flag/done.ok_to_continue_after_mount_image"'
+        echo 'Type in "echo 1 > /flag/done.ok_to_continue_after_mount_image"'
         echo "in a shell into this container to continue."
     fi 
     waitfor "ok_to_continue_after_mount_image"
@@ -1387,7 +1387,7 @@ startfunc
     # To stop here "rm /flag/done.ok_to_unmount_image_after_build".
     if [ ! -f /flag/done.ok_to_unmount_image_after_build ]; then
         echo "** Container paused before image unmount. **"
-        echo 'Type in "echo 0 > /flag/done.ok_to_unmount_image_after_build"'
+        echo 'Type in "echo 1 > /flag/done.ok_to_unmount_image_after_build"'
         echo "in a shell into this container to continue."
     fi  
     waitfor "ok_to_umount_image_after_build"
@@ -1423,7 +1423,7 @@ startfunc
     # To stop here "rm /flag/done.ok_to_exit_container_after_build".
     if [ ! -f /flag/done.ok_to_exit_container_after_build ]; then
         echo "** Image unmounted & container paused. **"
-        echo 'Type in "echo 0 > /flag/done.ok_to_exit_container_after_build"'
+        echo 'Type in "echo 1 > /flag/done.ok_to_exit_container_after_build"'
         echo "in a shell into this container to continue."
     fi 
     waitfor "ok_to_exit_container_after_build"
@@ -1503,20 +1503,20 @@ endfunc
 # The shell command would be something like this:
 # docker exec -it `cat ~/docker-rpi4-imagebuilder/build.cid` /bin/bash
 # Note that this flag is looked for in the image_and_chroot_cleanup function
-echo 0 > /flag/done.ok_to_umount_image_after_build
+echo 1 > /flag/done.ok_to_umount_image_after_build
 
 # For debugging.
-echo 0 > /flag/done.ok_to_continue_after_mount_image
+echo 1 > /flag/done.ok_to_continue_after_mount_image
 
 # Arbitrary_wait pause for debugging.
-[[ ! $ARBITRARY_WAIT ]] && echo 0 > /flag/done.ok_to_continue_after_here
+[[ ! $ARBITRARY_WAIT ]] && echo 1 > /flag/done.ok_to_continue_after_here
 
 # Delete this by connecting to the container using a shell if you want to 
 # debug the container before the container is exited.
 # The shell command would be something like this:
 # docker exec -it `cat ~/docker-rpi4-imagebuilder/build.cid` /bin/bash
 # Note that this flag is looked for in the image_and_chroot_cleanup function
-echo 0 > /flag/done.ok_to_exit_container_after_build
+echo 1 > /flag/done.ok_to_exit_container_after_build
 
 
 
