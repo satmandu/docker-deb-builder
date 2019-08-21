@@ -54,10 +54,14 @@ shift $(($OPTIND - 1))
 #  those distributions.
 default_base_dist="eoan"
 #  This is the default build host image. 18.04, 19.04, and 19.10 dev builds
-#  have been tested. However, non-19.04 images need to be built separately and 
-#  invoked through for instance:
-# ./build-image -i docker-rpi4-imagebuilder:18.04
-#defaultimage="docker-rpi4-imagebuilder-v2:19.04"
+#  have been tested. However, non-19.04 images may need to be built separately and 
+#  invoked through. e.g.:
+# base_dist=bionic ./build-image 
+# Note that currently kernel package installation in older build hosts may be unreliable.
+# I suggest using this for now to build the kernel packages, which will be used in
+# whatever image installation you use:
+# JUSTDEBS ./build-image
+
 outdir="${outdir:-output}"
 
 base_dist="${base_dist:-${default_base_dist}}"
