@@ -86,7 +86,7 @@ mkdir -p $src_cache
 # Apt cache is on the cache volume.
 #apt_cache=/cache/apt_cache
 # This is needed or apt has issues.
-mkdir -p $apt_cache/partial 
+mkdir -p ${apt_cache}/partial 
 
 # Set git hash digits. For some reason this can vary between containers.
 git config --global core.abbrev 9
@@ -107,22 +107,22 @@ nprocs=$(($(nproc) + 1))
 #env >> /output/environment
 
 echo "Starting local container software installs."
-apt-get -o dir::cache::archives=$apt_cache install curl moreutils -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install lsof -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install xdelta3 -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install e2fsprogs -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install qemu-user-static -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install dosfstools -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install libc6-arm64-cross -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install pv -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -y &>> /tmp/main.install.log 
-apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=${apt_cache} install curl moreutils -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=${apt_cache} install lsof -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=${apt_cache} install xdelta3 -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=${apt_cache} install e2fsprogs -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=${apt_cache} install qemu-user-static -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=${apt_cache} install dosfstools -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=${apt_cache} install libc6-arm64-cross -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=${apt_cache} install pv -y &>> /tmp/main.install.log 
+[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=${apt_cache} install u-boot-tools -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=${apt_cache} install vim -y &>> /tmp/main.install.log 
 
 
 echo -e "Performing cache volume apt autoclean.\n\r"
-apt-get -o dir::cache::archives=$apt_cache autoclean -y -qq &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives=${apt_cache} autoclean -y -qq &>> /tmp/main.install.log 
 
-#apt-get -o dir::cache::archives=$apt_cache install xdelta3 vim \
+#apt-get -o dir::cache::archives=${apt_cache} install xdelta3 vim \
 #e2fsprogs qemu-user-static dosfstools \
 #libc6-arm64-cross pv u-boot-tools -qq 2>/dev/null
 
@@ -139,7 +139,7 @@ function abspath {
 PrintLog(){
   information=${1}
   logFile=${2}
-  echo ${information} | ts >> $logFile
+  echo "${information}" | ts >> $logFile
 }
 
 # Via https://superuser.com/a/917073
@@ -487,7 +487,7 @@ compiler_setup () {
 startfunc
 
 [[ $BUILDNATIVE ]] && (
-    apt -o dir::cache::archives=$apt_cache \
+    apt -o dir::cache::archives=${apt_cache} \
     install -y --no-install-recommends \
         gcc-aarch64-linux-gnu \
         cpp-aarch64-linux-gnu \
@@ -499,14 +499,20 @@ startfunc
         &>> /tmp/${FUNCNAME[0]}.install.log || true
     )
 arbitrary_wait_here
+VERSION_CODENAME=$(grep VERSION_CODENAME /etc/os-release | head -1 | awk -F '=' '{print $2}')
+
+apt update ; 
+
 [[ $BUILDNATIVE ]] && (
-    apt -o dir::cache::archives=$apt_cache \
+echo "deb http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} main restricted" >> /etc/apt/sources.list \
+&& apt update && \
+    apt -o dir::cache::archives=${apt_cache} \
     install -y --no-install-recommends \
         libssl-dev:arm64 \
         &>> /tmp/${FUNCNAME[0]}.install.log || true
     )
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
-    apt -o dir::cache::archives=$apt_cache \
+    apt -o dir::cache::archives=${apt_cache} \
     install -y --no-install-recommends \
        gcc-9-aarch64-linux-gnu \
        cpp-9-aarch64-linux-gnu \
@@ -517,7 +523,7 @@ arbitrary_wait_here
        &>> /tmp/${FUNCNAME[0]}.install.log || true
    )
 [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
-    apt -o dir::cache::archives=$apt_cache \
+    apt -o dir::cache::archives=${apt_cache} \
     install -y --no-install-recommends \
        gcc-8-aarch64-linux-gnu \
        cpp-8-aarch64-linux-gnu \
@@ -709,7 +715,7 @@ startfunc
 #    mount -t sysfs sys     /mnt/sys/
 #    mount -o bind /dev     /mnt/dev/
     mount -o bind /dev/pts /mnt/dev/pts
-    mount --bind $apt_cache /mnt/var/cache/apt
+    mount --bind ${apt_cache} /mnt/var/cache/apt
  #   chmod -R 777 /mnt/var/lib/apt/
  #   setfacl -R -m u:_apt:rwx /mnt/var/lib/apt/ 
     mkdir -p /mnt/ccache || ls -aFl /mnt
@@ -736,12 +742,12 @@ startfunc
     echo "* Apt update done."
     echo "* Downloading software for apt upgrade."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
-    -o dir::cache::archives=$apt_cache \
+    -o dir::cache::archives=${apt_cache} \
     upgrade -d -y &>> /tmp/${FUNCNAME[0]}.install.log || true
     echo "* Apt upgrade download done."
     echo "* Downloading wifi & networking tools."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
-    -o dir::cache::archives=$apt_cache \
+    -o dir::cache::archives=${apt_cache} \
     -d install wireless-tools wireless-regdb crda \
     net-tools rng-tools connman -qq &>> /tmp/${FUNCNAME[0]}.install.log || true
     # This setup DOES get around the issues with kernel
@@ -750,7 +756,7 @@ startfunc
     # qemu-user-binfmt needs to be installed after reboot though otherwise there 
     # are container problems.
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
-    -o dir::cache::archives=$apt_cache \
+    -o dir::cache::archives=${apt_cache} \
     -d install  \
     qemu-user qemu libc6-amd64-cross -qq &>> /tmp/${FUNCNAME[0]}.install.log || true
 # endfunc
@@ -987,14 +993,14 @@ startfunc
 
    # Don't remake debs if they already exist in output.
    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
-   if test -n "$(find $apt_cache -maxdepth 1 -name linux-image-*${KERNEL_VERS}* -print -quit)"
+   if test -n "$(find ${apt_cache} -maxdepth 1 -name linux-image-*${KERNEL_VERS}* -print -quit)"
    then
         echo -e "${KERNEL_VERS} linux image on cache volume. 😎\n"
         echo "linux-image" >> /tmp/nodebs
     else
         rm -f /tmp/nodebs || true
     fi
-    if test -n "$(find $apt_cache -maxdepth 1 -name linux-headers-*${KERNEL_VERS}* -print -quit)"
+    if test -n "$(find ${apt_cache} -maxdepth 1 -name linux-headers-*${KERNEL_VERS}* -print -quit)"
    then
         echo -e "${KERNEL_VERS} linux headers on cache volume. 😎\n"
         echo "linux-image" >> /tmp/nodebs
@@ -1008,8 +1014,8 @@ startfunc
     then
         echo -e "Using existing $KERNEL_VERS debs from cache volume.\n \
         \rNo kernel needs to be built."
-        cp $apt_cache/linux-image-*${KERNEL_VERS}*arm64.deb $workdir/
-        cp $apt_cache/linux-headers-*${KERNEL_VERS}*arm64.deb $workdir/
+        cp ${apt_cache}/linux-image-*${KERNEL_VERS}*arm64.deb $workdir/
+        cp ${apt_cache}/linux-headers-*${KERNEL_VERS}*arm64.deb $workdir/
         cp $workdir/*.deb /output/ 
         chown $USER:$GROUP /output/*.deb
     else
@@ -1022,7 +1028,7 @@ startfunc
         KERNEL_VERS=$(< /tmp/KERNEL_VERS)
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
         rm -f $workdir/linux-libc-dev*.deb
-        cp $workdir/*.deb $apt_cache/ || (echo -e "Kernel Build Failed! 😬" ; pkill -F /flag/main)
+        cp $workdir/*.deb ${apt_cache}/ || (echo -e "Kernel Build Failed! 😬" ; pkill -F /flag/main)
         cp $workdir/*.deb /output/ 
         chown $USER:$GROUP /output/*.deb
     fi
