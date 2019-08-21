@@ -485,21 +485,21 @@ startfunc
 
 [[ $BUILDNATIVE ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends gcc-aarch64-linux-gnu \
                cpp-aarch64-linux-gnu \
-               g++-aarch64-linux-gnu &>> /tmp/${FUNCNAME[0]}.install.log )
+               g++-aarch64-linux-gnu &>> /tmp/${FUNCNAME[0]}.install.log || true)
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends \
                gcc-9-aarch64-linux-gnu \
                cpp-9-aarch64-linux-gnu \
                g++-9-aarch64-linux-gnu \
                gcc-9-aarch64-linux-gnu-base \
                libgcc-9-dev-arm64-cross \
-               libstdc++-9-dev-arm64-cross &>> /tmp/${FUNCNAME[0]}.install.log )
+               libstdc++-9-dev-arm64-cross &>> /tmp/${FUNCNAME[0]}.install.log || true)
 [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends \
                gcc-8-aarch64-linux-gnu \
                cpp-8-aarch64-linux-gnu \
                g++-8-aarch64-linux-gnu \
                gcc-8-aarch64-linux-gnu-base \
                libgcc-8-dev-arm64-cross \
-               libstdc++-8-dev-arm64-cross &>> /tmp/${FUNCNAME[0]}.install.log )
+               libstdc++-8-dev-arm64-cross &>> /tmp/${FUNCNAME[0]}.install.log || true)
 echo "* compilers installed."
 arbitrary_wait_here
 # The following is needed for multiarch support during build.
