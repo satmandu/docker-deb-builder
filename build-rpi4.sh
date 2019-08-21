@@ -487,7 +487,7 @@ compiler_setup () {
 startfunc
 
 [[ $BUILDNATIVE ]] && (
-    /usr/bin/chroot-apt-wrapper -o dir::cache::archives=$apt_cache \
+    apt -o dir::cache::archives=$apt_cache \
     install -y --no-install-recommends \
         gcc-aarch64-linux-gnu \
         cpp-aarch64-linux-gnu \
@@ -495,18 +495,17 @@ startfunc
         &>> /tmp/${FUNCNAME[0]}.install.log || true
     )
 [[ $BUILDNATIVE ]] && (
-    /usr/bin/chroot-dpkg-wrapper \
-        --add-architecture arm64 \
+    dpkg --add-architecture arm64 \
         &>> /tmp/${FUNCNAME[0]}.install.log || true
     )
 [[ $BUILDNATIVE ]] && (
-    /usr/bin/chroot-apt-wrapper -o dir::cache::archives=$apt_cache \
+    apt -o dir::cache::archives=$apt_cache \
     install -y --no-install-recommends \
         libssl-dev:arm64 \
         &>> /tmp/${FUNCNAME[0]}.install.log || true
     )
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
-    /usr/bin/chroot-apt-wrapper -o dir::cache::archives=$apt_cache \
+    apt -o dir::cache::archives=$apt_cache \
     install -y --no-install-recommends \
        gcc-9-aarch64-linux-gnu \
        cpp-9-aarch64-linux-gnu \
@@ -517,7 +516,7 @@ startfunc
        &>> /tmp/${FUNCNAME[0]}.install.log || true
    )
 [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
-    /usr/bin/chroot-apt-wrapper -o dir::cache::archives=$apt_cache \
+    apt -o dir::cache::archives=$apt_cache \
     install -y --no-install-recommends \
        gcc-8-aarch64-linux-gnu \
        cpp-8-aarch64-linux-gnu \
