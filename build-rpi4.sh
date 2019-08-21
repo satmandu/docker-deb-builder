@@ -501,13 +501,11 @@ startfunc
 arbitrary_wait_here
 VERSION_CODENAME=$(grep VERSION_CODENAME /etc/os-release | head -1 | awk -F '=' '{print $2}')
 
-apt update ; 
-
 [[ $BUILDNATIVE ]] && (
-echo "deb http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} main restricted" >> /etc/apt/sources.list \
+echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} main restricted universe multiverse" >> /etc/apt/sources.list \
 && apt update && \
     apt -o dir::cache::archives=${apt_cache} \
-    install -y --no-install-recommends \
+    install -y \
         libssl-dev:arm64 \
         &>> /tmp/${FUNCNAME[0]}.install.log || true
     )
