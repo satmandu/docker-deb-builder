@@ -504,12 +504,14 @@ VERSION_CODENAME=$(grep VERSION_CODENAME /etc/os-release | head -1 | awk -F '=' 
 # 
 
 [[ $BUILDNATIVE ]] && (
-echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} main restricted universe multiverse" >> /etc/apt/sources.list \
-&& dpkg --add-architecture arm64 \
-        &>> /tmp/${FUNCNAME[0]}.install.log && apt update && \
+echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} main restricted universe multiverse" >> /etc/apt/sources.list && \
+echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
+ dpkg --add-architecture arm64 \
+        &>> /tmp/${FUNCNAME[0]}.install.log && \
+        ( apt update || true ) && \
     apt -o dir::cache::archives=${apt_cache} \
     install -y \
-        libssl-dev:arm64 \
+        libssl-dev:arm64 -qq\
         &>> /tmp/${FUNCNAME[0]}.install.log || true
     )
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
