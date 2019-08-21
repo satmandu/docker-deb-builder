@@ -95,6 +95,15 @@ git config --global core.abbrev 9
 nprocs=$(($(nproc) + 1))
 
 
+
+
+
+#  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/ && mkdir -p /usr/include/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/include/aarch64-linux-gnu/* /usr/include/aarch64-linux-gnu/)
+
+
+
+
+
 #env >> /output/environment
 
 echo "Starting local container software installs."
@@ -108,6 +117,8 @@ apt-get -o dir::cache::archives=$apt_cache install curl moreutils -y &>> /tmp/ma
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install pv -y &>> /tmp/main.install.log 
 [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives=$apt_cache install u-boot-tools -y &>> /tmp/main.install.log 
 apt-get -o dir::cache::archives=$apt_cache install vim -y &>> /tmp/main.install.log 
+
+
 echo -e "Performing cache volume apt autoclean.\n\r"
 apt-get -o dir::cache::archives=$apt_cache autoclean -y -qq &>> /tmp/main.install.log 
 
@@ -469,6 +480,54 @@ chmod +x /mnt/usr/local/bin/chroot-dpkg-wrapper
 endfunc
 }
 
+compiler_setup () {
+startfunc
+
+[[ $BUILDNATIVE ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends gcc-aarch64-linux-gnu \
+               cpp-aarch64-linux-gnu \
+               g++-aarch64-linux-gnu \
+               gcc-aarch64-linux-gnu-base \
+               libgcc-dev-arm64-cross \
+               libstdc++-dev-arm64-cross &>> /tmp/main.install.log )
+[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends \
+               gcc-9-aarch64-linux-gnu \
+               cpp-9-aarch64-linux-gnu \
+               g++-9-aarch64-linux-gnu \
+               gcc-9-aarch64-linux-gnu-base \
+               libgcc-9-dev-arm64-cross \
+               libstdc++-9-dev-arm64-cross &>> /tmp/main.install.log )
+[[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (apt-get -o dir::cache::archives=$apt_cache install -y --no-install-recommends \
+               gcc-8-aarch64-linux-gnu \
+               cpp-8-aarch64-linux-gnu \
+               g++-8-aarch64-linux-gnu \
+               gcc-8-aarch64-linux-gnu-base \
+               libgcc-8-dev-arm64-cross \
+               libstdc++-8-dev-arm64-cross &>> /tmp/main.install.log )
+
+[[ ! ${base_dist} = "bionic" ]] && (update-alternatives --set gcc "/usr/bin/gcc-9" && update-alternatives --set g++ "/usr/bin/g++-9" && update-alternatives --set cpp "/usr/bin/cpp-9")
+[[ ! ${base_dist} = "bionic" ]] && (update-alternatives --set gcc "/usr/bin/gcc-8" && update-alternatives --set g++ "/usr/bin/g++-8" && update-alternatives --set cpp "/usr/bin/cpp-8")
+# The following is needed for multiarch support during build.
+[[ $BUILDNATIVE ]] && (ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu && ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 && cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
+	# Multiarch support
+	/usr/local/lib/aarch64-linux-gnu
+	/lib/aarch64-linux-gnu
+	/usr/lib/aarch64-linux-gnu
+EOF)
+
+[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch gcc-9 aarch64 &>> /tmp/main.install.log || true
+[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch g++-9 aarch64 &>> /tmp/main.install.log || true
+[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && cd /usr/bin && mv_arch cpp-9 aarch64 &>> /tmp/main.install.log || true
+[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-8 aarch64 &>> /tmp/main.install.log || true
+[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch g++-8 aarch64 &>> /tmp/main.install.log || true
+[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-8 aarch64 &>> /tmp/main.install.log || true
+[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ar aarch64 &>> /tmp/main.install.log 
+[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld.bfd aarch64 &>> /tmp/main.install.log 
+[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld aarch64 &>> /tmp/main.install.log 
+
+
+endfunc
+}
+
 
 
 
@@ -744,15 +803,6 @@ startfunc
     LOCALVERSION=$(< /tmp/LOCALVERSION)
 
 
-     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-8 aarch64 || true
-     #[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-7 aarch64 || true
-     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ar aarch64
-     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld.bfd aarch64
-     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld aarch64
-     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-8 aarch64 || true
-     #[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-7 aarch64 || true
- 
-     [[ $BUILDNATIVE ]] && (cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/ && mkdir -p /usr/include/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/include/aarch64-linux-gnu/* /usr/include/aarch64-linux-gnu/)
 
  
     cd $workdir/rpi-linux
@@ -1519,7 +1569,7 @@ echo 1 > /flag/done.ok_to_continue_after_mount_image
 echo 1 > /flag/done.ok_to_exit_container_after_build
 
 
-
+compiler_setup
 [[ ! $JUSTDEBS  ]] && utility_scripts &
 [[ ! $JUSTDEBS  ]] && base_image_check
 [[ ! $JUSTDEBS  ]] && image_extract &
