@@ -818,7 +818,7 @@ mv_arch () {
     
 
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-    debcmd='echo ${nprocs} | xargs -I % /arm64_chroot/bin/bash-static -c "make -j% CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg"' 
+    debcmd='$(($(nproc) + 1)) | xargs -I % /arm64_chroot/bin/bash-static -c "make -j% CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg"' 
     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
 
 #     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
