@@ -794,8 +794,6 @@ mv_arch () {
      [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld.bfd aarch64
      [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld aarch64
      [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-8 aarch64
-    #[[ $BUILDNATIVE ]] && ( mkdir -p /usr/lib/gcc/aarch64-linux-gnu/8/ && cp -r /arm64_chroot/usr/lib/gcc/aarch64-linux-gnu/8/* /usr/lib/gcc/aarch64-linux-gnu/8/ ) 
-    #[[ $BUILDNATIVE ]] && ( mkdir -p /usr/lib/gcc/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/gcc/aarch64-linux-gnu/* /usr/lib/gcc/aarch64-linux-gnu/ )
     cd $workdir/rpi-linux
     
     [[ ! $BUILDNATIVE ]] &&  cat <<-EOF> $workdir/kernel_compile.sh

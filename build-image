@@ -11,9 +11,6 @@ Options (These are optional):
            Default: ${defaultimage} .
   -o DIR    Destination directory to store packages to. 
            Default: ${outdir}.
-  -n NATIVEIMAGE Name of the docker image (including tag) to use as a arm64 package 
-            build environment.
-           Default: ${defaultnativeimage} .
 
 EOF
     exit 1
@@ -33,16 +30,13 @@ function abspath {
 
 #[ "$#" -eq "0" ] && usage
 
-while getopts "i:o:n:h" opt; do
+while getopts "i:o:h" opt; do
     case $opt in
         i)
             image="$OPTARG"
             ;;
         o)
             outdir="$OPTARG"
-            ;;
-        n)
-            nativeimage="$OPTARG"
             ;;
         h)
             usage
@@ -63,16 +57,17 @@ default_base_dist="eoan"
 #  have been tested. However, non-19.04 images need to be built separately and 
 #  invoked through for instance:
 # ./build-image -i docker-rpi4-imagebuilder:18.04
-defaultimage="docker-rpi4-imagebuilder-v2:19.04"
-defaultnativeimage="docker-rpi4-native-imagebuilder:19.04"
+#defaultimage="docker-rpi4-imagebuilder-v2:19.04"
 outdir="${outdir:-output}"
 
 base_dist="${base_dist:-${default_base_dist}}"
 
 if [ "$base_dist" == "bionic" ]; then
     base_url="http://cdimage.ubuntu.com/ubuntu-server/bionic/daily-preinstalled/current/"
+    defaultimage="docker-rpi4-imagebuilder-v2:18.04"
     else
     base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
+    defaultimage="docker-rpi4-imagebuilder-v2:19.04"
 fi
 
 base_image="${base_dist}-preinstalled-server-arm64+raspi3.img.xz"
@@ -96,14 +91,14 @@ if [ -n "$image" ]
         echo "Build host image defaulting to ${image}."
 fi
 
-if [ -n "$nativeimage" ]
-    then
-        echo ""
-        #echo "Native build host image is ${nativeimage}."
-    else
-        nativeimage="${nativeimage:-${defaultnativeimage}}"
-        #echo "Native build host image defaulting to ${nativeimage}."
-fi
+# if [ -n "$nativeimage" ]
+#     then
+#         echo ""
+#         #echo "Native build host image is ${nativeimage}."
+#     else
+#         nativeimage="${nativeimage:-${defaultnativeimage}}"
+#         #echo "Native build host image defaulting to ${nativeimage}."
+# fi
 
 
 
