@@ -790,12 +790,12 @@ mv_arch () {
         fi
 }
      [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-8 aarch64 || true
-     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-7 aarch64 || true
+     #[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-7 aarch64 || true
      [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ar aarch64
      [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld.bfd aarch64
      [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld aarch64
      [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-8 aarch64 || true
-     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-7 aarch64 || true
+     #[[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-7 aarch64 || true
     cd $workdir/rpi-linux
     
     [[ ! $BUILDNATIVE ]] &&  cat <<-EOF> $workdir/kernel_compile.sh
