@@ -735,8 +735,9 @@ startfunc
         then 
             cp /source-ro/conform_config-${kernel_branch}.sh \
             $workdir/kernel-build/conform_config.sh
-        elif [[ -e /source-ro/conform_config.sh ]]
-            cp /source-ro/conform_config.sh $workdir/kernel-build/
+    elif [[ -e /source-ro/conform_config.sh ]]
+        then
+        cp /source-ro/conform_config.sh $workdir/kernel-build/
     fi
 
     if [[ ! -e /tmp/APPLIED_KERNEL_PATCHES ]]
