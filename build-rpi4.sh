@@ -767,34 +767,31 @@ startfunc
     $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
     unset runthis
     
-    [[ $BUILDNATIVE ]] && (cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/)
+    [[ $BUILDNATIVE ]] && (cp /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/ && mkdir -p /usr/include/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/include/aarch64-linux-gnu/* /usr/include/aarch64-linux-gnu/)
 
-cp_arch () {
-        local arch_prefix="/usr/bin/aarch64-linux-gnu-"
-        echo ${1}
+mv_arch () {
+        echo ${1} to {2}
+        dest_arch=${2}
+        local dest_arch_prefix="${dest_arch}-linux-gnu-"
+        local host_arch_prefix="${BUILDHOST_ARCH}-linux-gnu-"
         local file_out=$(file ${1})
+        # Exit if dest arch file isn't available.
+        [[ ! -f ${dest_arch_prefix}${1} ]] && echo "Missing ${dest_arch_prefix}${1}" && exit 1
+        # If host arch backup file isn't available make backup.
+        # This doesn't dereference symlinks!
+        [[ ! -f ${host_arch_prefix}${1} && $(echo ${file_out} | grep -m1 ${BUILDHOST_ARCH}) ]] && cp ${1} ${host_arch_prefix}${1}
         if [[ $(echo ${file_out} | grep -m1 "symbolic") ]]
-            then 
-                rm ${1} && ln -s ${arch_prefix}${1} ${1}
-            elif [[ $(echo ${file_out} | grep -m1 "aarch64") ]]
-            then 
-                file_arch="aarch64"
-                cp ${1} ${1}.${file_arch} && cp ${arch_prefix}${1} ${1}
-            elif [[ $(echo ${file_out} | grep -m1 'x86-64' ) ]]
             then
-                file_arch="x86_64"
-                cp ${1} ${1}.${file_arch} && cp ${arch_prefix}${1} ${1}
+            rm ${1} && ln -s ${dest_arch_prefix}${1} ${1}
+        elif 
+            [[ -f ${dest_arch_prefix}${1} ]] && cp ${dest_arch_prefix}${1} ${1}
         fi
-        #[[ ! $file_arch ]] && echo "unknown arch" && exit 1
-        
 }
-    
-    
-     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch gcc-8
-     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch ar
-     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch ld.bfd
-     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch ld
-     [[ $BUILDNATIVE ]] && cd /usr/bin && cp_arch cpp-8
+     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch gcc-8 aarch64
+     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ar aarch64
+     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld.bfd aarch64
+     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch ld aarch64
+     [[ $BUILDNATIVE ]] && cd /usr/bin && mv_arch cpp-8 aarch64
     #[[ $BUILDNATIVE ]] && ( mkdir -p /usr/lib/gcc/aarch64-linux-gnu/8/ && cp -r /arm64_chroot/usr/lib/gcc/aarch64-linux-gnu/8/* /usr/lib/gcc/aarch64-linux-gnu/8/ ) 
     #[[ $BUILDNATIVE ]] && ( mkdir -p /usr/lib/gcc/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/gcc/aarch64-linux-gnu/* /usr/lib/gcc/aarch64-linux-gnu/ )
     cd $workdir/rpi-linux
