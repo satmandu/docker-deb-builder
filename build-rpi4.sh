@@ -837,7 +837,7 @@ mv_arch () {
 #     bindeb-pkg"'
 
     echo $debcmd
-    arbitrary_wait_here
+
 #    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
     cd $workdir/rpi-linux
     ${debcmd} || true
@@ -846,6 +846,7 @@ mv_arch () {
     DEB_KERNEL_VERSION=`cat $workdir/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/'`
     echo -e "** Expected Kernel Version: ${KERNEL_VERS}\n**    Built Kernel Version: ${DEB_KERNEL_VERSION}"   
     echo ${DEB_KERNEL_VERSION} > /tmp/KERNEL_VERS
+    arbitrary_wait_here
 endfunc
 }
 
