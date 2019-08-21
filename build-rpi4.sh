@@ -977,6 +977,9 @@ EOF
     cd "$workdir"/rpi-linux
     [[ -f $workdir/kernel_compile.sh ]] && chmod +x "$workdir"/kernel_compile.sh && "$workdir"/kernel_compile.sh | tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
     grep -v libfakeroot-sysv.so
+    cd "$workdir"/kernel-build
+    find . -executable ! -type d -exec file {} \; | grep x86-64 \
+     >> /tmp/"${FUNCNAME[0]}".compile.log
     #|| ${debcmd} &>> /tmp/${FUNCNAME[0]}.compile.log
    # ${debcmd} &>> /tmp/${FUNCNAME[0]}.compile.log
     # If there were kernel patches, the version may change, so let's check 
@@ -984,7 +987,6 @@ EOF
     DEB_KERNEL_VERSION=$(cat "$workdir"/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/')
     echo -e "** Expected Kernel Version: ${KERNEL_VERS}\n**    Built Kernel Version: ${DEB_KERNEL_VERSION}"   
     echo "${DEB_KERNEL_VERSION}" > /tmp/KERNEL_VERS
-    arbitrary_wait_here
 endfunc
 }
 
