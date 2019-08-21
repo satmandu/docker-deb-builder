@@ -543,7 +543,7 @@ cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
 	/usr/local/lib/aarch64-linux-gnu
 	/lib/aarch64-linux-gnu
 	/usr/lib/aarch64-linux-gnu
-EOF &>> /tmp/${FUNCNAME[0]}.install.log || true \
+EOF
 )
 PrintLog "setup multiarch"  /tmp/${FUNCNAME[0]}.install.log
 [[ $BUILDNATIVE ]] && (
