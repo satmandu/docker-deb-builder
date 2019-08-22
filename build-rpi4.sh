@@ -80,7 +80,7 @@ ccache -s
 # Create work directory.
 #workdir=/build/source
 mkdir -p "${workdir}"
-#cp -a /source-ro/ $workdir
+#cp -a /source-ro/ ${workdir}
 # Source cache is on the cache volume.
 #src_cache=/cache/src_cache
 mkdir -p "${src_cache}"
@@ -322,8 +322,8 @@ startfunclib
     local local_path="${2}"
     local git_branch="${3}"
     [ ! -z "${3}" ] || git_branch="master"
-    PrintLog "${src_cache}/${local_path}" /tmp/git_get.log
-    PrintLog "${workdir}/${local_path}" /tmp/git_get.log
+#     PrintLog "${src_cache}/${local_path}" /tmp/git_get.log
+#     PrintLog "${workdir}/${local_path}" /tmp/git_get.log
     PrintLog $(mkdir -p "${src_cache}/${local_path}") /tmp/git_get.log
     PrintLog $(mkdir -p "${workdir}/${local_path}") /tmp/git_get.log
     
@@ -345,7 +345,7 @@ startfunclib
             fi
             # Is the requested branch the same as the local saved branch?
             local local_branch=
-            local local_branch=$(git -C "${src_cache}"/"${local_path}" \
+            local local_branch=$(git -C ${src_cache}/${local_path} \
             rev-parse --abbrev-ref HEAD || true)
             # Set HEAD = master
             [[ "${local_branch}" = "HEAD" ]] && local_branch="master"
@@ -353,9 +353,9 @@ startfunclib
                 then 
                     echo "Kernel git branch mismatch!"
                     printf "%${COLUMNS}s\n" "${proc_name} refreshing cache files from git."
-                    mkdir -p "${src_cache}"/"${local_path}" && cd "${src_cache}"/"${local_path}"
-                    git checkout ${git_branch} || recreate_git "${git_repo}" \
-                    "${local_path}" ${git_branch}
+                    mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}"
+                    git checkout ${git_branch} || recreate_git ${git_repo} \
+                    ${local_path} ${git_branch}
                 else
                     echo -e "${proc_name}\nremote hash: \
                     ${remote_git}\nlocal hash:${local_git}\n"
@@ -364,8 +364,8 @@ startfunclib
             
             
             # sync to local branch
-            mkdir -p "${src_cache}"/"${local_path}" && cd "${src_cache}"/"${local_path}"
-            git fetch --all "${git_flags}" &>> /tmp/${proc_name}.git.log || true
+            mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}"
+            git fetch --all ${git_flags} &>> /tmp/${proc_name}.git.log || true
             git reset --hard $pull_flags --quiet 2>> /tmp/${proc_name}.git.log
         else
             echo -e "${proc_name}\nremote hash: ${remote_git}\nlocal hash: \
@@ -377,7 +377,7 @@ startfunclib
     %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
     --quiet 2> /dev/null)
     echo -e "*${proc_name} Last Commits:\n$last_commit\n"
-    rsync -a "${src_cache}"/"${local_path}" "$workdir"/
+    rsync -a "${src_cache}/${local_path}" "${workdir}"/
 endfunclib
 }
 
@@ -392,7 +392,7 @@ recreate_git () {
     local clone_flags=" ${git_repo} $git_extra_flags "
     rm -rf "${src_cache:?}/${local_path}" &>> /tmp/"${FUNCNAME[2]}".git.log
     cd "${src_cache}" &>> /tmp/"${FUNCNAME[2]}".git.log
-    git clone "${git_flags}" "$clone_flags" "${local_path}" \
+    git clone ${git_flags} $clone_flags ${local_path} \
     &>> /tmp/"${FUNCNAME[2]}".git.log 
 #endfunc
 }
@@ -657,15 +657,15 @@ endfunc
 base_image_check () {
 startfunc
     echo "* Checking for downloaded ${base_image} ."
-    cd "$workdir"
+    cd "${workdir}"
     if [ ! -f /"${base_image}" ]; then
         download_base_image
     else
         echo "* Downloaded ${base_image} exists."
     fi
     # Symlink existing image
-    if [ ! -f "$workdir"/"${base_image}" ]; then 
-        ln -s /"$base_image" "$workdir"/
+    if [ ! -f "${workdir}"/"${base_image}" ]; then 
+        ln -s /"$base_image" "${workdir}"/
     fi   
 endfunc
 }
@@ -675,18 +675,18 @@ image_extract () {
 startfunc 
     if [[ -f "/source-ro/${base_image%.xz}" ]] 
         then
-            cp "/source-ro/${base_image%.xz}" "$workdir"/"$new_image".img
+            cp "/source-ro/${base_image%.xz}" "${workdir}"/"$new_image".img
         [[ $DELTA ]] && (ln -s "/source-ro/${base_image%.xz}" \
-            "$workdir"/old_image.img &)
+            "${workdir}"/old_image.img &)
         else
             local size
             local filename   
             echo "* Extracting: ${base_image} to ${new_image}.img"
             read size filename < <(ls -sH "${workdir}"/"${base_image}")
-            pvcmd="pv -s ${size} -cfperb -N "xzcat:${base_image}" $workdir/$base_image"
+            pvcmd="pv -s ${size} -cfperb -N "xzcat:${base_image}" ${workdir}/$base_image"
             echo "$pvcmd"
-            $pvcmd | xzcat > "$workdir"/"$new_image".img
-        [[ $DELTA ]] && (cp "$workdir"/"$new_image".img "$workdir"/old_image.img &)
+            $pvcmd | xzcat > "${workdir}"/"$new_image".img
+        [[ $DELTA ]] && (cp "${workdir}"/"$new_image".img "${workdir}"/old_image.img &)
     fi
 
 endfunc
@@ -700,14 +700,14 @@ startfunc
     dmsetup remove -f /dev/mapper/"${old_loop_device}"p1 &> /dev/null || true; \
     losetup -d /dev/"${old_loop_device}" &> /dev/null || true)
     #echo "* Increasing image size by 200M"
-    #dd if=/dev/zero bs=1M count=200 >> $workdir/$new_image.img
+    #dd if=/dev/zero bs=1M count=200 >> ${workdir}/$new_image.img
     echo "* Clearing existing loopback mounts."
     # This is dangerous as this may not be the relevant loop device.
     #losetup -d /dev/loop0 &>/dev/null || true
     #dmsetup remove_all
     dmsetup info
     losetup -a
-    cd "$workdir"
+    cd "${workdir}"
     echo "* Mounting: ${new_image}.img"
     
     loop_device=$(kpartx -avs "${new_image}".img \
@@ -834,7 +834,7 @@ rpi_firmware () {
     git_get "https://github.com/Hexxeh/rpi-firmware" "rpi-firmware"
     waitfor "image_mount"
 startfunc    
-    cd "$workdir"/rpi-firmware
+    cd "${workdir}"/rpi-firmware
     echo "* Installing current RPI firmware."
     
     cp bootcode.bin /mnt/boot/firmware/
@@ -869,20 +869,20 @@ startfunc
     kernelrev=$(git -C "${src_cache}"/rpi-linux rev-parse --short HEAD) > /dev/null
     echo "$kernelrev" > /tmp/kernelrev
 
-    cd "$workdir"/rpi-linux
+    cd "${workdir}"/rpi-linux
         # Get rid of dirty localversion as per https://stackoverflow.com/questions/25090803/linux-kernel-kernel-version-string-appended-with-either-or-dirty
-    #touch $workdir/rpi-linux/.scmversion
+    #touch ${workdir}/rpi-linux/.scmversion
     #sed -i \
     # "s/scripts\/package/scripts\/package\\\|Makefile\\\|scripts\/setlocalversion/g" \
-    # $workdir/rpi-linux/scripts/setlocalversion
+    # ${workdir}/rpi-linux/scripts/setlocalversion
 
-    cd "$workdir"/rpi-linux
+    cd "${workdir}"/rpi-linux
     git update-index --refresh &>> /tmp/"${FUNCNAME[0]}".compile.log || true
     git diff-index --quiet HEAD &>> /tmp/"${FUNCNAME[0]}".compile.log || true
     
 
-    mkdir -p "$workdir"/kernel-build
-    cd "$workdir"/rpi-linux
+    mkdir -p "${workdir}"/kernel-build
+    cd "${workdir}"/rpi-linux
     
     
     [ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
@@ -919,49 +919,49 @@ startfunc
 
 
  
-    cd "$workdir"/rpi-linux
-    make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O="$workdir"/kernel-build \
+    cd "${workdir}"/rpi-linux
+    make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O="${workdir}"/kernel-build \
     LOCALVERSION="${LOCALVERSION}" bcm2711_defconfig &>> /tmp/"${FUNCNAME[0]}".compile.log
 #     PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log
 #     $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
 #     unset runthis
     
     
-    cd "$workdir"/kernel-build
+    cd "${workdir}"/kernel-build
     # Use kernel config modification script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
     if [[ -e /source-ro/conform_config-${kernel_branch}.sh ]]
         then 
             cp /source-ro/conform_config-"${kernel_branch}".sh \
-            "$workdir"/kernel-build/conform_config.sh
+            "${workdir}"/kernel-build/conform_config.sh
     elif [[ -e /source-ro/conform_config.sh ]]
         then
-        cp /source-ro/conform_config.sh "$workdir"/kernel-build/
+        cp /source-ro/conform_config.sh "${workdir}"/kernel-build/
     fi
-    "$workdir"/kernel-build/conform_config.sh
+    "${workdir}"/kernel-build/conform_config.sh
 
 #     if [[ ! -e /tmp/APPLIED_KERNEL_PATCHES ]]
 #         then
-#             sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' $workdir/kernel-build/conform_config.sh || true
+#             sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' ${workdir}/kernel-build/conform_config.sh || true
 # #             LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
 # #             echo ${LOCALVERSION} > /tmp/LOCALVERSION
 #     fi
 
     yes "" | make LOCALVERSION="${LOCALVERSION}" ARCH=arm64 \
     CROSS_COMPILE=aarch64-linux-gnu- \
-    O="$workdir"/kernel-build/ \
+    O="${workdir}"/kernel-build/ \
     olddefconfig &>> /tmp/"${FUNCNAME[0]}".compile.log  || true
 
     
 #     yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
 #     CROSS_COMPILE=aarch64-linux-gnu- \
-#     O=$workdir/kernel-build/ \
+#     O=${workdir}/kernel-build/ \
 #     olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
     
     
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     #make -j$(($(nproc) + 1)) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    #O=$workdir/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
+    #O=${workdir}/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
     
     runthis='echo "* Making ${KERNEL_VERS} kernel debs."'
     PrintLog "${runthis}" /tmp/"${FUNCNAME[0]}".compile.log
@@ -969,41 +969,41 @@ startfunc
     unset runthis
     
 
-    cd "$workdir"/rpi-linux
+    cd "${workdir}"/rpi-linux
     
-#     [[ ! $BUILDNATIVE ]] &&  cat <<-EOF> "$workdir"/kernel_compile.sh
+#     [[ ! $BUILDNATIVE ]] &&  cat <<-EOF> "${workdir}"/kernel_compile.sh
 # 	#!/bin/bash
-# 	cd $workdir/rpi-linux
-# 	make LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg
+# 	cd ${workdir}/rpi-linux
+# 	make LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=${workdir}/kernel-build bindeb-pkg
 # EOF
 
 #     [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
-#     LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg" 
+#     LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=${workdir}/kernel-build bindeb-pkg" 
 #     [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && PrintLog "LOCALVERSION, no BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
 
 #     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-#     debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) O=$workdir/kernel-build/ bindeb-pkg"'
+#     debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) O=${workdir}/kernel-build/ bindeb-pkg"'
 #     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "no LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
 #     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
-#     O=$workdir/kernel-build/ \
+#     O=${workdir}/kernel-build/ \
 #     bindeb-pkg"'
     
 
 #     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-#     debcmd='/arm64_chroot/bin/bash-static -c "nproc | xargs -I % make -j% CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg"' 
+#     debcmd='/arm64_chroot/bin/bash-static -c "nproc | xargs -I % make -j% CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=${workdir}/kernel-build/ bindeb-pkg"' 
 #     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
 
 #     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
 #     LOCALVERSION=${LOCALVERSION} \
-#     O=$workdir/kernel-build/ \
+#     O=${workdir}/kernel-build/ \
 #     bindeb-pkg"'
 
-[[ $BUILDNATIVE ]] && cat <<-EOF> "$workdir"/kernel_compile.sh
+[[ $BUILDNATIVE ]] && cat <<-EOF> "${workdir}"/kernel_compile.sh
 	#!/bin/bash
-	cd $workdir/rpi-linux
-	make -j${nprocs} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=$workdir/kernel-build/ bindeb-pkg
+	cd ${workdir}/rpi-linux
+	make -j${nprocs} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=${workdir}/kernel-build/ bindeb-pkg
 EOF
-#[[ $BUILDNATIVE ]] && chmod +x $workdir/kernel_compile.sh
+#[[ $BUILDNATIVE ]] && chmod +x ${workdir}/kernel_compile.sh
 
 
 
@@ -1012,14 +1012,14 @@ EOF
 #    echo $debcmd
 
 #    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
-    cd "$workdir"/rpi-linux
-    [[ -f $workdir/kernel_compile.sh ]] && chmod +x "$workdir"/kernel_compile.sh && "$workdir"/kernel_compile.sh | tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
+    cd "${workdir}"/rpi-linux
+    [[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh | tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
     grep --line-buffered -v libfakeroot-sysv.so
-    cd "$workdir"/kernel-build
+    cd "${workdir}"/kernel-build
     find . -executable ! -type d -exec file {} \; | grep x86-64 \
      >> /tmp/"${FUNCNAME[0]}".compile.log
 
-    DEB_KERNEL_VERSION=$(cat "$workdir"/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/')
+    DEB_KERNEL_VERSION=$(cat "${workdir}"/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/')
     echo -e "** Expected Kernel Version: ${KERNEL_VERS}\n**    Built Kernel Version: ${DEB_KERNEL_VERSION}"   
     echo "${DEB_KERNEL_VERSION}" > /tmp/KERNEL_VERS
 endfunc
@@ -1053,9 +1053,9 @@ startfunc
     then
         echo -e "Using existing ${KERNEL_VERS} debs from cache volume.\n \
         \rNo kernel needs to be built."
-        cp "${apt_cache}"/linux-image-*"${KERNEL_VERS}"*arm64.deb "$workdir"/
-        cp "${apt_cache}"/linux-headers-*"${KERNEL_VERS}"*arm64.deb "$workdir"/
-        cp "$workdir"/*.deb /output/ 
+        cp "${apt_cache}"/linux-image-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
+        cp "${apt_cache}"/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
+        cp "${workdir}"/*.deb /output/ 
         chown "$USER":"$GROUP" /output/*.deb
     else
         [[ ! $REBUILD ]] && echo "Cached ${KERNEL_VERS} kernel debs not found. Building."
@@ -1066,9 +1066,9 @@ startfunc
         # This may have changed, so reload:
         KERNEL_VERS=$(< /tmp/KERNEL_VERS)
         echo "* Copying out git *${KERNEL_VERS}* kernel debs."
-        rm -f "$workdir"/linux-libc-dev*.deb
-        cp "$workdir"/*.deb "${apt_cache}"/ || (echo -e "Kernel Build Failed! 😬" ; pkill -F /flag/main)
-        cp "$workdir"/*.deb /output/ 
+        rm -f "${workdir}"/linux-libc-dev*.deb
+        cp "${workdir}"/*.deb "${apt_cache}"/ || (echo -e "Kernel Build Failed! 😬" ; pkill -F /flag/main)
+        cp "${workdir}"/*.deb /output/ 
         chown "$USER":"$GROUP" /output/*.deb
     fi
     
@@ -1083,7 +1083,7 @@ kernel_deb_install () {
 startfunc
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     # Try installing the generated debs in chroot before we do anything else.
-    cp "$workdir"/*.deb /mnt/tmp/
+    cp "${workdir}"/*.deb /mnt/tmp/
     waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
     echo "* Installing ${KERNEL_VERS} debs to image."
@@ -1116,10 +1116,10 @@ endfunc
 armstub8-gic () {
     git_get "https://github.com/raspberrypi/tools.git" "rpi-tools"
 startfunc    
-    cd "$workdir"/rpi-tools/armstubs
+    cd "${workdir}"/rpi-tools/armstubs
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make armstub8-gic.bin &>> /tmp/"${FUNCNAME[0]}".compile.log
     waitfor "image_mount"
-    cp "$workdir"/rpi-tools/armstubs/armstub8-gic.bin /mnt/boot/firmware/armstub8-gic.bin
+    cp "${workdir}"/rpi-tools/armstubs/armstub8-gic.bin /mnt/boot/firmware/armstub8-gic.bin
 endfunc
 }
 
@@ -1129,7 +1129,7 @@ non-free_firmware () {
 startfunc    
 
     mkdir -p ${libpath}/firmware
-    cp -af "$workdir"/firmware-nonfree/*  ${libpath}/firmware
+    cp -af "${workdir}"/firmware-nonfree/*  ${libpath}/firmware
 
 endfunc
 }
@@ -1235,9 +1235,9 @@ rpi_userland () {
     waitfor "image_mount"
 startfunc
     echo "* Installing Raspberry Pi userland source."
-    cd "$workdir"
+    cd "${workdir}"
     mkdir -p /mnt/opt/vc
-    cd "$workdir"/rpi-userland/
+    cd "${workdir}"/rpi-userland/
     CROSS_COMPILE=aarch64-linux-gnu- ./buildme --aarch64 /mnt &>> /tmp/"${FUNCNAME[0]}".compile.log
     
     echo '/opt/vc/lib' > /mnt/etc/ld.so.conf.d/vc.conf 
@@ -1300,53 +1300,53 @@ endfunc
 andrei_gherzan_uboot_fork () {
 startfunc
     git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"   
-    cd "$workdir"/u-boot
+    cd "${workdir}"/u-boot
 #    curl -O https://github.com/satmandu/u-boot/commit/b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
-    echo "CONFIG_LZ4=y" >> "$workdir"/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_GZIP=y" >> "$workdir"/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_BZIP2=y" >> "$workdir"/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_SYS_LONGHELP=y" >> "$workdir"/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_REGEX=y" >> "$workdir"/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_CMD_ZFS=y" >> "$workdir"/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_PART=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_PCI=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_USB=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_BTRFS=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_EXT4=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_EXT4_WRITE=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_FAT=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_FS_GENERIC=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_PARTITION_TYPE_GUID=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_ENV_IS_IN_EXT4=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_PCI=y   " >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_DM_PCI=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_PCI_PNP=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_PCIE_ECAM_GENERIC=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_DM_USB=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_HOST=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_XHCI_HCD=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_XHCI_PCI=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_UHCI_HCD=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_DWC2=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_STORAGE=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_KEYBOARD=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_SYS_USB_EVENT_POLL=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_FS_BTRFS=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_FS_EXT4=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_EXT4_WRITE=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_FS_FAT=y" >> $workdir/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_FAT_WRITE=y" >> $workdir/u-boot/configs/rpi_4_defconfig
+    echo "CONFIG_LZ4=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    echo "CONFIG_GZIP=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    echo "CONFIG_BZIP2=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    echo "CONFIG_SYS_LONGHELP=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    echo "CONFIG_REGEX=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    echo "CONFIG_CMD_ZFS=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_PART=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_PCI=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_USB=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_BTRFS=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_EXT4=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_EXT4_WRITE=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_FAT=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_CMD_FS_GENERIC=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_PARTITION_TYPE_GUID=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_ENV_IS_IN_EXT4=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_PCI=y   " >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_DM_PCI=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_PCI_PNP=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_PCIE_ECAM_GENERIC=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_DM_USB=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_HOST=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_XHCI_HCD=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_XHCI_PCI=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_UHCI_HCD=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_DWC2=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_STORAGE=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_USB_KEYBOARD=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_SYS_USB_EVENT_POLL=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_FS_BTRFS=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_FS_EXT4=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_EXT4_WRITE=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_FS_FAT=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    #echo "CONFIG_FAT_WRITE=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make rpi_4_defconfig &>> /tmp/"${FUNCNAME[0]}".compile.log
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make -j $(($(nproc) + 1)) &>> /tmp/"${FUNCNAME[0]}".compile.log
     waitfor "image_mount"
     echo "* Installing Andrei Gherzan's RPI uboot fork to image."
-    cp "$workdir"/u-boot/u-boot.bin /mnt/boot/firmware/uboot.bin
-    cp "$workdir"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.bin
-    cp "$workdir"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.img
+    cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/uboot.bin
+    cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.bin
+    cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.img
     mkdir -p  ${libpath}/u-boot/rpi_4/
-    cp "$workdir"/u-boot/u-boot.bin  ${libpath}/u-boot/rpi_4/
+    cp "${workdir}"/u-boot/u-boot.bin  ${libpath}/u-boot/rpi_4/
     # This can be done without chroot by just having u-boot-tools on the build
     # container
     #chroot /mnt /bin/bash -c "mkimage -A arm64 -O linux -T script \
@@ -1546,7 +1546,7 @@ startfunc
     # first boot.
     echo "* Copying compiled kernel debs to image for proper install"
     echo "* at first boot and also so we have a copy locally."
-    cp "$workdir"/*.deb /mnt/var/cache/apt/archives/
+    cp "${workdir}"/*.deb /mnt/var/cache/apt/archives/
     sync
     # To stop here "rm /flag/done.ok_to_unmount_image_after_build".
     if [ ! -f /flag/done.ok_to_unmount_image_after_build ]; then
@@ -1580,7 +1580,7 @@ startfunc
 
     fsck.ext4 -fy /dev/mapper/"${loop_device}"p2 || true
     fsck.vfat -wa /dev/mapper/"${loop_device}"p1 || true
-    kpartx -dv "$workdir"/"${new_image}".img &>> /tmp/"${FUNCNAME[0]}".cleanup.log || true
+    kpartx -dv "${workdir}"/"${new_image}".img &>> /tmp/"${FUNCNAME[0]}".cleanup.log || true
     losetup -d /dev/"$loop_device" &>/dev/null || true
     dmsetup remove -f /dev/"$loop_device" &>/dev/null || true
     dmsetup info &>> /tmp/"${FUNCNAME[0]}".cleanup.log || true
@@ -1600,7 +1600,7 @@ startfunc
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     # Note that lz4 is much much faster than using xz.
     chown -R "$USER":"$GROUP" /build
-    cd "$workdir"
+    cd "${workdir}"
     for i in "${image_compressors[@]}"
     do
      echo "* Compressing ${new_image} with $i and exporting."
@@ -1609,7 +1609,7 @@ startfunc
      compresscmd="$i -v -k $compress_flags ${new_image}.img"
      echo "$compresscmd"
      $compresscmd
-     cp "$workdir/${new_image}.img.$i" \
+     cp "${workdir}/${new_image}.img.$i" \
      "/output/${new_image}-${KERNEL_VERS}_${now}.img.$i"
      #echo $cpcmd
      #$cpcmd
@@ -1624,8 +1624,8 @@ startfunc
         echo "* Making xdelta3 binary diffs between current ${base_dist} base image"
         echo "* and the new images."
         xdelta3 -e -S none -I 0 -B 1812725760 -W 16777216 -fs \
-        "$workdir"/old_image.img "$workdir"/"${new_image}".img \
-        "$workdir"/patch.xdelta
+        "${workdir}"/old_image.img "${workdir}"/"${new_image}".img \
+        "${workdir}"/patch.xdelta
         KERNEL_VERS=$(< /tmp/KERNEL_VERS)
         for i in "${image_compressors[@]}"
         do
@@ -1633,9 +1633,9 @@ startfunc
             compress_flags=""
             [ "$i" == "lz4" ] && compress_flags="-m"
             xdelta_patchout_compresscmd="$i -k $compress_flags \
-             $workdir/patch.xdelta"
+             ${workdir}/patch.xdelta"
             $xdelta_patchout_compresscmd
-            cp "$workdir/patch.xdelta.$i" \
+            cp "${workdir}/patch.xdelta.$i" \
      "/output/${base_dist}-daily-preinstalled-server_${KERNEL_VERS}_${now}.xdelta3.$i"
             #$xdelta_patchout_cpcmd
             chown "$USER":"$GROUP" /output/"${base_dist}"-daily-preinstalled-server_"${KERNEL_VERS}"_"${now}".xdelta3."$i"
