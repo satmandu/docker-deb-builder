@@ -64,10 +64,11 @@ RUN set -ex \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
 RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
     && (export VERSION_CODENAME=$(awk -F '=' '/VERSION_CODENAME/ {print $2}' /etc/os-release) \
-    && echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} main restricted universe multiverse' >> /etc/apt/sources.list \
-    && echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME}-updates main restricted universe multiverse' >> /etc/apt/sources.list )"]
-RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
-    && (apt-get install -y --no-install-recommends \
+    && echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} main restricted universe multiverse' \
+    >> /etc/apt/sources.list \
+    && echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME}-updates main restricted universe multiverse' \
+    >> /etc/apt/sources.list  \
+    && apt-get install -y --no-install-recommends \
                 gcc-aarch64-linux-gnu \
                 cpp-aarch64-linux-gnu \
                 g++-aarch64-linux-gnu \
