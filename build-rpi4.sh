@@ -858,16 +858,15 @@ startfunc
     if [[ -e /tmp/APPLIED_KERNEL_PATCHES ]]
         then
             KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${kernelrev}$(< /tmp/APPLIED_KERNEL_PATCHES)"
+            LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
         else
             KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${kernelrev}"
+            LOCALVERSION="-g$(< /tmp/kernelrev)"
     fi
     
     echo "** Current Kernel Version: $KERNEL_VERS" 
-    echo "$KERNEL_VERS" > /tmp/KERNEL_VERS
-    LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
+    echo "${KERNEL_VERS}" > /tmp/KERNEL_VERS
     echo "${LOCALVERSION}" > /tmp/LOCALVERSION
-    
-    
 endfunc
 }
     
@@ -1057,8 +1056,8 @@ startfunc
     &>> /tmp/"${FUNCNAME[0]}".install.log || true
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" \
     &>> /tmp/"${FUNCNAME[0]}".install.log || true
-    cp /mnt/boot/initrd.img-"$KERNEL_VERS" /mnt/boot/firmware/initrd.img
-    cp /mnt/boot/vmlinuz-"$KERNEL_VERS" /mnt/boot/firmware/vmlinuz
+    cp /mnt/boot/initrd.img-"${KERNEL_VERS}" /mnt/boot/firmware/initrd.img
+    cp /mnt/boot/vmlinuz-"${KERNEL_VERS}" /mnt/boot/firmware/vmlinuz
     vmlinuz_type=$(file -bn /mnt/boot/firmware/vmlinuz)
     if [ "$vmlinuz_type" == "MS-DOS executable" ]
         then
