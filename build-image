@@ -351,7 +351,8 @@ docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo
 # except on aarch64!
 [ -n "$BUILDNATIVE" ] && docker_args+="-e BUILDNATIVE=${BUILDNATIVE} "
 
-
+# Re-fetch all git trees to cache
+[ -n "$CLEAN_GIT" ] && docker_args+="-e CLEAN_GIT=${CLEAN_GIT} "
 
 # Should we enable the arbitrary wait flag?
 [ -n "$ARBITRARY_WAIT" ] && docker_args+="-e ARBITRARY_WAIT=${ARBITRARY_WAIT} "
