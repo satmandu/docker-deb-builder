@@ -1,7 +1,7 @@
 #!/bin/bash -e
 [[ $DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
-mkdir -p /flag
+mkdir -p /flag || echo "Are you sure you didn't mean to run ./build-image ?"
 echo $BASHPID > /flag/main
 mainPID=$BASHPID
 # The above is used for, amongst other things, the tail log process.

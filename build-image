@@ -68,10 +68,10 @@ base_dist="${base_dist:-${default_base_dist}}"
 
 if [ "$base_dist" == "bionic" ]; then
     base_url="http://cdimage.ubuntu.com/ubuntu-server/bionic/daily-preinstalled/current/"
-    defaultimage="docker-rpi4-imagebuilder-v3:18.04"
+    defaultimage="docker-rpi4-imagebuilder-v4:18.04"
     else
     base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
-    defaultimage="docker-rpi4-imagebuilder-v3:19.04"
+    defaultimage="docker-rpi4-imagebuilder-v4:19.04"
 fi
 
 base_image="${base_dist}-preinstalled-server-arm64+raspi3.img.xz"
@@ -79,8 +79,9 @@ base_image_url="${base_url}/${base_image}"
 cache_volume=rpi4-imagebuilder-cache
 
 #Remove existing build container if it exists.
-old_containers=("docker-rpi4-imagebuilder:19.04" "docker-rpi4-imagebuilder-v2:19.04" \
-"docker-rpi4-imagebuilder:18.04" "docker-rpi4-imagebuilder-v2:18.04")
+old_containers=("docker-rpi4-imagebuilder-v3:19.04" "docker-rpi4-imagebuilder-v3:18.04" \
+"docker-rpi4-imagebuilder-v2:19.04" "docker-rpi4-imagebuilder-v2:18.04" \
+"docker-rpi4-imagebuilder:19.04" "docker-rpi4-imagebuilder:18.04")
 for container in ${old_containers[*]};
 do
     if [ ! "${container}" = "${image}" ]
