@@ -68,15 +68,25 @@ base_dist="${base_dist:-${default_base_dist}}"
 
 if [ "$base_dist" == "bionic" ]; then
     base_url="http://cdimage.ubuntu.com/ubuntu-server/bionic/daily-preinstalled/current/"
-    defaultimage="docker-rpi4-imagebuilder-v2:18.04"
+    defaultimage="docker-rpi4-imagebuilder-v3:18.04"
     else
     base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
-    defaultimage="docker-rpi4-imagebuilder-v2:19.04"
+    defaultimage="docker-rpi4-imagebuilder-v3:19.04"
 fi
 
 base_image="${base_dist}-preinstalled-server-arm64+raspi3.img.xz"
 base_image_url="${base_url}/${base_image}"
 cache_volume=rpi4-imagebuilder-cache
+
+#Remove existing build container if it exists.
+old_containers=("docker-rpi4-imagebuilder:19.04" "docker-rpi4-imagebuilder-v2:19.04")
+for container in ${old_containers[*]};
+do
+    if [ ! "${container}" = "${image}" ]
+    then 
+            docker rm -v ${container}
+    fi
+done
 
 
 # This is the linux version we want to use:
@@ -109,8 +119,6 @@ fi
 #docker_args="-it "
 # The bash script & copy log if failure setup doesn't work without the "-dt" docker argument.
 docker_args="-dt "
-#build_container_name="rpi4-image-build"
-#docker_args="--name $build_container_name "
 
 # Are we mac or are we linux?
 SYSTEM=`uname`
@@ -148,33 +156,13 @@ build_container () {
     fi
 }
 
-# build_arm64v8_container () {
-#     echo "Arm64 Build container ${nativeimage} not found."
-#     if [ "$base_dist" == "bionic" ]; then
-#         echo "Creating Ubuntu Bionic build container."
-#         docker build -t ${nativeimage} -f Dockerfile-ubuntu-arm64v8-18.04 .
-#     else
-#         echo "Creating Ubuntu Disco build container."
-#         docker build -t ${nativeimage} -f Dockerfile-ubuntu-arm64v8-19.04 .
-#     fi
-# }
 
 # Create Docker Image if it does not exist.
 echo "Creating Docker Image ${image} if it does not exist."
 docker inspect "${image}" &>/dev/null || build_container
 docker inspect "${image}" 2>/dev/null | awk '/RepoTags/{getline; print} /LastTagTime/{print}'
 
-# arm64v8_container () {
-#     # Create Docker Image if it does not exist.
-#     echo "Creating Docker Image ${image} if it does not exist."
-#     docker inspect "${nativeimage}" &>/dev/null || build_arm64v8_container
-#     docker inspect "${nativeimage}" 2>/dev/null | awk '/RepoTags/{getline; print} /LastTagTime/{print}'
-# }
 
-# if [ -n "$BUILDNATIVE"  ] && [ ! "${HOST_ARCH}" = "aarch64" ]
-#     then
-#     arm64v8_container
-# fi
 
 # Needed for loopback to work inside container.
 #docker_args+="--cap-add=CAP_MKNOD --device-cgroup-rule='b 7:* rmw' "
@@ -375,8 +363,6 @@ cidfile="$(cd $PROG_DIR; pwd)/build.cid"
 docker_args+="--cidfile=$cidfile "
 
 # If the build script fails, the log is still copied out.
-#[ -e "/tmp/build.log" ] && cat /tmp/build.log > /output/build_fail.log || exit 0
-#startcmd='/build-rpi4.sh ; ls -crGg /flag > /output/build_fail_status.log ; [ -e "/tmp/build.log" ] && (mv /tmp/build.log /tmp/build_fail.log; cp /tmp/*.log /output/ ; chown $USER:$GROUP /output/*.log )  || exit 0'
 startcmd='/build-rpi4.sh ;  [ -e "/tmp/build.log" ] && (ls -crGg /flag > /tmp/build_fail_status.log ; grep "" /flag/* >> /tmp/build_fail_status.log ; mv /tmp/build.log /tmp/build_fail.log; cp /tmp/*.log /output/ ; chown $USER:$GROUP /output/*.log;  )  || exit 0'
 # Clear old build failure log file.
 rm -f $outdir/build_fail.log
@@ -388,8 +374,9 @@ rm -rf $outdir/*.compile.log
 echo "Creating docker cache volume $cache_volume if it does not exist."
 docker volume create --name $cache_volume
 
-#Remove existing build container if it exists.
-#docker rm -v $build_container_name
+
+
+
 
 # docker create -v /mnt/ccache:/ccache --name ccache $image
 echo -e "\nRunning build in docker:"
@@ -425,9 +412,9 @@ sudo renice -n 20 -p $PID_LIST &> /dev/null || true
 echo -e "Note that the command to open a shell into this docker instance would be:\n"
 echo -e "docker exec -it ${build_cid} /bin/bash\n"
 echo -e "Or run ./buildshell from this directory.\n"
-#echo "columns: $columns COLUMNS: $COLUMNS"
+
 echo "Tailing build log:"
 tail_log_cmd="docker exec -it $build_cid /bin/bash -c 'tail -F /tmp/build.log --pid=\$(cat /flag/main)'"
-#echo $tail_log_cmd
+
 echo ""
 exec /bin/bash -c "${tail_log_cmd}; [ -e ${outdir}/build_fail.log ] && echo -e '🤔 Build failed. Tailing ${outdir}/build_fail.log :   😬\n\r' && tail ${outdir}/build_fail.log"
