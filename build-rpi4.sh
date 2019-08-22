@@ -1,4 +1,5 @@
 #!/bin/bash -e
+[[ DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
 mkdir -p /flag
 echo $BASHPID > /flag/main
