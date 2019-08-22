@@ -1,5 +1,5 @@
 #!/bin/bash -e
-[[ DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+[[ $DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
 mkdir -p /flag
 echo $BASHPID > /flag/main
@@ -140,7 +140,7 @@ function abspath {
 PrintLog(){
   information="${1}"
   logFile="${2}"
-  [[ DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
+  [[ $DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
   mkdir -p "$(dirname "${logFile}")" &>/dev/null || true
   touch "${logFile}" &>/dev/null || true
   echo "${information}" | ts >> "${logFile}"
@@ -243,7 +243,7 @@ endfunc () {
 }
 
 startfunclib () {
-  [[ DEBUG ]] && echo "FUNCNAME: ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
+  [[ $DEBUG ]] && echo "FUNCNAME: ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
     local proc_name=${FUNCNAME[1]}.${FUNCNAME[2]} 
     [[ -z ${FUNCNAME[1]} ]] && proc_name=main
     echo $BASHPID > /flag/start.${proc_name}
