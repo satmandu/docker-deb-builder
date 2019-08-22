@@ -1,6 +1,6 @@
-ENV VERSION 19.04
-FROM ubuntu:${VERSION:-19.04}
-COPY --from=arm64v8/ubuntu:${VERSION:-19.04} /etc/apt/sources.list /etc/apt/sources.list.d/arm64.list
+ENV UBUNTU 19.04
+FROM ubuntu:${UBUNTU:-19.04}
+COPY --from=arm64v8/ubuntu:${UBUNTU:-19.04} /etc/apt/sources.list /etc/apt/sources.list.d/arm64.list
 RUN set -ex \
     && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
     && apt-get update \
