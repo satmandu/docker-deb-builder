@@ -339,7 +339,7 @@ startfunclib
     if [ ! "${remote_git}" = "${local_git}" ]
         then
             # Does the local repo even exist?
-            if [[ ! -d "${src_cache}/${local_path}/.git"  -o -z ${CLEAN_GIT} ]] 
+            if [[ [[ ! -d "${src_cache}/${local_path}/.git" ]] -o [[ -z ${CLEAN_GIT} ]] ]] 
                 then
                     recreate_git "${git_repo}" "${local_path}" ${git_branch}
             fi
