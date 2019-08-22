@@ -141,8 +141,8 @@ PrintLog(){
   information="${1}"
   logFile="${2}"
   [[ DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
-  mkdir -p "$(dirname "${logFile}")" || true
-  touch "${logFile}" || true
+  mkdir -p "$(dirname "${logFile}")" &>/dev/null || true
+  touch "${logFile}" &>/dev/null || true
   echo "${information}" | ts >> "${logFile}"
 }
 
