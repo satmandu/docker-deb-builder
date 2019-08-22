@@ -336,10 +336,10 @@ startfunclib
     local pull_flags="origin/${git_branch}"
     #echo -e "${proc_name}\nremote hash: ${remote_git}\nlocal hash: ${local_git}"
       
-    if [ ! "${remote_git}" = "${local_git}" ]
+    if [ ! "${remote_git}" = "${local_git}" ] || [[ $CLEAN_GIT ]] 
         then
             # Does the local repo even exist?
-            if [[ ! -d "${src_cache}/${local_path}/.git" ]] || [[ ! $CLEAN_GIT ]]  
+            if [[ ! -d "${src_cache}/${local_path}/.git" ]] || [[ $CLEAN_GIT ]]  
                 then
                     recreate_git "${git_repo}" "${local_path}" ${git_branch}
             fi
