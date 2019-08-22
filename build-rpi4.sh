@@ -867,6 +867,7 @@ startfunc
     echo "** Current Kernel Version: $KERNEL_VERS" 
     echo "${KERNEL_VERS}" > /tmp/KERNEL_VERS
     echo "${LOCALVERSION}" > /tmp/LOCALVERSION
+    arbitrary_wait_here
 endfunc
 }
     
