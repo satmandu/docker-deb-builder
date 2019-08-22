@@ -83,7 +83,7 @@ RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
     && apt update \
     && apt install -y libssl-dev:arm64 -qq \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 \
-    && update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 
+    && update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*)"]
 RUN set -ex && apt-get clean && rm -rf /tmp/* /var/tmp/*
 
