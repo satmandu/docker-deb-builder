@@ -317,7 +317,7 @@ git_get () {
                 then 
                     echo "Kernel git branch mismatch!"
                     printf "%${COLUMNS}s\n" "${proc_name} refreshing cache files from git."
-                    cd "$src_cache"/"$local_path"
+                    mkdir -p "$src_cache"/"$local_path" && cd "$src_cache"/"$local_path"
                     git checkout $git_branch || recreate_git "$git_repo" \
                     "$local_path" $git_branch
                 else
@@ -328,7 +328,7 @@ git_get () {
             
             
             # sync to local branch
-            cd "$src_cache"/"$local_path"
+            mkdir -p "$src_cache"/"$local_path" && cd "$src_cache"/"$local_path"
             git fetch --all "$git_flags" &>> /tmp/${proc_name}.git.log || true
             git reset --hard $pull_flags --quiet 2>> /tmp/${proc_name}.git.log
         else
@@ -503,32 +503,32 @@ VERSION_CODENAME=$(grep VERSION_CODENAME /etc/os-release | head -1 | awk -F '=' 
 #     )
 # 
 
-[[ $BUILDNATIVE ]] && (
-echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} main restricted universe multiverse" >> /etc/apt/sources.list && \
-echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
- dpkg --add-architecture arm64 
-        &>> /tmp/"${FUNCNAME[0]}".install.log 
-        )
-[[ $BUILDNATIVE ]] && ( apt update -qq &>> /tmp/"${FUNCNAME[0]}".install.log || true ) 
-# Local install needed due to kernel wanting header file.
-[[ $BUILDNATIVE ]] && (
-    apt -o dir::cache::archives="${apt_cache}" \
-    -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-    install -y \
-        libssl-dev:arm64 -qq\
-        &>> /tmp/"${FUNCNAME[0]}".install.log || true
-    )
-[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
-    apt -o dir::cache::archives="${apt_cache}" \
-    install -y --no-install-recommends \
-       gcc-9-aarch64-linux-gnu \
-       cpp-9-aarch64-linux-gnu \
-       g++-9-aarch64-linux-gnu \
-       gcc-9-aarch64-linux-gnu-base \
-       libgcc-9-dev-arm64-cross \
-       libstdc++-9-dev-arm64-cross \
-       &>> /tmp/"${FUNCNAME[0]}".install.log || true
-   )
+# [[ $BUILDNATIVE ]] && (
+# echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} main restricted universe multiverse" >> /etc/apt/sources.list && \
+# echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
+#  dpkg --add-architecture arm64 
+#         &>> /tmp/"${FUNCNAME[0]}".install.log 
+#         )
+# [[ $BUILDNATIVE ]] && ( apt update -qq &>> /tmp/"${FUNCNAME[0]}".install.log || true ) 
+# # Local install needed due to kernel wanting header file.
+# [[ $BUILDNATIVE ]] && (
+#     apt -o dir::cache::archives="${apt_cache}" \
+#     -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+#     install -y \
+#         libssl-dev:arm64 -qq\
+#         &>> /tmp/"${FUNCNAME[0]}".install.log || true
+#     )
+# [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+#     apt -o dir::cache::archives="${apt_cache}" \
+#     install -y --no-install-recommends \
+#        gcc-9-aarch64-linux-gnu \
+#        cpp-9-aarch64-linux-gnu \
+#        g++-9-aarch64-linux-gnu \
+#        gcc-9-aarch64-linux-gnu-base \
+#        libgcc-9-dev-arm64-cross \
+#        libstdc++-9-dev-arm64-cross \
+#        &>> /tmp/"${FUNCNAME[0]}".install.log || true
+#    )
 [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
     apt -o dir::cache::archives="${apt_cache}" \
     install -y --no-install-recommends \
@@ -544,20 +544,20 @@ PrintLog  "compilers updated" /tmp/"${FUNCNAME[0]}".install.log
 
 PrintLog " post-wait" /tmp/"${FUNCNAME[0]}".install.log
 #The following is needed for multiarch support during build.
-[[ $BUILDNATIVE ]] && (
-(ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu \
- &>> /tmp/"${FUNCNAME[0]}".install.log || true) \
-&& \
-(ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 \
- &>> /tmp/"${FUNCNAME[0]}".install.log || true) \
-&& \
-cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
-	# Multiarch support
-	/usr/local/lib/aarch64-linux-gnu
-	/lib/aarch64-linux-gnu
-	/usr/lib/aarch64-linux-gnu
-EOF
-)
+# [[ $BUILDNATIVE ]] && (
+# (ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu \
+#  &>> /tmp/"${FUNCNAME[0]}".install.log || true) \
+# && \
+# (ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 \
+#  &>> /tmp/"${FUNCNAME[0]}".install.log || true) \
+# && \
+# cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
+# 	# Multiarch support
+# 	/usr/local/lib/aarch64-linux-gnu
+# 	/lib/aarch64-linux-gnu
+# 	/usr/lib/aarch64-linux-gnu
+# EOF
+# )
 PrintLog "setup multiarch"  /tmp/"${FUNCNAME[0]}".install.log
 [[ $BUILDNATIVE ]] && (
 mv_arch ar aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log 
@@ -586,11 +586,11 @@ mv_arch g++-9 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
 [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
 mv_arch cpp-9 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
 )
-[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
-update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
-&& \
-update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
-)
+# [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+# update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
+# && \
+# update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
+# )
 
 [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
 update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
