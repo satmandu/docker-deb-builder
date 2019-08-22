@@ -63,7 +63,7 @@ RUN set -ex \
     && apt-get upgrade -y \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
 RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
-    && export VERSION_CODENAME=$(awk -F '=' '/VERSION_CODENAME/ {print $2}' /etc/os-release) \
+    && export VERSION_CODENAME=$(awk -F '"'"'='"'"' '"'"'/VERSION_CODENAME/ {print $2}'"'"' /etc/os-release) \
     && (apt-get install -y --no-install-recommends \
                 gcc-aarch64-linux-gnu \
                 cpp-aarch64-linux-gnu \
