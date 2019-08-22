@@ -139,6 +139,7 @@ function abspath {
 PrintLog(){
   information="${1}"
   logFile="${2}"
+  mkdir -p "$(dirname "${logFile}")" && touch "${logFile}"
   echo "${information}" | ts >> "${logFile}"
 }
 
