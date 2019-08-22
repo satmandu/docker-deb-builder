@@ -62,7 +62,8 @@ RUN set -ex \
     && apt-get build-dep -y linux-image-generic \
     && apt-get upgrade -y \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
-RUN export VERSION_CODENAME=$(awk -F '=' '/VERSION_CODENAME/ {print $2}' /etc/os-release) ; ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
+RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
+    && export VERSION_CODENAME=$(awk -F '=' '/VERSION_CODENAME/ {print $2}' /etc/os-release) \
     && (apt-get install -y --no-install-recommends \
                 gcc-aarch64-linux-gnu \
                 cpp-aarch64-linux-gnu \
