@@ -244,7 +244,7 @@ startfunclib () {
     echo $BASHPID > /flag/start.lib.${proc_name}.${FUNCNAME[2]}
     [[ ! -e /flag/start.${proc_name} ]] && touch /flag/start.${proc_name} || true
     if [ ! "${proc_name}" == "spinnerwait" ] 
-        then printf "%${COLUMNS}s\n" "Started: ${proc_name}.${FUNCNAME[2]} [ ] "
+        then printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[2]}.${proc_name} [ ] "
     fi
     
 }
@@ -261,7 +261,7 @@ endfunclib () {
     fi
     mv -f /flag/start.lib.${proc_name}.${FUNCNAME[2]} /flag/done.lib.${proc_name}${FUNCNAME[2]}
     if [ ! "${proc_name}" == "spinnerwait" ]
-        then printf "%${COLUMNS}s\n" "Done: ${proc_name}.${FUNCNAME[2]} [X] "
+        then printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[2]}.${proc_name} [X] "
     fi
 }
 
