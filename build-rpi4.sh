@@ -933,11 +933,11 @@ startfunc
 
     cd "$workdir"/rpi-linux
     
-    [[ ! $BUILDNATIVE ]] &&  cat <<-EOF> "$workdir"/kernel_compile.sh
-	#!/bin/bash
-	cd $workdir/rpi-linux
-	make LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg
-EOF
+#     [[ ! $BUILDNATIVE ]] &&  cat <<-EOF> "$workdir"/kernel_compile.sh
+# 	#!/bin/bash
+# 	cd $workdir/rpi-linux
+# 	make LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg
+# EOF
 
 #     [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
 #     LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=$workdir/kernel-build bindeb-pkg" 
