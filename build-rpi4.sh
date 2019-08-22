@@ -864,7 +864,7 @@ startfunc
             LOCALVERSION="-g$(< /tmp/kernelrev)"
     fi
     
-    echo "** Current Kernel Version: $KERNEL_VERS" 
+    echo "** Current Kernel Version: ${KERNEL_VERS}" 
     echo "${KERNEL_VERS}" > /tmp/KERNEL_VERS
     echo "${LOCALVERSION}" > /tmp/LOCALVERSION
     arbitrary_wait_here
@@ -925,7 +925,7 @@ startfunc
     #make -j$(($(nproc) + 1)) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     #O=$workdir/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
     
-    runthis='echo "* Making $KERNEL_VERS kernel debs."'
+    runthis='echo "* Making ${KERNEL_VERS} kernel debs."'
     PrintLog "${runthis}" /tmp/"${FUNCNAME[0]}".compile.log
     $runthis  &>> /tmp/"${FUNCNAME[0]}".compile.log
     unset runthis
@@ -1013,7 +1013,7 @@ startfunc
     
     if [[ -e /tmp/nodebs ]]
     then
-        echo -e "Using existing $KERNEL_VERS debs from cache volume.\n \
+        echo -e "Using existing ${KERNEL_VERS} debs from cache volume.\n \
         \rNo kernel needs to be built."
         cp "${apt_cache}"/linux-image-*"${KERNEL_VERS}"*arm64.deb "$workdir"/
         cp "${apt_cache}"/linux-headers-*"${KERNEL_VERS}"*arm64.deb "$workdir"/
@@ -1048,7 +1048,7 @@ startfunc
     cp "$workdir"/*.deb /mnt/tmp/
     waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
-    echo "* Installing $KERNEL_VERS debs to image."
+    echo "* Installing ${KERNEL_VERS} debs to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
     linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 -y --purge" \
     &>> /tmp/"${FUNCNAME[0]}".install.log || true
