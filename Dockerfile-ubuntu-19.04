@@ -1,6 +1,5 @@
-ENV UBUNTU 19.04
-FROM ubuntu:${UBUNTU:-19.04}
-COPY --from=arm64v8/ubuntu:${UBUNTU:-19.04} /etc/apt/sources.list /etc/apt/sources.list.d/arm64.list
+ARG VERSION_ID=19.04
+FROM ubuntu:${VERSION_ID}
 RUN set -ex \
     && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
     && apt-get update \
@@ -64,6 +63,7 @@ RUN set -ex \
     && apt-get build-dep -y linux-image-generic \
     && apt-get upgrade -y \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
+COPY --from=arm64v8/ubuntu:${VERSION_ID} /etc/apt/sources.list /etc/apt/sources.list.d/arm64.list
 RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
     && (sed -i 's/deb http/deb [arch=arm64] http/' \
     /etc/apt/sources.list.d/arm64.list) \
