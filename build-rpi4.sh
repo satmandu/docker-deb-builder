@@ -67,7 +67,7 @@ exec 1>$TMPLOG 2>&1
 # Use ccache.
 PATH=/usr/lib/ccache:$PATH
 CCACHE_DIR=/cache/ccache
-mkdir -p $CCACHE_DIR
+mkdir -p ${CCACHE_DIR}
 # Change these settings if you need them to be different.
 ccache -M 0 > /dev/null
 ccache -F 0 > /dev/null
@@ -78,11 +78,11 @@ ccache -s
 # These environment variables are set at container invocation.
 # Create work directory.
 #workdir=/build/source
-mkdir -p "$workdir"
+mkdir -p "${workdir}"
 #cp -a /source-ro/ $workdir
 # Source cache is on the cache volume.
 #src_cache=/cache/src_cache
-mkdir -p "$src_cache"
+mkdir -p "${src_cache}"
 # Apt cache is on the cache volume.
 #apt_cache=/cache/apt_cache
 # This is needed or apt has issues.
@@ -288,60 +288,60 @@ git_get () {
     local local_path="$2"
     local git_branch="$3"
     [ ! -z "$3" ] || git_branch="master"
-    mkdir -p "$src_cache"/"$local_path"
-    mkdir -p "$workdir"/"$local_path"
+    mkdir -p "${src_cache}"/"${local_path}"
+    mkdir -p "${workdir}"/"${local_path}"
     
-    local remote_git=$(git_check "$git_repo" "$git_branch")
-    local local_git=$(local_check "$src_cache/$local_path" "$git_branch")
+    local remote_git=$(git_check "${git_repo}" "${git_branch}")
+    local local_git=$(local_check "${src_cache}/${local_path}" "${git_branch}")
     
-    [ -z $git_branch ] && git_extra_flags= || git_extra_flags=" -b $git_branch "
+    [ -z ${git_branch} ] && git_extra_flags= || git_extra_flags=" -b ${git_branch} "
     local git_flags=" --quiet --depth=1 "
-    local clone_flags=" $git_repo $git_extra_flags "
-    local pull_flags="origin/$git_branch"
-    #echo -e "${proc_name}\nremote hash: $remote_git\nlocal hash: $local_git"
+    local clone_flags=" ${git_repo} $git_extra_flags "
+    local pull_flags="origin/${git_branch}"
+    #echo -e "${proc_name}\nremote hash: ${remote_git}\nlocal hash: ${local_git}"
       
-    if [ ! "$remote_git" = "$local_git" ]
+    if [ ! "${remote_git}" = "${local_git}" ]
         then
             # Does the local repo even exist?
-            if [ ! -d "$src_cache/$local_path/.git" ] 
+            if [ ! -d "${src_cache}/${local_path}/.git" ] 
                 then
-                    recreate_git "$git_repo" "$local_path" $git_branch
+                    recreate_git "${git_repo}" "${local_path}" ${git_branch}
             fi
             # Is the requested branch the same as the local saved branch?
             local local_branch=
-            local local_branch=$(git -C "$src_cache"/"$local_path" \
+            local local_branch=$(git -C "${src_cache}"/"${local_path}" \
             rev-parse --abbrev-ref HEAD || true)
             # Set HEAD = master
-            [[ "$local_branch" = "HEAD" ]] && local_branch="master"
-            if [[ "$local_branch" != "$git_branch" ]]
+            [[ "${local_branch}" = "HEAD" ]] && local_branch="master"
+            if [[ "${local_branch}" != "${git_branch}" ]]
                 then 
                     echo "Kernel git branch mismatch!"
                     printf "%${COLUMNS}s\n" "${proc_name} refreshing cache files from git."
-                    mkdir -p "$src_cache"/"$local_path" && cd "$src_cache"/"$local_path"
-                    git checkout $git_branch || recreate_git "$git_repo" \
-                    "$local_path" $git_branch
+                    mkdir -p "${src_cache}"/"${local_path}" && cd "${src_cache}"/"${local_path}"
+                    git checkout ${git_branch} || recreate_git "${git_repo}" \
+                    "${local_path}" ${git_branch}
                 else
                     echo -e "${proc_name}\nremote hash: \
-                    $remote_git\nlocal hash:$local_git\n"
+                    ${remote_git}\nlocal hash:${local_git}\n"
                     printf "%${COLUMNS}s\n" "${proc_name} refreshing cache files from git."
             fi
             
             
             # sync to local branch
-            mkdir -p "$src_cache"/"$local_path" && cd "$src_cache"/"$local_path"
-            git fetch --all "$git_flags" &>> /tmp/${proc_name}.git.log || true
+            mkdir -p "${src_cache}"/"${local_path}" && cd "${src_cache}"/"${local_path}"
+            git fetch --all "${git_flags}" &>> /tmp/${proc_name}.git.log || true
             git reset --hard $pull_flags --quiet 2>> /tmp/${proc_name}.git.log
         else
-            echo -e "${proc_name}\nremote hash: $remote_git\nlocal hash: \
-            $local_git\n\r${proc_name} getting files from cache volume. 😎\n"
+            echo -e "${proc_name}\nremote hash: ${remote_git}\nlocal hash: \
+            ${local_git}\n\r${proc_name} getting files from cache volume. 😎\n"
     fi
-    cd "$src_cache"/"$local_path" 
+    cd "${src_cache}"/"${local_path}" 
     last_commit=$(git log --graph \
     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
     %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
     --quiet 2> /dev/null)
     echo -e "*${proc_name} Last Commits:\n$last_commit\n"
-    rsync -a "$src_cache"/"$local_path" "$workdir"/
+    rsync -a "${src_cache}"/"${local_path}" "$workdir"/
 }
 
 recreate_git () {
@@ -350,11 +350,11 @@ recreate_git () {
     local local_path="$2"
     local git_branch="$3"
     local git_flags=" --quiet --depth=1 "
-    local git_extra_flags=" -b $git_branch "
-    local clone_flags=" $git_repo $git_extra_flags "
-    rm -rf "$src_cache"/"$local_path"
-    cd "$src_cache"
-    git clone "$git_flags" "$clone_flags" "$local_path" \
+    local git_extra_flags=" -b ${git_branch} "
+    local clone_flags=" ${git_repo} $git_extra_flags "
+    rm -rf "${src_cache:?}"/"${local_path}"
+    cd "${src_cache}"
+    git clone "${git_flags}" "$clone_flags" "${local_path}" \
     &>> /tmp/"${FUNCNAME[2]}".git.log || true
 #endfunc
 }
@@ -814,21 +814,21 @@ endfunc
 kernelbuild_setup () {
     git_get "$kernelgitrepo" "rpi-linux" "$kernel_branch"
 startfunc    
-    majorversion=$(grep VERSION "$src_cache"/rpi-linux/Makefile | \
+    majorversion=$(grep VERSION "${src_cache}"/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
-    patchlevel=$(grep PATCHLEVEL "$src_cache"/rpi-linux/Makefile | \
+    patchlevel=$(grep PATCHLEVEL "${src_cache}"/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
-    sublevel=$(grep SUBLEVEL "$src_cache"/rpi-linux/Makefile | \
+    sublevel=$(grep SUBLEVEL "${src_cache}"/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
-    extraversion=$(grep EXTRAVERSION "$src_cache"/rpi-linux/Makefile | \
+    extraversion=$(grep EXTRAVERSION "${src_cache}"/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
     extraversion_nohyphen="${extraversion//-}"
     CONFIG_LOCALVERSION=$(grep CONFIG_LOCALVERSION \
-    "$src_cache"/rpi-linux/arch/arm64/configs/bcm2711_defconfig | \
+    "${src_cache}"/rpi-linux/arch/arm64/configs/bcm2711_defconfig | \
     head -1 | awk -F '=' '{print $2}' | sed 's/"//g')
     PKGVER="$majorversion.$patchlevel.$sublevel"
     
-    kernelrev=$(git -C "$src_cache"/rpi-linux rev-parse --short HEAD) > /dev/null
+    kernelrev=$(git -C "${src_cache}"/rpi-linux rev-parse --short HEAD) > /dev/null
     echo "$kernelrev" > /tmp/kernelrev
 
     cd "$workdir"/rpi-linux
@@ -1574,7 +1574,7 @@ startfunc
      "/output/${new_image}-${KERNEL_VERS}_${now}.img.$i"
      #echo $cpcmd
      #$cpcmd
-     chown "$USER":"$GROUP" /output/"${new_image}"-"${KERNEL_VERS}_""${now}".img."$i"
+     chown "$USER":"$GROUP" /output/"${new_image}"-"${KERNEL_VERS}"_"${now}".img."$i"
      echo "${new_image}-${KERNEL_VERS}_${now}.img.$i created." 
     done
 endfunc
@@ -1599,7 +1599,7 @@ startfunc
             cp "$workdir/patch.xdelta.$i" \
      "/output/${base_dist}-daily-preinstalled-server_${KERNEL_VERS}_${now}.xdelta3.$i"
             #$xdelta_patchout_cpcmd
-            chown "$USER":"$GROUP" /output/"${base_dist}"-daily-preinstalled-server_"${KERNEL_VERS}_""${now}".xdelta3."$i"
+            chown "$USER":"$GROUP" /output/"${base_dist}"-daily-preinstalled-server_"${KERNEL_VERS}"_"${now}".xdelta3."$i"
             echo "Xdelta3 file exported to:"
             echo "/output/${base_dist}-daily-preinstalled-server_${KERNEL_VERS}_${now}.xdelta3.$i"
         done
@@ -1617,8 +1617,8 @@ fi
 startfunc
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     echo "* Build log at: build-log-${KERNEL_VERS}_${now}.log"
-    cat $TMPLOG > /output/build-log-"${KERNEL_VERS}_""${now}".log
-    chown "$USER":"$GROUP" /output/build-log-"${KERNEL_VERS}_""${now}".log
+    cat $TMPLOG > /output/build-log-"${KERNEL_VERS}"_"${now}".log
+    chown "$USER":"$GROUP" /output/build-log-"${KERNEL_VERS}"_"${now}".log
     
 endfunc
 }
