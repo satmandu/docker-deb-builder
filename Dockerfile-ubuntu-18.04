@@ -1,29 +1,4 @@
-FROM arm64v8/ubuntu:19.04
-RUN mkdir /arm64 && set -ex \
-    && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
-    && apt-get update \
-    && apt-get install -y \
-    			bash-static \
-    			libncurses-dev \
-    			flex \
-    			bison \
-    			libssl-dev \
-    			dkms \
-    			libelf-dev \
-    			qemu-user-static \
-    			libc6-amd64-cross \
-    && apt-get build-dep -y linux-image-generic \
-    && apt-get install -y build-essential autoconf automake \
-    libtool gawk alien fakeroot ksh \
-    && apt-get install -y zlib1g-dev uuid-dev libattr1-dev libblkid-dev \
-    libselinux-dev libudev-dev \
-    && apt-get install -y libacl1-dev libaio-dev libdevmapper-dev \
-    && apt-get install -y python3 python3-dev python3-setuptools python3-cffi \
-    && apt-get upgrade -y \
-    && apt-get clean && rm -rf /tmp/* /var/tmp/*
-
 FROM ubuntu:latest
-COPY --from=0 . arm64_chroot/
 RUN set -ex \
     && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
     && apt-get update \
@@ -48,6 +23,9 @@ RUN set -ex \
                fakeroot \
                flex \
                gawk \
+               gcc-8 \
+               cpp-8 \
+               g++-8 \
                git \
                kernel-package \
                kpartx \
@@ -77,21 +55,29 @@ RUN set -ex \
                xz-utils \         
     && apt-get build-dep -y linux-image-raspi2 \
     && apt-get build-dep -y linux-image-generic \
-    && apt-get upgrade -y
-RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] && (apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu \
-               cpp-aarch64-linux-gnu \
-               g++-aarch64-linux-gnu \
-               gcc-9-aarch64-linux-gnu \
-               cpp-9-aarch64-linux-gnu \
-               g++-9-aarch64-linux-gnu \
-               gcc-9-aarch64-linux-gnu-base \
-               libgcc-9-dev-arm64-cross \
-               libstdc++-9-dev-arm64-cross)"]
-RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] && (ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu && ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 && cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
-	# Multiarch support
-	/usr/local/lib/aarch64-linux-gnu
-	/lib/aarch64-linux-gnu
-	/usr/lib/aarch64-linux-gnu
-EOF
-)"]
+    && apt-get upgrade -y \
+    && apt-get clean && rm -rf /tmp/* /var/tmp/*
+RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
+    && (apt-get install -y --no-install-recommends \
+                gcc-aarch64-linux-gnu \
+                cpp-aarch64-linux-gnu \
+                g++-aarch64-linux-gnu \
+                gcc-8-aarch64-linux-gnu \
+                cpp-8-aarch64-linux-gnu \
+                g++-8-aarch64-linux-gnu \
+                gcc-8-aarch64-linux-gnu-base \
+                libgcc-8-dev-arm64-cross \
+                libstdc++-8-dev-arm64-cross\
+    && ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu \
+    && ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 \
+    && (export arch=amd64 && sed -i 's/deb http/deb [arch=${arch}] http/' /etc/apt/sources.list) \
+    && (export arch=amd64 && sed -i 's/deb-src http/deb-src [arch=${arch}] http/' /etc/apt/sources.list) \
+    && echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports disco main restricted universe multiverse' >> /etc/apt/sources.list \
+    && echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports disco-updates main restricted universe multiverse' >> /etc/apt/sources.list \
+    && dpkg --add-architecture arm64 \
+    && apt update \
+    && apt install -y libssl-dev:arm64 -qq \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10 \
+    && update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-8 10 \
+    && apt-get clean && rm -rf /tmp/* /var/tmp/*)"]
 RUN set -ex && apt-get clean && rm -rf /tmp/* /var/tmp/*

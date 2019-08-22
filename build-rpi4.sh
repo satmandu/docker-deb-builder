@@ -567,17 +567,17 @@ VERSION_CODENAME=$(grep VERSION_CODENAME /etc/os-release | head -1 | awk -F '=' 
 #        libstdc++-9-dev-arm64-cross \
 #        &>> /tmp/"${FUNCNAME[0]}".install.log || true
 #    )
-[[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
-    apt -o dir::cache::archives="${apt_cache}" \
-    install -y --no-install-recommends \
-       gcc-8-aarch64-linux-gnu \
-       cpp-8-aarch64-linux-gnu \
-       g++-8-aarch64-linux-gnu \
-       gcc-8-aarch64-linux-gnu-base \
-       libgcc-8-dev-arm64-cross \
-       libstdc++-8-dev-arm64-cross \
-       &>> /tmp/"${FUNCNAME[0]}".install.log || true
-   )
+# [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
+#     apt -o dir::cache::archives="${apt_cache}" \
+#     install -y --no-install-recommends \
+#        gcc-8-aarch64-linux-gnu \
+#        cpp-8-aarch64-linux-gnu \
+#        g++-8-aarch64-linux-gnu \
+#        gcc-8-aarch64-linux-gnu-base \
+#        libgcc-8-dev-arm64-cross \
+#        libstdc++-8-dev-arm64-cross \
+#        &>> /tmp/"${FUNCNAME[0]}".install.log || true
+#    )
 PrintLog  "compilers updated" /tmp/"${FUNCNAME[0]}".install.log
 
 PrintLog " post-wait" /tmp/"${FUNCNAME[0]}".install.log
@@ -630,11 +630,11 @@ mv_arch cpp-9 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
 # update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
 # )
 
-[[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
-update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
-&& \
-update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-8 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
-)
+# [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
+# update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
+# && \
+# update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-8 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
+# )
 #arbitrary_wait_here
 
 
