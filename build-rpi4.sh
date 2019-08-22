@@ -139,7 +139,8 @@ function abspath {
 PrintLog(){
   information="${1}"
   logFile="${2}"
-  [[ DEBUG ]] && echo "Logfile: ${logFile}"
+  [[ DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
+#  [[ DEBUG ]] && echo "Callers: ${FUNCNAME[1]} ${FUNCNAME[1]} ${FUNCNAME[1]} "
   mkdir -p "$(dirname "${logFile}")" && touch "${logFile}"
   echo "${information}" | ts >> "${logFile}"
 }
