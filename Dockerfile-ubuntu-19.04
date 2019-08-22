@@ -62,7 +62,7 @@ RUN set -ex \
     && apt-get build-dep -y linux-image-generic \
     && apt-get upgrade -y \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
-RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
+RUN VERSION_CODENAME=$(grep VERSION_CODENAME /etc/os-release | head -1 | awk -F '=' '{print $2}) ; ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
     && (apt-get install -y --no-install-recommends \
                 gcc-aarch64-linux-gnu \
                 cpp-aarch64-linux-gnu \
@@ -77,7 +77,6 @@ RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
     && ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 \
     && (export arch=amd64 && sed -i 's/deb http/deb [arch=${arch}] http/' /etc/apt/sources.list) \
     && (export arch=amd64 && sed -i 's/deb-src http/deb-src [arch=${arch}] http/' /etc/apt/sources.list) \
-    && (export VERSION_CODENAME=`grep VERSION_CODENAME /etc/os-release | head -1 | awk -F '=' '{print $2}'` \
     && echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} main restricted universe multiverse' >> /etc/apt/sources.list \
     && echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME}-updates main restricted universe multiverse' >> /etc/apt/sources.list )\
     && dpkg --add-architecture arm64 \
