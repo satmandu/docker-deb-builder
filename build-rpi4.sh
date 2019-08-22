@@ -386,13 +386,14 @@ recreate_git () {
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
-    local git_flags=" --quiet --depth=1 "
+    #local git_flags=" --quiet --depth=1 "
+    local git_flags=" --depth=1 "
     local git_extra_flags=" -b ${git_branch} "
     local clone_flags=" ${git_repo} $git_extra_flags "
-    rm -rf "${src_cache:?}"/"${local_path}"
-    cd "${src_cache}"
+    rm -rf "${src_cache:?}/${local_path}" &>> /tmp/"${FUNCNAME[2]}".git.log
+    cd "${src_cache}" &>> /tmp/"${FUNCNAME[2]}".git.log
     git clone "${git_flags}" "$clone_flags" "${local_path}" \
-    &>> /tmp/"${FUNCNAME[2]}".git.log || true
+    &>> /tmp/"${FUNCNAME[2]}".git.log 
 #endfunc
 }
 
