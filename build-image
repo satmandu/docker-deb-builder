@@ -85,7 +85,7 @@ for container in ${old_containers[*]};
 do
     if [ ! "${container}" = "${image}" ]
     then 
-            docker rm -fv ${container} 2>&1 /dev/null || true
+            docker rm -fv ${container} || true
     fi
 done
 
