@@ -38,7 +38,7 @@ EOF
 chmod +x /usr/bin/killme
 
 #DEBUG=1
-GIT_DISCOVERY_ACROSS_FILESYSTEM=1
+#GIT_DISCOVERY_ACROSS_FILESYSTEM=1
 
 # Needed for display
 shopt -s checkwinsize 
@@ -133,7 +133,7 @@ apt-get -o dir::cache::archives="${apt_cache}" autoclean -y -qq &>> /tmp/main.in
 # Utility Functions
 
 function abspath {
-    echo $(cd "$1" && pwd)
+    cd "${1}" && pwd
 }
 
 # via https://serverfault.com/a/905345
@@ -199,8 +199,6 @@ endfunc
 waitfor () {
     local proc_name=${FUNCNAME[1]}
     [[ -z ${proc_name} ]] && proc_name=main
-    local waitforit
-    # waitforit file is written in the function "endfunc"
     touch /flag/wait.${proc_name}_for_"${1}"
     printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${1} [/] "
     local start_timeout=100000
@@ -275,18 +273,18 @@ endfunclib () {
 git_check () {
     local git_base="$1"
     local git_branch="$2"
-    [ ! -z "$2" ] || git_branch="master"
+    [ -n "$2" ] || git_branch="master"
     local git_output=$(git ls-remote "${git_base}" refs/heads/${git_branch})
     local git_hash
     local discard 
-    read git_hash discard< <(echo "${git_output}")
+    read -r git_hash discard< <(echo "${git_output}")
     echo "${git_hash}"
 }
 
 local_check () {
     local git_path="$1"
     local git_branch="$2"
-    [ ! -z "$2" ] || git_branch="HEAD"
+    [ -n "$2" ] || git_branch="HEAD"
     local git_output=$(git -C "${git_path}" rev-parse ${git_branch} 2>/dev/null)
     echo "${git_output}"
 }
@@ -321,7 +319,7 @@ startfunclib
     local git_repo="${1}"
     local local_path="${2}"
     local git_branch="${3}"
-    [ ! -z "${3}" ] || git_branch="master"
+    [ -n "${3}" ] || git_branch="master"
 #     PrintLog "${src_cache}/${local_path}" /tmp/git_get.log
 #     PrintLog "${workdir}/${local_path}" /tmp/git_get.log
     PrintLog $(mkdir -p "${src_cache}/${local_path}") /tmp/git_get.log
@@ -524,119 +522,34 @@ endfunc
 compiler_setup () {
 startfunc
 
-[[ $BUILDNATIVE ]] && (
-    apt -o dir::cache::archives="${apt_cache}" \
-    install -y --no-install-recommends \
-        gcc-aarch64-linux-gnu \
-        cpp-aarch64-linux-gnu \
-        g++-aarch64-linux-gnu \
-        &>> /tmp/"${FUNCNAME[0]}".install.log || true
-    )
-
-VERSION_CODENAME=$(grep VERSION_CODENAME /etc/os-release | head -1 | awk -F '=' '{print $2}')
-
-# [[ $BUILDNATIVE ]] && (
-#     dpkg --add-architecture arm64 \
-#         &>> /tmp/${FUNCNAME[0]}.install.log || true
-#     )
-# 
-
-# [[ $BUILDNATIVE ]] && (
-# echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} main restricted universe multiverse" >> /etc/apt/sources.list && \
-# echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
-#  dpkg --add-architecture arm64 
-#         &>> /tmp/"${FUNCNAME[0]}".install.log 
-#         )
-# [[ $BUILDNATIVE ]] && ( apt update -qq &>> /tmp/"${FUNCNAME[0]}".install.log || true ) 
-# # Local install needed due to kernel wanting header file.
-# [[ $BUILDNATIVE ]] && (
-#     apt -o dir::cache::archives="${apt_cache}" \
-#     -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-#     install -y \
-#         libssl-dev:arm64 -qq\
-#         &>> /tmp/"${FUNCNAME[0]}".install.log || true
-#     )
-# [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
-#     apt -o dir::cache::archives="${apt_cache}" \
-#     install -y --no-install-recommends \
-#        gcc-9-aarch64-linux-gnu \
-#        cpp-9-aarch64-linux-gnu \
-#        g++-9-aarch64-linux-gnu \
-#        gcc-9-aarch64-linux-gnu-base \
-#        libgcc-9-dev-arm64-cross \
-#        libstdc++-9-dev-arm64-cross \
-#        &>> /tmp/"${FUNCNAME[0]}".install.log || true
-#    )
-# [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
-#     apt -o dir::cache::archives="${apt_cache}" \
-#     install -y --no-install-recommends \
-#        gcc-8-aarch64-linux-gnu \
-#        cpp-8-aarch64-linux-gnu \
-#        g++-8-aarch64-linux-gnu \
-#        gcc-8-aarch64-linux-gnu-base \
-#        libgcc-8-dev-arm64-cross \
-#        libstdc++-8-dev-arm64-cross \
-#        &>> /tmp/"${FUNCNAME[0]}".install.log || true
-#    )
-PrintLog  "compilers updated" /tmp/"${FUNCNAME[0]}".install.log
-
-PrintLog " post-wait" /tmp/"${FUNCNAME[0]}".install.log
-#The following is needed for multiarch support during build.
-# [[ $BUILDNATIVE ]] && (
-# (ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu \
-#  &>> /tmp/"${FUNCNAME[0]}".install.log || true) \
-# && \
-# (ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 \
-#  &>> /tmp/"${FUNCNAME[0]}".install.log || true) \
-# && \
-# cat <<-EOF> /etc/ld.so.conf.d/aarch64-linux-gnu.conf
-# 	# Multiarch support
-# 	/usr/local/lib/aarch64-linux-gnu
-# 	/lib/aarch64-linux-gnu
-# 	/usr/lib/aarch64-linux-gnu
-# EOF
-# )
 PrintLog "setup multiarch"  /tmp/"${FUNCNAME[0]}".install.log
-[[ $BUILDNATIVE ]] && (
-mv_arch ar aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log 
-)
-[[ $BUILDNATIVE ]] && (
-mv_arch ld.bfd aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log 
-)
-[[ $BUILDNATIVE ]] && (
-mv_arch ld aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log 
-)
-[[ $BUILDNATIVE ]] && (
-mv_arch gcc-8 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
-)
-[[ $BUILDNATIVE ]] && (
-mv_arch g++-8 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
-)
-[[ $BUILDNATIVE ]] && (
-mv_arch cpp-8 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
-)
-[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
-mv_arch gcc-9 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
-)
-[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
-mv_arch g++-9 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
-)
-[[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
-mv_arch cpp-9 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
-)
-# [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
-# update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
-# && \
-# update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
-# )
-
-# [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
-# update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
-# && \
-# update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-8 10 &>> /tmp/"${FUNCNAME[0]}".install.log\
-# )
-#arbitrary_wait_here
-
+    [[ $BUILDNATIVE ]] && (
+    mv_arch ar aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log 
+    )
+    [[ $BUILDNATIVE ]] && (
+    mv_arch ld.bfd aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log 
+    )
+    [[ $BUILDNATIVE ]] && (
+    mv_arch ld aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log 
+    )
+    [[ $BUILDNATIVE ]] && (
+    mv_arch gcc-8 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
+    )
+    [[ $BUILDNATIVE ]] && (
+    mv_arch g++-8 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
+    )
+    [[ $BUILDNATIVE ]] && (
+    mv_arch cpp-8 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
+    )
+    [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+    mv_arch gcc-9 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
+    )
+    [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+    mv_arch g++-9 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
+    )
+    [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+    mv_arch cpp-9 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
+    )
 
 endfunc
 }
@@ -682,7 +595,7 @@ startfunc
             local size
             local filename   
             echo "* Extracting: ${base_image} to ${new_image}.img"
-            read size filename < <(ls -sH "${workdir}"/"${base_image}")
+            read -r size filename < <(ls -sH "${workdir}"/"${base_image}")
             pvcmd="pv -s ${size} -cfperb -N "xzcat:${base_image}" ${workdir}/$base_image"
             echo "$pvcmd"
             $pvcmd | xzcat > "${workdir}"/"$new_image".img
@@ -922,9 +835,6 @@ startfunc
     cd "${workdir}"/rpi-linux
     make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O="${workdir}"/kernel-build \
     LOCALVERSION="${LOCALVERSION}" bcm2711_defconfig &>> /tmp/"${FUNCNAME[0]}".compile.log
-#     PrintLog ${runthis} /tmp/${FUNCNAME[0]}.compile.log
-#     $runthis  &>> /tmp/${FUNCNAME[0]}.compile.log
-#     unset runthis
     
     
     cd "${workdir}"/kernel-build
@@ -940,12 +850,6 @@ startfunc
     fi
     "${workdir}"/kernel-build/conform_config.sh
 
-#     if [[ ! -e /tmp/APPLIED_KERNEL_PATCHES ]]
-#         then
-#             sed -i 's/set_kernel_config CONFIG_LOCALVERSION_AUTO y/#set_kernel_config CONFIG_LOCALVERSION_AUTO y/' ${workdir}/kernel-build/conform_config.sh || true
-# #             LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
-# #             echo ${LOCALVERSION} > /tmp/LOCALVERSION
-#     fi
 
     yes "" | make LOCALVERSION="${LOCALVERSION}" ARCH=arm64 \
     CROSS_COMPILE=aarch64-linux-gnu- \
@@ -971,47 +875,12 @@ startfunc
 
     cd "${workdir}"/rpi-linux
     
-#     [[ ! $BUILDNATIVE ]] &&  cat <<-EOF> "${workdir}"/kernel_compile.sh
-# 	#!/bin/bash
-# 	cd ${workdir}/rpi-linux
-# 	make LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=${workdir}/kernel-build bindeb-pkg
-# EOF
 
-#     [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && debcmd="make \
-#     LOCALVERSION=${LOCALVERSION} ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(($(nproc) + 1)) O=${workdir}/kernel-build bindeb-pkg" 
-#     [[ $LOCALVERSION ]] && [[ ! $BUILDNATIVE ]] && PrintLog "LOCALVERSION, no BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
-
-#     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-#     debcmd='CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- /arm64_chroot/bin/bash-static -c "make -j$(($(nproc) + 1)) O=${workdir}/kernel-build/ bindeb-pkg"'
-#     [[ ! $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "no LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
-#     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
-#     O=${workdir}/kernel-build/ \
-#     bindeb-pkg"'
-    
-
-#     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && \
-#     debcmd='/arm64_chroot/bin/bash-static -c "nproc | xargs -I % make -j% CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=${workdir}/kernel-build/ bindeb-pkg"' 
-#     [[ $LOCALVERSION ]] && [[ $BUILDNATIVE ]] && PrintLog "LOCALVERSION, BUILDNATIVE: ${debcmd}" /tmp/${FUNCNAME[0]}.compile.log
-
-#     debcmd='chroot /mnt /bin/bash -c "make -j$(($(nproc) + 1)) \
-#     LOCALVERSION=${LOCALVERSION} \
-#     O=${workdir}/kernel-build/ \
-#     bindeb-pkg"'
-
-[[ $BUILDNATIVE ]] && cat <<-EOF> "${workdir}"/kernel_compile.sh
+cat <<-EOF> "${workdir}"/kernel_compile.sh
 	#!/bin/bash
 	cd ${workdir}/rpi-linux
 	make -j${nprocs} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=${workdir}/kernel-build/ bindeb-pkg
 EOF
-#[[ $BUILDNATIVE ]] && chmod +x ${workdir}/kernel_compile.sh
-
-
-
-
-
-#    echo $debcmd
-
-#    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
     cd "${workdir}"/rpi-linux
     [[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
     grep --line-buffered -v libfakeroot-sysv.so
@@ -1019,7 +888,7 @@ EOF
     find . -executable ! -type d -exec file {} \; | grep x86-64 \
      >> /tmp/"${FUNCNAME[0]}".compile.log
 
-    DEB_KERNEL_VERSION=$(cat "${workdir}"/kernel-build/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/')
+    DEB_KERNEL_VERSION=$(sed -e 's/.*"\(.*\)".*/\1/' "${workdir}"/kernel-build/include/generated/utsrelease.h )
     echo -e "** Expected Kernel Version: ${KERNEL_VERS}\n**    Built Kernel Version: ${DEB_KERNEL_VERSION}"   
     echo "${DEB_KERNEL_VERSION}" > /tmp/KERNEL_VERS
 endfunc
