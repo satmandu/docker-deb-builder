@@ -1013,7 +1013,7 @@ EOF
 
 #    $debcmd &>> /tmp/${FUNCNAME[0]}.compile.log
     cd "${workdir}"/rpi-linux
-    [[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh | tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
+    [[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
     grep --line-buffered -v libfakeroot-sysv.so
     cd "${workdir}"/kernel-build
     find . -executable ! -type d -exec file {} \; | grep x86-64 \
