@@ -318,9 +318,9 @@ startfunclib
     local local_path="$2"
     local git_branch="$3"
     [ ! -z "$3" ] || git_branch="master"
-    PrintLog ${src_cache}/${local_path} /tmp/${FUNCNAME[1]}.git.log
-    PrintLog $(mkdir -p ${src_cache}/${local_path}) /tmp/${FUNCNAME[1]}.git.log
-    PrintLog $(mkdir -p ${workdir}/${local_path}) /tmp/${FUNCNAME[1]}.git.log
+    PrintLog "${src_cache}/${local_path}" /tmp/git_get.log
+    PrintLog $(mkdir -p "${src_cache}/${local_path}") /tmp/git_get.log
+    PrintLog $(mkdir -p "${workdir}/${local_path}") /tmp/git_get.log
     
     local remote_git=$(git_check "${git_repo}" "${git_branch}")
     local local_git=$(local_check "${src_cache}/${local_path}" "${git_branch}")
