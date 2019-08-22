@@ -243,6 +243,7 @@ endfunc () {
 }
 
 startfunclib () {
+  [[ DEBUG ]] && echo "FUNCNAME: ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
     local proc_name=${FUNCNAME[1]}
     [[ -z ${proc_name} ]] && proc_name=main
     echo $BASHPID > /flag/start.lib.${proc_name}.${FUNCNAME[2]}
