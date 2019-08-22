@@ -244,19 +244,19 @@ endfunc () {
 
 startfunclib () {
   [[ DEBUG ]] && echo "FUNCNAME: ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
-    local proc_name=${FUNCNAME[1]}
-    [[ -z ${proc_name} ]] && proc_name=main
-    echo $BASHPID > /flag/start.lib.${proc_name}.${FUNCNAME[2]}
+    local proc_name=${FUNCNAME[1]}.${FUNCNAME[2]} 
+    [[ -z ${FUNCNAME[1]} ]] && proc_name=main
+    echo $BASHPID > /flag/start.${proc_name}
     [[ ! -e /flag/start.${proc_name} ]] && touch /flag/start.${proc_name} || true
     if [ ! "${proc_name}" == "spinnerwait" ] 
-        then printf "%${COLUMNS}s\n" "Started: ${FUNCNAME[2]}.${proc_name} [ ] "
+        then printf "%${COLUMNS}s\n" "Started: ${proc_name} [ ] "
     fi
     
 }
 
 endfunclib () {
-    local proc_name=${FUNCNAME[1]}
-    [[ -z ${proc_name} ]] && proc_name=main
+    local proc_name=${FUNCNAME[1]}.${FUNCNAME[2]}
+    [[ -z ${FUNCNAME[1]} ]] && proc_name=main
    if [[ ! $DEBUG ]]
         then 
         if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_name}.*.log -print -quit)"
@@ -264,9 +264,9 @@ endfunclib () {
                 rm /tmp/${proc_name}.*.log || true
         fi
     fi
-    mv -f /flag/start.lib.${proc_name}.${FUNCNAME[2]} /flag/done.lib.${proc_name}${FUNCNAME[2]}
+    mv -f /flag/start.${proc_name} /flag/done.${proc_name}
     if [ ! "${proc_name}" == "spinnerwait" ]
-        then printf "%${COLUMNS}s\n" "Done: ${FUNCNAME[2]}.${proc_name} [X] "
+        then printf "%${COLUMNS}s\n" "Done: ${proc_name} [X] "
     fi
 }
 
