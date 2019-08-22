@@ -140,9 +140,9 @@ function abspath {
 PrintLog(){
   information="${1}"
   logFile="${2}"
-  [[ DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
-#  [[ DEBUG ]] && echo "Callers: ${FUNCNAME[1]} ${FUNCNAME[1]} ${FUNCNAME[1]} "
-  mkdir -p "$(dirname "${logFile}")" && touch "${logFile}"
+  [[ DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
+  mkdir -p "$(dirname "${logFile}")" || true
+  touch "${logFile}" || true
   echo "${information}" | ts >> "${logFile}"
 }
 
@@ -279,16 +279,16 @@ git_check () {
     local git_output=$(git ls-remote "${git_base}" refs/heads/${git_branch})
     local git_hash
     local discard 
-    read git_hash discard< <(echo "$git_output")
-    echo "$git_hash"
+    read git_hash discard< <(echo "${git_output}")
+    echo "${git_hash}"
 }
 
 local_check () {
     local git_path="$1"
     local git_branch="$2"
     [ ! -z "$2" ] || git_branch="HEAD"
-    local git_output=$(git -C "$git_path" rev-parse ${git_branch} 2>/dev/null)
-    echo "$git_output"
+    local git_output=$(git -C "${git_path}" rev-parse ${git_branch} 2>/dev/null)
+    echo "${git_output}"
 }
 
 
@@ -318,11 +318,12 @@ git_get () {
 startfunclib
     local proc_name=${FUNCNAME[1]}
     [[ -z ${proc_name} ]] && proc_name=main
-    local git_repo="$1"
-    local local_path="$2"
-    local git_branch="$3"
-    [ ! -z "$3" ] || git_branch="master"
+    local git_repo="${1}"
+    local local_path="${2}"
+    local git_branch="${3}"
+    [ ! -z "${3}" ] || git_branch="master"
     PrintLog "${src_cache}/${local_path}" /tmp/git_get.log
+    PrintLog "${workdir}/${local_path}" /tmp/git_get.log
     PrintLog $(mkdir -p "${src_cache}/${local_path}") /tmp/git_get.log
     PrintLog $(mkdir -p "${workdir}/${local_path}") /tmp/git_get.log
     
