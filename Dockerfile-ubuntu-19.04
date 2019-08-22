@@ -1,4 +1,5 @@
-FROM ubuntu:19.04
+ENV VERSION_ID 19.04
+FROM ubuntu:$VERSION_ID
 RUN set -ex \
     && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
     && apt-get update \
@@ -62,19 +63,16 @@ RUN set -ex \
     && apt-get build-dep -y linux-image-generic \
     && apt-get upgrade -y \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
+COPY --from=arm64v8/ubuntu:$VERSION_ID /etc/apt/sources.list /etc/apt/sources.list.d/arm64.list
 RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
-    && (export VERSION_CODENAME=$(awk -F '=' '/VERSION_CODENAME/ {print $2}' /etc/os-release) && echo ${VERSION_CODENAME} \
-    && echo \'deb [arch=arm64] \
-    http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME} \
-    main restricted universe multiverse\' >> /etc/apt/sources.list \
-    && echo \'deb [arch=arm64] \
-    http://ports.ubuntu.com/ubuntu-ports ${VERSION_CODENAME}-updates \
-    main restricted universe multiverse\' >> /etc/apt/sources.list \
+    && (sed -i 's/deb http/deb [arch=arm64] http/' \
+    /etc/apt/sources.list.d/arm64.list) \
+    && (sed -i 's/deb-src http/deb-src [arch=arm64] http/' \
+    /etc/apt/sources.list.d/arm64.list) \
     && dpkg --add-architecture arm64 \
     && apt update \
-    && apt install -y libssl-dev:arm64 -qq )"]
-RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
-    && (apt-get install -y --no-install-recommends \
+    && apt install -y libssl-dev:arm64 -qq \
+    && apt-get install -y --no-install-recommends \
                 gcc-aarch64-linux-gnu \
                 cpp-aarch64-linux-gnu \
                 g++-aarch64-linux-gnu \
@@ -84,10 +82,12 @@ RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
                 gcc-9-aarch64-linux-gnu-base \
                 libgcc-9-dev-arm64-cross \
                 libstdc++-9-dev-arm64-cross\
-    && ln -sf /usr/aarch64-linux-gnu/lib /lib/aarch64-linux-gnu \
-    && ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1 \
-    && (export arch=amd64 && sed -i 's/deb http/deb [arch=${arch}] http/' /etc/apt/sources.list) \
-    && (export arch=amd64 && sed -i 's/deb-src http/deb-src [arch=${arch}] http/' /etc/apt/sources.list) \
+    && ln -sf /usr/aarch64-linux-gnu/lib \
+    /lib/aarch64-linux-gnu \
+    && ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 \
+    /lib/ld-linux-aarch64.so.1 \
+    && (sed -i 's/deb http/deb [arch=amd64] http/' /etc/apt/sources.list) \
+    && (sed -i 's/deb-src http/deb-src [arch=amd64] http/' /etc/apt/sources.list) \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 \
     && update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*)"]
