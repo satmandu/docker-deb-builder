@@ -238,6 +238,34 @@ endfunc () {
     fi
 }
 
+startfunclib () {
+    local proc_name=${FUNCNAME[1]}
+    [[ -z ${proc_name} ]] && proc_name=main
+    echo $BASHPID > /flag/start.lib.${proc_name}.${FUNCNAME[2]}
+    [[ ! -e /flag/start.${proc_name} ]] && touch /flag/start.${proc_name} || true
+    if [ ! "${proc_name}" == "spinnerwait" ] 
+        then printf "%${COLUMNS}s\n" "Started: ${proc_name}.${FUNCNAME[2]} [ ] "
+    fi
+    
+}
+
+endfunclib () {
+    local proc_name=${FUNCNAME[1]}
+    [[ -z ${proc_name} ]] && proc_name=main
+   if [[ ! $DEBUG ]]
+        then 
+        if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_name}.*.log -print -quit)"
+            then
+                rm /tmp/${proc_name}.*.log || true
+        fi
+    fi
+    mv -f /flag/start.lib.${proc_name}.${FUNCNAME[2]} /flag/done.lib.${proc_name}${FUNCNAME[2]}
+    if [ ! "${proc_name}" == "spinnerwait" ]
+        then printf "%${COLUMNS}s\n" "Done: ${proc_name}.${FUNCNAME[2]} [X] "
+    fi
+}
+
+
 
 git_check () {
     local git_base="$1"
@@ -282,6 +310,7 @@ arbitrary_wait_here () {
 # }
 
 git_get () {
+startfunclib
     local proc_name=${FUNCNAME[1]}
     [[ -z ${proc_name} ]] && proc_name=main
     local git_repo="$1"
@@ -342,6 +371,7 @@ git_get () {
     --quiet 2> /dev/null)
     echo -e "*${proc_name} Last Commits:\n$last_commit\n"
     rsync -a "${src_cache}"/"${local_path}" "$workdir"/
+endfunclib
 }
 
 recreate_git () {
