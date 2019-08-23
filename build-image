@@ -53,7 +53,8 @@ shift $(($OPTIND - 1))
 #  Ubuntu Bionic & Ubuntu Eoan since Canonical only provides daily build images of
 #  those distributions.
 default_BASE_DIST="eoan"
-#  This is the default build host image. 18.04, 19.04, and 19.10 dev builds
+#  This is the default build host image. 18.04 (bionic), 19.04 (disco/rolling)
+# and 19.10 (dev/eoan) builds
 #  have been tested. However, non-19.04 images may need to be built separately and 
 #  invoked through. e.g.:
 # BASE_DIST=bionic ./build-image 
@@ -72,10 +73,12 @@ BASE_DIST="${BASE_DIST:-${default_BASE_DIST}}"
 
 if [ "$BASE_DIST" == "bionic" ]; then
     base_url="http://cdimage.ubuntu.com/ubuntu-server/bionic/daily-preinstalled/current/"
-    defaultimage="docker-rpi4-imagebuilder-v5:18.04"
+    defaultimage="docker-rpi4-imagebuilder-v1:bionic"
     else
     base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
-    defaultimage="docker-rpi4-imagebuilder-v4:19.04"
+    defaultimage="docker-rpi4-imagebuilder-v1:rolling"
+    # There is no rolling/disco daily-preinstalled image
+    BASE_DIST=eoan
 fi
 
 base_image="${BASE_DIST}-preinstalled-server-arm64+raspi3.img.xz"
@@ -118,15 +121,15 @@ build_container () {
     echo "Build container ${image} not found."
     if [ "$BASE_DIST" == "bionic" ]; then
         echo "Creating Ubuntu Bionic build container."
-        docker build -t ${image} -f Dockerfile-ubuntu-18.04 .
+        docker build -t ${image} -f Dockerfile-ubuntu-bionic .
     else
-        echo "Creating Ubuntu Disco build container."
-        docker build -t ${image} -f Dockerfile-ubuntu-19.04 .
+        echo "Creating Ubuntu Stable (Rolling) build container."
+        docker build -t ${image} -f Dockerfile-ubuntu-rolling .
     fi
 }
 
 #Remove existing build container if it exists.
-old_containers=("docker-rpi4-imagebuilder-v4:18.04" \
+old_containers=("docker-rpi4-imagebuilder-v4:19.04" "docker-rpi4-imagebuilder-v4:18.04" \
 "docker-rpi4-imagebuilder-v3:19.04" "docker-rpi4-imagebuilder-v3:18.04" \
 "docker-rpi4-imagebuilder-v2:19.04" "docker-rpi4-imagebuilder-v2:18.04" \
 "docker-rpi4-imagebuilder:19.04" "docker-rpi4-imagebuilder:18.04" )
@@ -180,7 +183,7 @@ check_new_image_hash () {
     echo "* Checking image hash."
     current_output=$(curl --silent ${base_url}/SHA1SUMS)
     current=${current_output%% *}
-    if [ "$(which sha1sum)" ]; then
+    if [ "$(command -v sha1sum)" ]; then
         local local_hash_output=$(sha1sum $(abspath ${srcdir})/${base_image}.new)
     else
         local local_hash_output=$(linux_cmd "sha1sum ${base_image}.new")
@@ -230,7 +233,7 @@ check_for_current_image () {
     current_output=$(curl --silent ${base_url}/SHA1SUMS)
     current=${current_output%% *}
     local local_hash_output
-    if [ "$(which sha1sum)" ]; then 
+    if [ "$(command -v sha1sum)" ]; then 
         local_hash_output=$(sha1sum $(abspath ${srcdir})/${base_image})
     else
         local_hash_output=$(linux_cmd "sha1sum ${base_image}")

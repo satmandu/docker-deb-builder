@@ -628,7 +628,7 @@ startfunc
     mount /dev/mapper/"${loop_device}"p2 /mnt
     mount /dev/mapper/"${loop_device}"p1 /mnt/boot/firmware
     
-    # Ubuntu after 18.04 symlinks /lib to /usr/lib
+    # Ubuntu after bionic symlinks /lib to /usr/lib
     if [[ -L "/mnt/lib" && -d "/mnt/lib" ]]
     then
         libpath="/mnt/usr/lib"
