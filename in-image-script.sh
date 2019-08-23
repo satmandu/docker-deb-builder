@@ -260,7 +260,8 @@ startfunc () {
 }
 
 endfunc () {
-    proc_file=$(grep -lw ${BASHPID} /flag/*)
+    parent_pid=${1:-${mainPID}}
+    proc_file=$(grep -lw ${parent_pid} /flag/*)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
     local proc_temp=${${proc_file_base}%.*}
@@ -600,7 +601,7 @@ startfunc
     if [ ! -f "${workdir}"/"${base_image}" ]; then 
         ln -s /"$base_image" "${workdir}"/
     fi   
-endfunc
+endfunc ${BASHPID}
 }
 
 image_extract () {
