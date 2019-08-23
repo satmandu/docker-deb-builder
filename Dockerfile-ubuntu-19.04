@@ -67,8 +67,9 @@ RUN set -ex \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
 ARG VERSION_ID
 COPY --from=arm64v8/ubuntu:${VERSION_ID} etc/apt/sources.list /etc/apt/sources.list.d/arm64.list
-RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
-    && (sed -i 's/deb http/deb [arch=arm64] http/' \
+RUN [[ ! $(uname -m) = aarch64 ]] \
+    && ( \
+    (sed -i 's/deb http/deb [arch=arm64] http/' \
     /etc/apt/sources.list.d/arm64.list) \
     && (sed -i 's/deb-src http/deb-src [arch=arm64] http/' \
     /etc/apt/sources.list.d/arm64.list) \
@@ -93,7 +94,8 @@ RUN ["/bin/bash", "-c", "[[ ! $(uname -m) = aarch64 ]] \
     && (sed -i 's/deb-src http/deb-src [arch=amd64] http/' /etc/apt/sources.list) \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 \
     && update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 \
-    && apt-get clean && rm -rf /tmp/* /var/tmp/*)"]
+    && apt-get clean && rm -rf /tmp/* /var/tmp/* ) \
+    )
 RUN set -ex && apt-get clean && rm -rf /tmp/* /var/tmp/*
 
 
