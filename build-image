@@ -52,11 +52,11 @@ shift $(($OPTIND - 1))
 #  This should be the image we want to modify. Note that the only options here are 
 #  Ubuntu Bionic & Ubuntu Eoan since Canonical only provides daily build images of
 #  those distributions.
-default_base_dist="eoan"
+default_BASE_DIST="eoan"
 #  This is the default build host image. 18.04, 19.04, and 19.10 dev builds
 #  have been tested. However, non-19.04 images may need to be built separately and 
 #  invoked through. e.g.:
-# base_dist=bionic ./build-image 
+# BASE_DIST=bionic ./build-image 
 # Note that currently kernel package installation in older build hosts may be unreliable.
 # I suggest using this for now to build the kernel packages, which will be used in
 # whatever image installation you use:
@@ -68,9 +68,9 @@ default_base_dist="eoan"
 
 outdir="${outdir:-output}"
 
-base_dist="${base_dist:-${default_base_dist}}"
+BASE_DIST="${BASE_DIST:-${default_BASE_DIST}}"
 
-if [ "$base_dist" == "bionic" ]; then
+if [ "$BASE_DIST" == "bionic" ]; then
     base_url="http://cdimage.ubuntu.com/ubuntu-server/bionic/daily-preinstalled/current/"
     defaultimage="docker-rpi4-imagebuilder-v4:18.04"
     else
@@ -78,7 +78,7 @@ if [ "$base_dist" == "bionic" ]; then
     defaultimage="docker-rpi4-imagebuilder-v4:19.04"
 fi
 
-base_image="${base_dist}-preinstalled-server-arm64+raspi3.img.xz"
+base_image="${BASE_DIST}-preinstalled-server-arm64+raspi3.img.xz"
 base_image_url="${base_url}/${base_image}"
 cache_volume=rpi4-imagebuilder-cache
 
@@ -116,7 +116,7 @@ docker_args+="-e BUILDHOST_ARCH=${BUILDHOST_ARCH} "
 
 build_container () {
     echo "Build container ${image} not found."
-    if [ "$base_dist" == "bionic" ]; then
+    if [ "$BASE_DIST" == "bionic" ]; then
         echo "Creating Ubuntu Bionic build container."
         docker build -t ${image} -f Dockerfile-ubuntu-18.04 .
     else
@@ -288,7 +288,7 @@ docker_args+="-e workdir=/build/source "
 # Send in base image environment variables:
 docker_args+="-e base_url=${base_url} "
 docker_args+="-e base_image=${base_image} "
-docker_args+="-e base_dist=${base_dist} "
+docker_args+="-e BASE_DIST=${BASE_DIST} "
 
 # Should we enable the arbitrary wait flag?
 [ -n "$ARBITRARY_WAIT" ] && docker_args+="-e ARBITRARY_WAIT=${ARBITRARY_WAIT} "

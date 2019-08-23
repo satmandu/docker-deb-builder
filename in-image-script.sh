@@ -18,10 +18,10 @@ mainPID=$BASHPID
 #kernelgitrepo="https://github.com/lategoodbye/rpi-zero.git"
 # This should be the image we want to modify.
 #base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
-#base_image="${base_dist}-preinstalled-server-arm64+raspi3.img.xz"
+#base_image="${BASE_DIST}-preinstalled-server-arm64+raspi3.img.xz"
 base_image_url="${base_url}/${base_image}"
 # This is the base name of the image we are creating.
-new_image="${base_dist}-preinstalled-server-arm64+raspi4"
+new_image="${BASE_DIST}-preinstalled-server-arm64+raspi4"
 # Comment out the following if apt is throwing errors silently.
 # Note that these only work for the chroot commands.
 silence_apt_flags="-o Dpkg::Use-Pty=0 -qq < /dev/null > /dev/null "
@@ -519,22 +519,22 @@ PrintLog "setup multiarch"  /tmp/"${FUNCNAME[0]}".install.log
     [[ $BUILDNATIVE ]] && (
     mv_arch ld aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log 
     )
-    [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
+    [[ $BUILDNATIVE ]] && [[ ${BASE_DIST} = "bionic" ]] && (
     mv_arch gcc-8 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
     )
-    [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
+    [[ $BUILDNATIVE ]] && [[ ${BASE_DIST} = "bionic" ]] && (
     mv_arch g++-8 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
     )
-    [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
+    [[ $BUILDNATIVE ]] && [[ ${BASE_DIST} = "bionic" ]] && (
     mv_arch cpp-8 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
     )
-    [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+    [[ $BUILDNATIVE ]] && [[ ! ${BASE_DIST} = "bionic" ]] && (
     mv_arch gcc-9 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
     )
-    [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+    [[ $BUILDNATIVE ]] && [[ ! ${BASE_DIST} = "bionic" ]] && (
     mv_arch g++-9 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
     )
-    [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
+    [[ $BUILDNATIVE ]] && [[ ! ${BASE_DIST} = "bionic" ]] && (
     mv_arch cpp-9 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
     )
 
