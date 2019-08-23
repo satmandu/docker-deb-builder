@@ -237,14 +237,15 @@ startfunc () {
     local proc_base="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-_}.${FUNCNAME[$((level+2))]:-_}.${FUNCNAME[$((level+3))]:-_}"
     local proc_file=$(mktemp /flag/strt_XXX_${proc_base})
     echo ${BASHPID} > "${proc_file}"
-    local pretty_proc_name="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-\b \b}.${FUNCNAME[$((level+2))]:-\b \b}..${FUNCNAME[$((level+3))]:-\b \b}"
+    local pretty_proc_name="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-\b \b}.${FUNCNAME[$((level+2))]:-\b \b}.${FUNCNAME[$((level+3))]:-\b \b}"
     #[[ -z ${FUNCNAME[1]} ]] && proc_name=main
 
     [[ ! -e ${proc_file} ]] && touch ${proc_file}|| true
     #if [ ! "${proc_name}" == "spinnerwait" ] 
     #    then printf "%${COLUMNS}s\n" "Started: ${pretty_proc_name} [ ] "
     #fi
-    printf "%${COLUMNS}s\n" "Started: ${pretty_proc_name} [ ] "
+    #printf "%${COLUMNS}s\n" "Started: ${pretty_proc_name} [ ] "
+    echo -e 
     
 }
 
