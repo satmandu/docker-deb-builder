@@ -85,7 +85,7 @@ ccache -s
 # https://community.arm.com/developer/tools-software/tools/b/tools-software-ides-blog/posts/compiler-flags-across-architectures-march-mtune-and-mcpu
 #DEFAULTCFLAGS="-mcpu=cortex-a72 -ftree-vectorize -O2 -pipe -fomit-frame-pointer"
 #DEFAULTCFLAGS="-mcpu=cortex-a72 -ftree-vectorize -pipe -fomit-frame-pointer"
-DEFAULTCFLAGS="-mcpu=cortex-a72"
+DEFAULTCFLAGS="-mcpu=cortex-a72 -march=armv8-a+crc"
 CFLAGS=${CFLAGS:-${DEFAULTCFLAGS}}
 export CXXFLAGS="${CFLAGS}"
 
@@ -847,16 +847,28 @@ startfunc
 
    # Don't remake debs if they already exist in output.
    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
-   if test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-image-*"${KERNEL_VERS}"* -print -quit)"
+   [[ ! $REBUILD ]] && if test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-image-*"${KERNEL_VERS}"* -print -quit)"
    then
         echo -e "${KERNEL_VERS} linux image on cache volume. 😎\n"
+        cp "${apt_cache}"/linux-image-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
+        echo "linux-image" >> /tmp/nodebs
+    elif if test -n "$(find /output/ -maxdepth 1 -name linux-image-*"${KERNEL_VERS}"* -print -quit)"
+   then
+        echo -e "${KERNEL_VERS} linux image found in /output/. 😎\n"
+        cp /output/linux-image-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
         echo "linux-image" >> /tmp/nodebs
     else
         rm -f /tmp/nodebs || true
     fi
-    if test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-headers-*"${KERNEL_VERS}"* -print -quit)"
+    [[ ! $REBUILD ]] && if test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-headers-*"${KERNEL_VERS}"* -print -quit)"
    then
         echo -e "${KERNEL_VERS} linux headers on cache volume. 😎\n"
+        cp "${apt_cache}"/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
+        echo "linux-image" >> /tmp/nodebs
+    elif if test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-headers-*"${KERNEL_VERS}"* -print -quit)"
+   then
+        echo -e "${KERNEL_VERS} linux headers found in /output/. 😎\n"
+        cp /output/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
         echo "linux-image" >> /tmp/nodebs
     else
         rm -f /tmp/nodebs || true
@@ -868,8 +880,8 @@ startfunc
     then
         echo -e "Using existing ${KERNEL_VERS} debs from cache volume.\n \
         \rNo kernel needs to be built."
-        cp "${apt_cache}"/linux-image-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
-        cp "${apt_cache}"/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
+        #cp "${apt_cache}"/linux-image-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
+        #cp "${apt_cache}"/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
         cp "${workdir}"/*.deb /output/ 
         chown "$USER":"$GROUP" /output/*.deb
     else
