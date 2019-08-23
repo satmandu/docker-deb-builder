@@ -95,18 +95,6 @@ git config --global core.abbrev 9
 # Set this once:
 nprocs=$(($(nproc) + 1))
 
-
-
-
-
-#  && cp -r /usr/aarch64-linux-gnu/lib/* /usr/lib/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/lib/aarch64-linux-gnu/* /usr/lib/aarch64-linux-gnu/ && mkdir -p /usr/include/aarch64-linux-gnu/ && cp -r /arm64_chroot/usr/include/aarch64-linux-gnu/* /usr/include/aarch64-linux-gnu/)
-
-
-
-
-
-#env >> /output/environment
-
 # echo "Starting local container software installs."
 # apt-get -o dir::cache::archives="${apt_cache}" install curl moreutils -y &>> /tmp/main.install.log 
 # [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install lsof -y &>> /tmp/main.install.log 
@@ -122,13 +110,6 @@ nprocs=$(($(nproc) + 1))
 
 echo -e "Performing cache volume apt autoclean.\n\r"
 apt-get -o dir::cache::archives="${apt_cache}" autoclean -y -qq &>> /tmp/main.install.log 
-
-#apt-get -o dir::cache::archives=${apt_cache} install xdelta3 vim \
-#e2fsprogs qemu-user-static dosfstools \
-#libc6-arm64-cross pv u-boot-tools -qq 2>/dev/null
-
-
-
 
 # Utility Functions
 
@@ -151,16 +132,7 @@ wait_file() {
   local file="$1"; shift
   local wait_seconds="${1:-100000}"; shift # 100000 seconds as default timeout
     PrintLog "file: ${file}, seconds: ${wait_seconds}" /tmp/wait.log
-#   until test $((wait_seconds--)) -eq 0 -o -f "${file}"
-#         do 
-#             PrintLog "file: ${file}, seconds: ${wait_seconds}" /tmp/wait_file.log
-#             sleep 1
-#         done
     timeout "${wait_seconds}" tail -f -s 1 --retry "${file}" 2> /dev/null | ( grep -q -m1 ""  && pkill -P $$ -x tail) || true
-  # [[ -f "${file}" ]] && PrintLog "${file} found at T-${wait_seconds} seconds." /tmp/wait_file.log
-#   [[ ${wait_seconds} -eq 0 ]] && PrintLog \
-#   "${file} hit time limit at ${wait_seconds} seconds." /tmp/wait_file.log
-#   ((++wait_seconds))
     [[ -f "${file}" ]] && PrintLog "${file} found" /tmp/wait_file.log
 }
 
@@ -648,8 +620,6 @@ startfunc
     else
         libpath="/mnt/lib"
     fi
-    #echo -e "* Image lib path has been detected as ${libpath} ."
-
     # Guestmount is at least an order of magnitude slower than using loopback device.
     #guestmount -a ${new_image}.img -m /dev/sda2 -m /dev/sda1:/boot/firmware --rw /mnt -o dev
     
@@ -711,12 +681,6 @@ startfunc
     -o dir::cache::archives="${apt_cache}" \
     -d install  \
     qemu-user qemu libc6-amd64-cross -qq &>> /tmp/"${FUNCNAME[0]}".install.log || true
-# endfunc
-# }
-# 
-# image_apt_upgrade () {
-#         waitfor "image_apt_download"
-# startfunc 
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install -qq \
     --no-install-recommends \
     qemu-user qemu libc6-amd64-cross" &>> /tmp/"${FUNCNAME[0]}".install.log || true
@@ -727,14 +691,7 @@ startfunc
     #echo "* There may be some errors here due to" 
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -qq || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -qq)" || true &>> /tmp/"${FUNCNAME[0]}".install.log || true
     echo "* Image apt upgrade done."
-    
-# endfunc
-# }
-# 
-# image_apt_install () {
-#         waitfor "image_apt_upgrade"
-# startfunc
-  echo "* Installing wifi & networking tools to image."
+    echo "* Installing wifi & networking tools to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
     install network-manager wireless-tools wireless-regdb crda \
     net-tools rng-tools -y -qq " &>> /tmp/"${FUNCNAME[0]}".install.log || true
@@ -781,14 +738,6 @@ startfunc
     
     kernelrev=$(git -C "${src_cache}"/rpi-linux rev-parse --short HEAD) > /dev/null
     echo "$kernelrev" > /tmp/kernelrev
-
-    cd "${workdir}"/rpi-linux
-        # Get rid of dirty localversion as per https://stackoverflow.com/questions/25090803/linux-kernel-kernel-version-string-appended-with-either-or-dirty
-    #touch ${workdir}/rpi-linux/.scmversion
-    #sed -i \
-    # "s/scripts\/package/scripts\/package\\\|Makefile\\\|scripts\/setlocalversion/g" \
-    # ${workdir}/rpi-linux/scripts/setlocalversion
-
     cd "${workdir}"/rpi-linux
     git update-index --refresh &>> /tmp/"${FUNCNAME[0]}".compile.log || true
     git diff-index --quiet HEAD &>> /tmp/"${FUNCNAME[0]}".compile.log || true
@@ -855,26 +804,9 @@ startfunc
     CROSS_COMPILE=aarch64-linux-gnu- \
     O="${workdir}"/kernel-build/ \
     olddefconfig &>> /tmp/"${FUNCNAME[0]}".compile.log  || true
-
-    
-#     yes "" | make LOCALVERSION=${LOCALVERSION} ARCH=arm64 \
-#     CROSS_COMPILE=aarch64-linux-gnu- \
-#     O=${workdir}/kernel-build/ \
-#     olddefconfig &>> /tmp/${FUNCNAME[0]}.compile.log
-    
-    
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
-    #make -j$(($(nproc) + 1)) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    #O=${workdir}/kernel-build/ &>> /tmp/${FUNCNAME[0]}.compile.log
-    
-    runthis='echo "* Making ${KERNEL_VERS} kernel debs."'
-    PrintLog "${runthis}" /tmp/"${FUNCNAME[0]}".compile.log
-    $runthis  &>> /tmp/"${FUNCNAME[0]}".compile.log
-    unset runthis
-    
-
+    echo "* Making ${KERNEL_VERS} kernel debs."
     cd "${workdir}"/rpi-linux
-    
 
 cat <<-EOF> "${workdir}"/kernel_compile.sh
 	#!/bin/bash
@@ -885,6 +817,7 @@ EOF
     [[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
     grep --line-buffered -v libfakeroot-sysv.so
     cd "${workdir}"/kernel-build
+    # This file should be EMPTY if all goes well.
     find . -executable ! -type d -exec file {} \; | grep x86-64 \
      >> /tmp/"${FUNCNAME[0]}".compile.log
 
@@ -975,9 +908,6 @@ startfunc
         cd /mnt/boot/firmware/ ; gunzip -f /mnt/boot/firmware/kernel8.img.nouboot.gz \
         &>> /tmp/"${FUNCNAME[0]}".install.log
     fi
-    # U-Boot now default since 4Gb of ram can be seen with it.
-    #cp /mnt/boot/firmware/kernel8.img.nouboot /mnt/boot/firmware/kernel8.img
-
 endfunc
 }
 
@@ -1090,6 +1020,8 @@ startfunc
     # This disables logging of the SD card DMA getting disabled, which happens
     # anyways, so hopefully this is only a temporary workaround to having logspam
     # in dmesg until this issue is actually addressed.
+    # DMA issues may be resolved with https://github.com/raspberrypi/linux/pull/3164 
+    # So maybe ok to remove this.
     if ! grep -qs 'sdhci.debug_quirks=96' /mnt/boot/firmware/cmdline.txt
         then sed -i 's/rootwait/rootwait sdhci.debug_quirks=96/' \
         /mnt/boot/firmware/cmdline.txt
@@ -1431,7 +1363,7 @@ startfunc
     umount /mnt/proc
     umount /mnt/dev/pts
     #umount /mnt/sys
-    # This is no longer needed.
+    # This is no longer needed after we are done building the image.
     rm /mnt/usr/bin/qemu-aarch64-static
 endfunc
 }
