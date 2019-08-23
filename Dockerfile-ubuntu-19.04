@@ -73,7 +73,7 @@ RUN [[ ! $(uname -m) = aarch64 ]] \
     && sed -i 's/deb-src http/deb-src [arch=arm64] http/' \
     /etc/apt/sources.list.d/arm64.list \
     && dpkg --add-architecture arm64 \
-    && apt update \
+    && ( apt update || true )\
     && apt install -y libssl-dev:arm64 -qq \
     && apt-get install -y --no-install-recommends \
                 gcc-aarch64-linux-gnu \
