@@ -1,5 +1,5 @@
 #!/bin/bash -e
-#[[ $DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+[[ $DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
 mkdir -p /flag || echo "Are you sure you didn't mean to run ./build-image ?"
 echo $BASHPID > /flag/main
@@ -60,7 +60,7 @@ COLUMNS="${COLS:-80}"
 now=$(date +"%m_%d_%Y_%H%M%Z")
 
 # Create debug output folder.
-[[ $DEBUG ]] && ( mkdir -p /output/"${now}"/ ; chown "$USER":"$GROUP" /output/"${now}"/ )
+#[[ $DEBUG ]] && ( mkdir -p /output/"${now}"/ ; chown "$USER":"$GROUP" /output/"${now}"/ )
 #[[ $DEBUG ]] && chown $USER:$GROUP /output/${now}/
 
 # Logging Setup
