@@ -199,7 +199,7 @@ endfunc
 
 waitfor () {
     local wait_target=${1}
-#    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
+    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
     local level_a=${FUNCNAME[1]:-main}
     local level_b=${FUNCNAME[2]:-_}
     local level_c=${FUNCNAME[3]:-_}
@@ -265,7 +265,7 @@ waitforstart () {
 
 startfunc () {
     local level="${1:-1}"
-    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
+ #   [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
     local level_a=${FUNCNAME[1]:-main}
     local level_b=${FUNCNAME[2]:-_}
     local level_c=${FUNCNAME[3]:-_}
