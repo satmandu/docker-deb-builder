@@ -95,11 +95,3 @@ RUN [[ ! $(uname -m) = aarch64 ]] \
     && update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 \
     && apt-get clean && rm -rf /tmp/* /var/tmp/* )
 RUN set -ex && apt-get clean && rm -rf /tmp/* /var/tmp/*
-
-
-
-    
-
-
-
-

@@ -1,5 +1,8 @@
-FROM ubuntu:19.10
-
+ARG VERSION_ID=19.10
+FROM arm64v8/ubuntu:${VERSION_ID} as stageforcopy
+ARG VERSION_ID
+FROM ubuntu:${VERSION_ID} as base
+SHELL ["/bin/bash","-c"]
 RUN set -ex \
     && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
     && apt-get update \
@@ -15,6 +18,7 @@ RUN set -ex \
                cmake \
                cpio \
                curl \
+               debhelper \
                devscripts \
                dkms \
                dosfstools \
@@ -24,6 +28,9 @@ RUN set -ex \
                fakeroot \
                flex \
                gawk \
+               gcc-9 \
+               cpp-9 \
+               g++-9 \
                git \
                kernel-package \
                kpartx \
@@ -36,13 +43,17 @@ RUN set -ex \
                libssl-dev \
                libxdelta2 \
                libpython3.7 \
+               moreutils \
                ncurses-dev \
                patch \
+               piuparts \
                psmisc \
                pv \
                qemu-user-static \
                rsync \
+               sbuild \
                sudo \
+               ubuntu-dev-tools \
                u-boot-tools \
                vim \
                vim-common \
@@ -50,16 +61,37 @@ RUN set -ex \
                wget \
                xdelta3 \
                xxd \
-               xz-utils \         
+               xz-utils \
     && apt-get build-dep -y linux-image-raspi2 \
     && apt-get build-dep -y linux-image-generic \
     && apt-get upgrade -y \
-    && (apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu \
-               cpp-aarch64-linux-gnu \
-               g++-aarch64-linux-gnu \
-#               linux-generic \
-#               linux-image-generic \
-#               linux-firmware 
-                || true ) \
-    && apt-get clean \
-    && rm -rf /tmp/* /var/tmp/*
+    && apt-get clean && rm -rf /tmp/* /var/tmp/*
+COPY --from=stageforcopy /etc/apt/sources.list /etc/apt/sources.list.d/arm64.list
+RUN [[ ! $(uname -m) = aarch64 ]] \
+    && (sed -i 's/deb http/deb [arch=arm64] http/' \
+    /etc/apt/sources.list.d/arm64.list \
+    && sed -i 's/deb-src http/deb-src [arch=arm64] http/' \
+    /etc/apt/sources.list.d/arm64.list \
+    && dpkg --add-architecture arm64 \
+    && ( apt update || true )\
+    && apt install -y libssl-dev:arm64 -qq \
+    && apt-get install -y --no-install-recommends \
+                gcc-aarch64-linux-gnu \
+                cpp-aarch64-linux-gnu \
+                g++-aarch64-linux-gnu \
+                gcc-9-aarch64-linux-gnu \
+                cpp-9-aarch64-linux-gnu \
+                g++-9-aarch64-linux-gnu \
+                gcc-9-aarch64-linux-gnu-base \
+                libgcc-9-dev-arm64-cross \
+                libstdc++-9-dev-arm64-cross\
+    && ln -sf /usr/aarch64-linux-gnu/lib \
+    /lib/aarch64-linux-gnu \
+    && ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 \
+    /lib/ld-linux-aarch64.so.1 \
+    && sed -i 's/deb http/deb [arch=amd64] http/' /etc/apt/sources.list \
+    && sed -i 's/deb-src http/deb-src [arch=amd64] http/' /etc/apt/sources.list \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 \
+    && update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 \
+    && apt-get clean && rm -rf /tmp/* /var/tmp/* )
+RUN set -ex && apt-get clean && rm -rf /tmp/* /var/tmp/*
