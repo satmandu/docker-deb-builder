@@ -234,10 +234,10 @@ waitforstart () {
 startfunc () {
     local level="${1:-1}"
     [[ $DEBUG ]] && echo "FUNCNAME: 0.${FUNCNAME[0]} 1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} Level:${level}"
-    local level_a=${FUNCNAME[${level}]:-main}
-    local level_b=${FUNCNAME[$((level++))]:-_}
-    local level_c=${FUNCNAME[$((level+2))]:-_}
-    local level_d=${FUNCNAME[$((level+3))]:-_}
+    local level_a=${FUNCNAME[0]:-main}
+    local level_b=${FUNCNAME[1]:-_}
+    local level_c=${FUNCNAME[2]:-_}
+    local level_d=${FUNCNAME[3]:-_}
     local proc_base=${level_a}.${level_b}.${level_c}.{level_d}
     [[ $level_c = $level_d ]] && proc_base=${level_a}.${level_b}.${level_c}
     [[ $level_b = $level_c ]] && proc_base=${level_a}.${level_b}
@@ -262,6 +262,8 @@ startfunc () {
 endfunc () {
     parent_pid=${1:-${mainPID}}
     proc_file=$(grep -lw ${parent_pid} /flag/*)
+    [[ -z ${proc_file} ]]
+    
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
     local proc_temp=${${proc_file_base}%.*}
