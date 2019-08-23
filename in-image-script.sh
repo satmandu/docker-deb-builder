@@ -220,13 +220,13 @@ waitfor () {
     [[ -z ${wait_proc} ]] && local wait_proc=$(find /flag -name *${wait_target} -print)
     local wait_proc_base=$(basename "${wait_proc}")
     #[[ -z ${proc_name} ]] && proc_name=main
-    touch /flag/wait_${proc_name}_for_${wait_proc_base:5}
+    touch /flag/wait_${proc_name}_for_${wait_proc_base}
     printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${wait_target} [/] "
     local start_timeout=100000
 
     wait_file "/flag/done_${wait_proc_base:5}" $start_timeout
     printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${wait_target} [X] " && \
-    rm -f /flag/wait_${proc_name}_for_${wait_proc_base:5}
+    rm -f /flag/wait_${proc_name}_for_${wait_proc_base}
 }
 
 waitforstart () {
