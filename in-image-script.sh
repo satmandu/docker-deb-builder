@@ -88,7 +88,7 @@ ccache -s
 #DEFAULTCFLAGS="-mcpu=cortex-a72 -march=armv8-a+crc"
 DEFAULTCFLAGS="-mcpu=cortex-a72"
 CFLAGS=${CFLAGS:-${DEFAULTCFLAGS}}
-#export CXXFLAGS="${CFLAGS}"
+export CXXFLAGS="${CFLAGS}"
 
 # These environment variables are set at container invocation.
 # Create work directory.
