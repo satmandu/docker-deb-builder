@@ -2,7 +2,6 @@ ARG VERSION_ID=19.04
 FROM arm64v8/ubuntu:${VERSION_ID} as stageforcopy
 ARG VERSION_ID
 FROM ubuntu:${VERSION_ID} as base
-ARG VERSION_ID
 SHELL ["/bin/bash","-c"]
 RUN set -ex \
     && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
@@ -69,10 +68,10 @@ RUN set -ex \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
 COPY --from=stageforcopy /etc/apt/sources.list /etc/apt/sources.list.d/arm64.list
 RUN [[ ! $(uname -m) = aarch64 ]] \
-    && ((sed -i 's/deb http/deb [arch=arm64] http/' \
-    /etc/apt/sources.list.d/arm64.list) \
-    && (sed -i 's/deb-src http/deb-src [arch=arm64] http/' \
-    /etc/apt/sources.list.d/arm64.list) \
+    && (sed -i 's/deb http/deb [arch=arm64] http/' \
+    /etc/apt/sources.list.d/arm64.list \
+    && sed -i 's/deb-src http/deb-src [arch=arm64] http/' \
+    /etc/apt/sources.list.d/arm64.list \
     && dpkg --add-architecture arm64 \
     && apt update \
     && apt install -y libssl-dev:arm64 -qq \
@@ -90,11 +89,11 @@ RUN [[ ! $(uname -m) = aarch64 ]] \
     /lib/aarch64-linux-gnu \
     && ln -sf /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 \
     /lib/ld-linux-aarch64.so.1 \
-    && (sed -i 's/deb http/deb [arch=amd64] http/' /etc/apt/sources.list) \
-    && (sed -i 's/deb-src http/deb-src [arch=amd64] http/' /etc/apt/sources.list) \
+    && sed -i 's/deb http/deb [arch=amd64] http/' /etc/apt/sources.list \
+    && sed -i 's/deb-src http/deb-src [arch=amd64] http/' /etc/apt/sources.list \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 \
     && update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 10 \
-    && apt-get clean && rm -rf /tmp/* /var/tmp/* ))
+    && apt-get clean && rm -rf /tmp/* /var/tmp/* )
 RUN set -ex && apt-get clean && rm -rf /tmp/* /var/tmp/*
 
 
