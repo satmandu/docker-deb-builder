@@ -153,33 +153,35 @@ wait_file() {
 
 
 spinnerwait () {
+flock /flag/spinnerwait
+startfunc
     [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
-    local level_a=${FUNCNAME[1]:-main}
-    local level_b=${FUNCNAME[2]:-_}
-    local level_c=${FUNCNAME[3]:-_}
-    local level_d=${FUNCNAME[4]:-_}
-    local proc_name=${FUNCNAME[1]:-main}
-    local parent_pid=${BASHPID}
-    #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
-    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[2]} /flag/* || true)
-    [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[2]} /flag/* || true)
+#     local level_a=${FUNCNAME[1]:-main}
+#     local level_b=${FUNCNAME[2]:-_}
+#     local level_c=${FUNCNAME[3]:-_}
+#     local level_d=${FUNCNAME[4]:-_}
+#     local proc_name=${FUNCNAME[1]:-main}
+#     local parent_pid=${BASHPID}
+#     #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
+    #[[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[2]} /flag/* || true)
+    #[[ -z ${proc_file} ]] && proc_file=$(grep -lw ${1} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
 
-        local start_timeout=100000
-        if [[ -f "/flag/start.spinnerwait" ]]
-        then
-            PrintLog "${1} waiting" /tmp/spinnerwait.log
-            wait_file "/flag/done.spinnerwait" ${start_timeout}
-            PrintLog "${1} done waiting" /tmp/spinnerwait.log
-            rm -f "/flag/done.spinnerwait"
-        fi
+         local start_timeout=100000
+#         if [[ -f "/flag/start.spinnerwait" ]]
+#         then
+#             PrintLog "${1} waiting" /tmp/spinnerwait.log
+#             wait_file "/flag/done.spinnerwait" ${start_timeout}
+#             PrintLog "${1} done waiting" /tmp/spinnerwait.log
+#             rm -f "/flag/done.spinnerwait"
+#         fi
 startfunc
         PrintLog "start.${1}" /tmp/spinnerwait.log
-        wait_file "/flag/start.${1}" ${start_timeout} || \
+        wait_file "${proc_file}" ${start_timeout} || \
         PrintLog "${1} didn't start in $? seconds." /tmp/spinnerwait.log
-        local job_id=$(< /flag/start."${1}")
+        local job_id=$(< ${proc_file})
         PrintLog "Start wait for ${1}:${job_id} end." /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP "${job_id}" &>/dev/null)
@@ -194,6 +196,7 @@ startfunc
         PrintLog "${1}:${job_id} pgrep exit:$(pgrep -cxP "${job_id}")" /tmp/spinnerwait.log
         PrintLog "${1}:${job_id} $(pstree -p)" /tmp/spinnerwait.log
 endfunc
+flock -u /flag/spinnerwait
 }
 
 
@@ -451,7 +454,6 @@ recreate_git () {
 }
 
 mv_arch () {
-#[[ $DEBUG ]] && startfunc
 startfunc
         echo Replacing "${1}" with "${1}":"${2}"-cross.
         local dest_arch=${2}
@@ -473,7 +475,6 @@ startfunc
             #cp ${dest_arch_prefix}${1} ${1}
             update-alternatives --install /usr/bin/"${1}" "${1}" /usr/bin/"${dest_arch_prefix}""${1}" 10
         fi
-#[[ $DEBUG ]] && endfunc
 endfunc
 }
 
