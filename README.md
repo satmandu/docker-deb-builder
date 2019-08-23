@@ -87,7 +87,7 @@ Do setup the Time Zone using ```sudo dpkg-reconfigure tzdata``` when you first l
 
 | Build Env. Variable| Syntax | What/Why |
 | --- | --- | --- |
-| CFLAGS | CFLAGS="-mcpu=cortex-a72" | |
+| CFLAGS | CFLAGS="-mcpu=cortex-a72" | Good Luck. (Changing this may make your compiles fail.)|
 | CLEAN_GIT | CLEAN_GIT=1 | Force download all source from git. |
 | JUSTDEBS | JUSTDEBS=1 | Just compile kernel debs, don't rebuild image. |
 | REBUILD | REBUILD=1 | Rebuild kernel even if current version has been compiled & cached. |
