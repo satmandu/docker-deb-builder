@@ -84,7 +84,8 @@ ccache -s
 # Default flags as per gentoo sources and also:
 # https://community.arm.com/developer/tools-software/tools/b/tools-software-ides-blog/posts/compiler-flags-across-architectures-march-mtune-and-mcpu
 #DEFAULTCFLAGS="-mcpu=cortex-a72 -ftree-vectorize -O2 -pipe -fomit-frame-pointer"
-DEFAULTCFLAGS="-mcpu=cortex-a72 -ftree-vectorize -pipe -fomit-frame-pointer"
+#DEFAULTCFLAGS="-mcpu=cortex-a72 -ftree-vectorize -pipe -fomit-frame-pointer"
+DEFAULTCFLAGS="-mcpu=cortex-a72"
 CFLAGS=${CFLAGS:-${DEFAULTCFLAGS}}
 #export CXXFLAGS="${CFLAGS}"
 
