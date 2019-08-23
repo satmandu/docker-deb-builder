@@ -184,8 +184,8 @@ endfunc
 
 
 waitfor () {
-    local proc_name=${FUNCNAME[1]}
-    [[ -z ${proc_name} ]] && proc_name=main
+    local proc_name=${FUNCNAME[1]:-main}
+    #[[ -z ${proc_name} ]] && proc_name=main
     touch /flag/wait.${proc_name}_for_"${1}"
     printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${1} [/] "
     local start_timeout=100000
@@ -234,17 +234,27 @@ waitforstart () {
 startfunc () {
     local level="${1:-1}"
     [[ $DEBUG ]] && echo "FUNCNAME: 0.${FUNCNAME[0]} 1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} Level:${level}"
-    local proc_base="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-_}.${FUNCNAME[$((level+2))]:-_}.${FUNCNAME[$((level+3))]:-_}"
+    local level_a=${FUNCNAME[${level}]:-main}
+    local level_b=${FUNCNAME[$((level++))]:-_}
+    local level_c=${FUNCNAME[$((level+2))]:-_}
+    local level_d=${FUNCNAME[$((level+3))]:-_}
+    local proc_base=${level_a}.${level_b}.${level_c}.{level_d}
+    [[ $level_c = $level_d ]] && proc_base=${level_a}.${level_b}.${level_c}
+    [[ $level_b = $level_c ]] && proc_base=${level_a}.${level_b}
+    [[ $level_a = $level_b ]] && proc_base=${level_a}
+
+
+#proc_base="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-_}.${FUNCNAME[$((level+2))]:-_}.${FUNCNAME[$((level+3))]:-_}"
     local proc_file=$(mktemp /flag/strt_XXX_${proc_base})
     echo ${BASHPID} > "${proc_file}"
-    local pretty_proc_name="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-\b \b}.${FUNCNAME[$((level+2))]:-\b \b}.${FUNCNAME[$((level+3))]:-\b \b}"
+#${FUNCNAME[${level}]:-main} = local pretty_proc_name="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-\b \b}.${FUNCNAME[$((level+2))]:-\b \b}.${FUNCNAME[$((level+3))]:-\b \b}"
     #[[ -z ${FUNCNAME[1]} ]] && proc_name=main
 
     [[ ! -e ${proc_file} ]] && touch ${proc_file}|| true
     #if [ ! "${proc_name}" == "spinnerwait" ] 
     #    then printf "%${COLUMNS}s\n" "Started: ${pretty_proc_name} [ ] "
     #fi
-    #printf "%${COLUMNS}s\n" "Started: ${pretty_proc_name} [ ] "
+    printf "%${COLUMNS}s\n" "Started: ${proc_base} [ ] "
     echo -e 
     
 }
