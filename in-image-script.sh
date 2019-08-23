@@ -848,13 +848,13 @@ startfunc
    # Don't remake debs if they already exist in output.
    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
    if [[ ! $REBUILD ]]
-        then
+   then
             if test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-image-*"${KERNEL_VERS}"* -print -quit)"
             then
                 echo -e "${KERNEL_VERS} linux image on cache volume. 😎\n"
                 cp "${apt_cache}"/linux-image-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
                 echo "linux-image" >> /tmp/nodebs
-            elif if test -n "$(find /output/ -maxdepth 1 -name linux-image-*"${KERNEL_VERS}"* -print -quit)"
+            elif test -n "$(find /output/ -maxdepth 1 -name linux-image-*"${KERNEL_VERS}"* -print -quit)"
             then
                 echo -e "${KERNEL_VERS} linux image found in /output/. 😎\n"
                 cp /output/linux-image-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
@@ -867,7 +867,7 @@ startfunc
                 echo -e "${KERNEL_VERS} linux headers on cache volume. 😎\n"
                 cp "${apt_cache}"/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
                 echo "linux-image" >> /tmp/nodebs
-            elif if test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-headers-*"${KERNEL_VERS}"* -print -quit)"
+            elif test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-headers-*"${KERNEL_VERS}"* -print -quit)"
             then
                 echo -e "${KERNEL_VERS} linux headers found in /output/. 😎\n"
                 cp /output/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
