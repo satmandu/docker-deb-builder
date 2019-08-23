@@ -160,9 +160,9 @@ spinnerwait () {
     local level_d=${FUNCNAME[4]:-_}
     local proc_name=${FUNCNAME[1]:-main}
     local parent_pid=${BASHPID}
-    local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
-    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
-    [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
+    #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
+    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[2]} /flag/* || true)
+    [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[2]} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
@@ -203,13 +203,18 @@ waitfor () {
     local level_b=${FUNCNAME[2]:-_}
     local level_c=${FUNCNAME[3]:-_}
     local level_d=${FUNCNAME[4]:-_}
-    local proc_name=${FUNCNAME[1]:-main}
-        local parent_pid=${BASHPID}
-    local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
-    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
-    [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
-    [[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
-    local proc_file_base_raw=$(basename "${proc_file}")
+    local proc_base=${level_a}.${level_b}.${level_c}.${level_d}
+    [[ $level_d = "main" ]] && proc_base=${level_a}.${level_b}.${level_c}
+    [[ $level_c = "main" ]] && proc_base=${level_a}.${level_b}
+    [[ $level_b = "main" ]] && proc_base=${level_a}
+    #local proc_name=${FUNCNAME[1]:-main}
+    local proc_name=${proc_base}
+    #    local parent_pid=${BASHPID}
+    #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
+    #[[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
+    #[[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
+    #[[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
+    local proc_file_base_raw=$(basename "${proc_base}")
     local proc_file_base=${proc_file_base_raw:5}
     #[[ -z ${proc_name} ]] && proc_name=main
     touch /flag/wait_${proc_file_base}_for_"${1}"
