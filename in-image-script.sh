@@ -60,7 +60,7 @@ COLUMNS="${COLS:-80}"
 now=$(date +"%m_%d_%Y_%H%M%Z")
 
 # Create debug output folder.
-#[[ $DEBUG ]] && ( mkdir -p /output/"${now}"/ ; chown "$USER":"$GROUP" /output/"${now}"/ )
+[[ $DEBUG ]] && ( mkdir -p /output/"${now}"/ ; chown "$USER":"$GROUP" /output/"${now}"/ )
 #[[ $DEBUG ]] && chown $USER:$GROUP /output/${now}/
 
 # Logging Setup
@@ -136,7 +136,7 @@ function abspath {
 PrintLog(){
   information="${1}"
   logFile="${2}"
-  [[ $DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
+#  [[ $DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
   mkdir -p "$(dirname "${logFile}")" &>/dev/null || true
   touch "${logFile}" &>/dev/null || true
   [[ -f "${logFile}" ]] && echo "${information}" | ts >> "${logFile}"
