@@ -435,7 +435,7 @@ endfunc
 }
 
 recreate_git () {
-#[[ $DEBUG ]] && startfunc
+[[ $DEBUG ]] && startfunc
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
@@ -447,11 +447,11 @@ recreate_git () {
     cd "${src_cache}" &>> /tmp/"${FUNCNAME[2]}".git.log
     git clone ${git_flags} $clone_flags ${local_path} \
     &>> /tmp/"${FUNCNAME[2]}".git.log 
-#[[ $DEBUG ]] && endfunc
+[[ $DEBUG ]] && endfunc
 }
 
 mv_arch () {
-[[ $DEBUG ]] && startfunc
+#[[ $DEBUG ]] && startfunc
         echo Replacing "${1}" with "${1}":"${2}"-cross.
         dest_arch=${2}
         local dest_arch_prefix="${dest_arch}-linux-gnu-"
@@ -472,7 +472,7 @@ mv_arch () {
             #cp ${dest_arch_prefix}${1} ${1}
             update-alternatives --install /usr/bin/"${1}" "${1}" /usr/bin/"${dest_arch_prefix}""${1}" 10
         fi
-[[ $DEBUG ]] && endfunc
+#[[ $DEBUG ]] && endfunc
 }
 
 # Main functions
