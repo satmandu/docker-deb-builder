@@ -166,7 +166,7 @@ flock 201
 #     #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
     #[[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[2]} /flag/* || true)
     #[[ -z ${proc_file} ]] && proc_file=$(grep -lw ${1} /flag/* || true)
-    [[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
+    [[ -z ${proc_file} ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${1}" -o -regex ".*done_([A-Za-z0-9]{3})_${1}" \) -print)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
 #         if [[ -f "/flag/start.spinnerwait" ]]
@@ -219,7 +219,7 @@ waitfor () {
     #[[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     local wait_proc=
     until [[ -n ${wait_proc} ]]; do
-        wait_proc=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${wait_target}" -o -regex ".*done_([A-Za-z0-9]{3})_${wait_target}" \)
+        wait_proc=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${wait_target}" -o -regex ".*done_([A-Za-z0-9]{3})_${wait_target}" \) -print)
         sleep 1
     done
     local wait_proc_base=$(basename "${wait_proc}")
