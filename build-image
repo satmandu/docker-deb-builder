@@ -394,7 +394,7 @@ echo -e "\n"
 PID_LIST=
 [ $SYSTEM == "Darwin" ] && PID_LIST=`pgrep com.docker.hyperkit`
 if [ $SYSTEM == "Linux" ]; then
-    container_pid=`pgrep in-image-script.sh`
+    container_pid=`pgrep ${PROG%.*}`
     findpids() {
             for pid in /proc/$1/task/* ; do
                     pid="$(basename "$pid")"
