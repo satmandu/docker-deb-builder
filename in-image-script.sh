@@ -213,16 +213,16 @@ waitfor () {
     #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
     #[[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     #[[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
-    #[[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
-    local proc_file_base=$(basename "${proc_base}")
+    [[ -z ${wait_proc} ]] && local wait_proc=$(find /flag -name strt_*${1} -print)
+    local wait_proc_base=$(basename "${wait_proc}")
     #[[ -z ${proc_name} ]] && proc_name=main
-    touch /flag/wait_${proc_file_base}_for_"${1}"
+    touch /flag/wait_${proc_name}_for_${wait_proc_base}
     printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${1} [/] "
     local start_timeout=100000
 
-    wait_file "/flag/done_${proc_file_base}" $start_timeout
+    wait_file "/flag/done_${wait_proc_base}" $start_timeout
     printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${1} [X] " && \
-    rm -f /flag/wait_${proc_file_base}_for_"${1}"
+    rm -f /flag/wait_${proc_name}_for_${wait_proc_base}
 }
 
 waitforstart () {
