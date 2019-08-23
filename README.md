@@ -1,5 +1,5 @@
 
-# Creating an ARM64 boot image for a Raspberry Pi 4B in a Docker container from a either a Ubuntu Bionic or Ubuntu Eoan (current/dev) RPI3 boot image
+# Creating an ARM64 boot image for a Raspberry Pi 4B in a Ubuntu Docker container from a either a Ubuntu Bionic or Ubuntu Disco (current/dev) RPI3 boot image
 
 (Initially adapted from project at https://github.com/tsaarni/docker-deb-builder )
 
@@ -81,7 +81,20 @@ The **default login for this image is unchanged** from the ubuntu server default
 Note also that the **RPI4 SHOULD Be connected to ethernet for first login**, as the ubuntu startup cloud sequence wants a connection.
 After the network starts, you should be able to ssh to the IP of the RPI with username ubuntu, where you will be prompted to change the password. As the ubuntu cloud setup is not disabled, you have to wait about five minutes for login to be available.
 
-Do setup the Time Zone using ```sudo dpkg-reconfigure tzdata``` when you first login. You can use ```connmanctl``` to configure the wireless network.
+Do setup the Time Zone using ```sudo dpkg-reconfigure tzdata``` when you first login. You can use ```sudo nmtui``` to configure the wireless network.
+
+## Advanced Build Options
+
+| Build Env. Variable| Syntax | What/Why |
+| --- | --- | --- |
+| CFLAGS | CFLAGS="-mcpu=cortex-a72" | |
+| CLEAN_GIT | CLEAN_GIT=1 | Force download all source from git. |
+| JUSTDEBS | JUSTDEBS=1 | Just compile kernel debs, don't rebuild image. |
+| REBUILD | REBUILD=1 | Rebuild kernel even if current version has been compiled & cached. |
+| XZ | XZ=1 | Use XZ to compress final disk image. |
+
+# Example usage:
+git pull ; JUSTDEBS=1 REBUILD=1 ./build-image
 
 ## Note that running this repeatedly will create much container cruft.
 Consider running ```docker container prune``` on your docker machine to reclaim unused space.
