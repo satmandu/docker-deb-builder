@@ -153,8 +153,8 @@ wait_file() {
 
 
 spinnerwait () {
-flock /flag/spinnerwait
 startfunc
+flock /flag/spinnerwait
     [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
 #     local level_a=${FUNCNAME[1]:-main}
 #     local level_b=${FUNCNAME[2]:-_}
@@ -195,8 +195,8 @@ startfunc
         PrintLog "${1}:${job_id} done." /tmp/spinnerwait.log
         PrintLog "${1}:${job_id} pgrep exit:$(pgrep -cxP "${job_id}")" /tmp/spinnerwait.log
         PrintLog "${1}:${job_id} $(pstree -p)" /tmp/spinnerwait.log
-endfunc
 flock -u /flag/spinnerwait
+endfunc
 }
 
 
