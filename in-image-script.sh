@@ -108,16 +108,16 @@ nprocs=$(($(nproc) + 1))
 #env >> /output/environment
 
 echo "Starting local container software installs."
-apt-get -o dir::cache::archives="${apt_cache}" install curl moreutils -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install lsof -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install xdelta3 -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install e2fsprogs -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install qemu-user-static -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install dosfstools -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install libc6-arm64-cross -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install pv -y &>> /tmp/main.install.log 
-[[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install u-boot-tools -y &>> /tmp/main.install.log 
-apt-get -o dir::cache::archives="${apt_cache}" install vim -y &>> /tmp/main.install.log 
+a# pt-get -o dir::cache::archives="${apt_cache}" install curl moreutils -y &>> /tmp/main.install.log 
+# [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install lsof -y &>> /tmp/main.install.log 
+# [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install xdelta3 -y &>> /tmp/main.install.log 
+# [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install e2fsprogs -y &>> /tmp/main.install.log 
+# [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install qemu-user-static -y &>> /tmp/main.install.log 
+# [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install dosfstools -y &>> /tmp/main.install.log 
+# [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install libc6-arm64-cross -y &>> /tmp/main.install.log 
+# [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install pv -y &>> /tmp/main.install.log 
+# [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install u-boot-tools -y &>> /tmp/main.install.log 
+# apt-get -o dir::cache::archives="${apt_cache}" install vim -y &>> /tmp/main.install.log 
 
 
 echo -e "Performing cache volume apt autoclean.\n\r"
