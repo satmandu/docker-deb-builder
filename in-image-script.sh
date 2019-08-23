@@ -213,7 +213,7 @@ waitfor () {
     #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
     #[[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     #[[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
-    [[ -z ${wait_proc} ]] && local wait_proc=$(find /flag -name strt_*${1} -print)
+    [[ -z ${wait_proc} ]] && local wait_proc=$(find /flag -name *${1} -print)
     local wait_proc_base=$(basename "${wait_proc}")
     #[[ -z ${proc_name} ]] && proc_name=main
     touch /flag/wait_${proc_name}_for_${wait_proc_base}
@@ -421,12 +421,12 @@ startfunc
             git reset --hard $pull_flags --quiet 2>> /tmp/${proc_name}.git.log
         else
             echo -e "${proc_name}\nremote hash: ${remote_git}\nlocal hash: \
-            ${local_git}\n\r${proc_name} getting files from cache volume. 😎\n"
+${local_git}\n\r${proc_name} getting files from cache volume. 😎\n"
     fi
     cd "${src_cache}"/"${local_path}" 
     last_commit=$(git log --graph \
     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
-    %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
+%C(bold blue)<%an>%Creset' --abbrev-commit -2 \
     --quiet 2> /dev/null)
     echo -e "*${proc_name} Last Commits:\n$last_commit\n"
     rsync -a "${src_cache}/${local_path}" "${workdir}"/
