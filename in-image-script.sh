@@ -214,17 +214,20 @@ waitfor () {
     [[ $level_b = "main" ]] && proc_base=${level_a}
     #local proc_name=${FUNCNAME[1]:-main}
     local proc_name=${proc_base}
+    touch /flag/wait_${proc_name}_for_${wait_target}
+    printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${wait_target} [/] "
     #    local parent_pid=${BASHPID}
     #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
     #[[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     #[[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
-    [[ -z ${wait_proc} ]] && local wait_proc=$(find /flag -name *${wait_target} -print)
+    local wait_proc=
+    until [[ -n ${wait_proc} ]]; do
+        wait_proc=$(find /flag -name *${wait_target} -print)
+        sleep 1
+    done
     local wait_proc_base=$(basename "${wait_proc}")
     #[[ -z ${proc_name} ]] && proc_name=main
-    touch /flag/wait_${proc_name}_for_${wait_proc_base}
-    printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${wait_target} [/] "
     local start_timeout=100000
-
     wait_file "/flag/done_${wait_proc_base:5}" $start_timeout
     printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${wait_target} [X] " && \
     rm -f /flag/wait_${proc_name}_for_${wait_proc_base}
