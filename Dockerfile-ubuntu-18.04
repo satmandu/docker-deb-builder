@@ -42,6 +42,7 @@ RUN set -ex \
                libssl-dev \
                libxdelta2 \
                libpython3.7 \
+               moreutils \
                ncurses-dev \
                patch \
                psmisc \
