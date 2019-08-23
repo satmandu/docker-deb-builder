@@ -178,7 +178,6 @@ flock 201
 #             PrintLog "${1} done waiting" /tmp/spinnerwait.log
 #             rm -f "/flag/done.spinnerwait"
 #         fi
-startfunc
         PrintLog "start.${1}" /tmp/spinnerwait.log
         wait_file "${proc_file}" ${start_timeout} || \
         PrintLog "${1} didn't start in $? seconds." /tmp/spinnerwait.log
