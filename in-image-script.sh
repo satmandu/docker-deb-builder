@@ -161,7 +161,7 @@ spinnerwait () {
     local proc_name=${FUNCNAME[1]:-main}
     local parent_pid=${BASHPID}
     local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
-    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
+    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
     local proc_file_base_raw=$(basename "${proc_file}")
@@ -204,9 +204,9 @@ waitfor () {
     local level_c=${FUNCNAME[3]:-_}
     local level_d=${FUNCNAME[4]:-_}
     local proc_name=${FUNCNAME[1]:-main}
-    local parent_pid=${BASHPID}
+        local parent_pid=${BASHPID}
     local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
-    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
+    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
     local proc_file_base_raw=$(basename "${proc_file}")
@@ -290,12 +290,9 @@ startfunc () {
 endfunc () {
     local parent_pid=${BASHPID}
     local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
-    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
+    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
-    local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
-    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
-    [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
 #     local proc_temp=${proc_file_base}
