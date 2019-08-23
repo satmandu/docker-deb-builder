@@ -238,7 +238,7 @@ startfunc () {
     local level_b=${FUNCNAME[1]:-_}
     local level_c=${FUNCNAME[2]:-_}
     local level_d=${FUNCNAME[3]:-_}
-    local proc_base=${level_a}.${level_b}.${level_c}.{level_d}
+    local proc_base=${level_a}.${level_b}.${level_c}.${level_d}
     [[ $level_c = $level_d ]] && proc_base=${level_a}.${level_b}.${level_c}
     [[ $level_b = $level_c ]] && proc_base=${level_a}.${level_b}
     [[ $level_a = $level_b ]] && proc_base=${level_a}
