@@ -451,14 +451,15 @@ recreate_git () {
 }
 
 mv_arch () {
-[[ $DEBUG ]] && startfunc
+#[[ $DEBUG ]] && startfunc
+startfunc
         echo Replacing "${1}" with "${1}":"${2}"-cross.
-        dest_arch=${2}
+        local dest_arch=${2}
         local dest_arch_prefix="${dest_arch}-linux-gnu-"
         local host_arch_prefix="${BUILDHOST_ARCH}-linux-gnu-"
         local file_out=$(file /usr/bin/"${1}")
         # Exit if dest arch file isn't available.
-        [[ ! -f /usr/bin/${dest_arch_prefix}${1} ]] && echo "Missing ${dest_arch_prefix}${1}" && exit 1
+        [[ ! -f /usr/bin/${dest_arch_prefix}${1} ]] && PrintLog "Missing dest arch ${dest_arch_prefix}${1}" /tmp/compiler_setup.install.log && exit 1
         # If host arch backup file isn't available make backup.
         # This doesn't dereference symlinks!
         [[ ! -f /usr/bin/${host_arch_prefix}${1} && $(echo "${file_out}" | grep -m1 "${BUILDHOST_ARCH}") ]] && (
@@ -472,7 +473,8 @@ mv_arch () {
             #cp ${dest_arch_prefix}${1} ${1}
             update-alternatives --install /usr/bin/"${1}" "${1}" /usr/bin/"${dest_arch_prefix}""${1}" 10
         fi
-[[ $DEBUG ]] && endfunc
+#[[ $DEBUG ]] && endfunc
+endfunc
 }
 
 # Main functions
