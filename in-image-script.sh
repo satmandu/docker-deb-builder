@@ -234,10 +234,10 @@ waitforstart () {
 startfunc () {
     local level="${1:-1}"
     [[ $DEBUG ]] && echo "FUNCNAME: 0.${FUNCNAME[0]} 1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} Level:${level}"
-    local level_a=${FUNCNAME[0]:-main}
-    local level_b=${FUNCNAME[1]:-_}
-    local level_c=${FUNCNAME[2]:-_}
-    local level_d=${FUNCNAME[3]:-_}
+    local level_a=${FUNCNAME[1]:-main}
+    local level_b=${FUNCNAME[2]:-_}
+    local level_c=${FUNCNAME[3]:-_}
+    local level_d=${FUNCNAME[4]:-_}
     local proc_base=${level_a}.${level_b}.${level_c}.${level_d}
     [[ $level_c = $level_d ]] && proc_base=${level_a}.${level_b}.${level_c}
     [[ $level_b = $level_c ]] && proc_base=${level_a}.${level_b}
