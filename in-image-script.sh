@@ -247,6 +247,7 @@ startfunc () {
 #proc_base="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-_}.${FUNCNAME[$((level+2))]:-_}.${FUNCNAME[$((level+3))]:-_}"
     local proc_file=$(mktemp /flag/strt_XXX_${proc_base})
     echo ${BASHPID} > "${proc_file}"
+    [[ ${BASHPID} = ${mainPID} ]] && echo ${proc_base} > "${proc_file}"
 #${FUNCNAME[${level}]:-main} = local pretty_proc_name="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-\b \b}.${FUNCNAME[$((level+2))]:-\b \b}.${FUNCNAME[$((level+3))]:-\b \b}"
     #[[ -z ${FUNCNAME[1]} ]] && proc_name=main
 
@@ -262,7 +263,8 @@ startfunc () {
 endfunc () {
     parent_pid=${BASHPID}
     proc_file=$(grep -lw ${parent_pid} /flag/*)
-    [[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${FUNCNAME[1]} -print)
+    [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
+    #[[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${FUNCNAME[1]} -print)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
     local proc_temp=${${proc_file_base}%.*}
