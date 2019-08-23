@@ -136,7 +136,7 @@ function abspath {
 PrintLog(){
   information="${1}"
   logFile="${2}"
-#  [[ $DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
+  [[ $DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
   mkdir -p "$(dirname "${logFile}")" &>/dev/null || true
   touch "${logFile}" &>/dev/null || true
   [[ -f "${logFile}" ]] && echo "${information}" | ts >> "${logFile}"
@@ -153,7 +153,7 @@ wait_file() {
 
 
 spinnerwait () {
-    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
+#    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
     local level_a=${FUNCNAME[1]:-main}
     local level_b=${FUNCNAME[2]:-_}
     local level_c=${FUNCNAME[3]:-_}
