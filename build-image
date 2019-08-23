@@ -62,6 +62,10 @@ default_base_dist="eoan"
 # whatever image installation you use:
 # JUSTDEBS ./build-image
 
+# Default flags as per:
+# https://community.arm.com/developer/tools-software/tools/b/tools-software-ides-blog/posts/compiler-flags-across-architectures-march-mtune-and-mcpu
+
+
 outdir="${outdir:-output}"
 
 base_dist="${base_dist:-${default_base_dist}}"
@@ -77,19 +81,6 @@ fi
 base_image="${base_dist}-preinstalled-server-arm64+raspi3.img.xz"
 base_image_url="${base_url}/${base_image}"
 cache_volume=rpi4-imagebuilder-cache
-
-#Remove existing build container if it exists.
-old_containers=("docker-rpi4-imagebuilder-v3:19.04" "docker-rpi4-imagebuilder-v3:18.04" \
-"docker-rpi4-imagebuilder-v2:19.04" "docker-rpi4-imagebuilder-v2:18.04" \
-"docker-rpi4-imagebuilder:19.04" "docker-rpi4-imagebuilder:18.04")
-for container in ${old_containers[*]};
-do
-    if [ ! "${container}" = "${image}" ]
-    then 
-            docker rm -fv ${container} > /dev/null 2>&1 || true
-    fi
-done
-
 
 # This is the linux version we want to use:
 #kernel_branch=rpi-4.19.y
@@ -107,17 +98,6 @@ if [ -n "$image" ]
         echo "Build host image defaulting to ${image}."
 fi
 
-# if [ -n "$nativeimage" ]
-#     then
-#         echo ""
-#         #echo "Native build host image is ${nativeimage}."
-#     else
-#         nativeimage="${nativeimage:-${defaultnativeimage}}"
-#         #echo "Native build host image defaulting to ${nativeimage}."
-# fi
-
-
-
 #docker_args="-it "
 # The bash script & copy log if failure setup doesn't work without the "-dt" docker argument.
 docker_args="-dt "
@@ -126,19 +106,6 @@ docker_args="-dt "
 SYSTEM=`uname`
 BUILDHOST_ARCH=`uname -m`
 docker_args+="-e BUILDHOST_ARCH=${BUILDHOST_ARCH} "
-
-if [ "${BUILDHOST_ARCH}" = "aarch64" ]
-    then
-        unset BUILDNATIVE
-    else
-        BUILDNATIVE=1
-fi
-
-# Just make kerneldebs?
-[ -n "$JUSTDEBS" ] && docker_args+="-e JUSTDEBS=${JUSTDEBS} "
-
-# Request rebuild?
-[ -n "$REBUILD" ] && docker_args+="-e REBUILD=${REBUILD} "
 
 # Check that mandatory parameters are valid
 #[ !    "$outdir"        ] && fatal "output directory was not given (-o DIR)"
@@ -158,13 +125,22 @@ build_container () {
     fi
 }
 
+#Remove existing build container if it exists.
+old_containers=("docker-rpi4-imagebuilder-v3:19.04" "docker-rpi4-imagebuilder-v3:18.04" \
+"docker-rpi4-imagebuilder-v2:19.04" "docker-rpi4-imagebuilder-v2:18.04" \
+"docker-rpi4-imagebuilder:19.04" "docker-rpi4-imagebuilder:18.04")
+for container in ${old_containers[*]};
+do
+    if [ ! "${container}" = "${image}" ]
+    then 
+            docker rm -fv ${container} > /dev/null 2>&1 || true
+    fi
+done
 
 # Create Docker Image if it does not exist.
-echo "Creating Docker Image ${image} if it does not exist."
+echo "Creating Build Container ${image} if it does not exist."
 docker inspect "${image}" &>/dev/null || build_container
 docker inspect "${image}" 2>/dev/null | awk '/RepoTags/{getline; print} /LastTagTime/{print}'
-
-
 
 # Needed for loopback to work inside container.
 #docker_args+="--cap-add=CAP_MKNOD --device-cgroup-rule='b 7:* rmw' "
@@ -199,7 +175,6 @@ linux_cmd () {
     && cd /work && ${linux_cmd_args}"
 }
 
-
 check_new_image_hash () {
     echo "* Checking image hash."
     current_output=`curl --silent ${base_url}/SHA1SUMS`
@@ -224,7 +199,6 @@ EOF
     download_base_image
     fi
 }
-
 
 download_base_image () {
         echo "* Downloading ${base_image} ."
@@ -279,14 +253,11 @@ check_for_current_image () {
         
 }
 
-
 if [ ! -f $(abspath ${srcdir})/$base_image ] && [ ! -n "$JUSTDEBS" ]; then
         download_base_image
     else
         [ ! -n "$JUSTDEBS" ] && check_for_current_image
 fi
-
-
 
 if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ] && [ ! -n "$JUSTDEBS" ]
     then 
@@ -301,19 +272,16 @@ if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ] && [ ! -n "$JUSTDEBS" ]
     echo "* Base image already extracted."
 fi
 
-
-[ ! -n "$JUSTDEBS" ] && docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
+#Send in linux repo environment variables:
+docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo} "
 
 # For ccache
 #docker_args+="-e CCACHE_DIR=/ccache --volumes-from ccache -v ccache:/ccache "
 docker_args+="-e CCACHE_DIR=/cache/ccache -v $cache_volume:/cache "
-
 # Store apt-cache on cache volume too
 docker_args+="-e src_cache=/cache/src_cache "
-
 # Store remote src cache on ccache volume too
 docker_args+="-e apt_cache=/cache/apt_cache "
-
 # Set workdir. This is useful if we need to shell in to debug.
 docker_args+="-e workdir=/build/source "
 
@@ -322,36 +290,30 @@ docker_args+="-e base_url=${base_url} "
 docker_args+="-e base_image=${base_image} "
 docker_args+="-e base_dist=${base_dist} "
 
-#Send in linux repo environment variables:
-docker_args+="-e kernel_branch=${kernel_branch} -e kernelgitrepo=${kernelgitrepo} "
-
+# Should we enable the arbitrary wait flag?
+[ -n "$ARBITRARY_WAIT" ] && docker_args+="-e ARBITRARY_WAIT=${ARBITRARY_WAIT} "
+# Send in CFLAGS if they are provided.
+[ -n "$CFLAGS" ] && docker_args+="-e CFLAGS=${CFLAGS} "
+# Re-fetch all git trees to cache
+[ -n "$CLEAN_GIT" ] && docker_args+="-e CLEAN_GIT=${CLEAN_GIT} "
+# DEBUG?
+[ -n "$DEBUG" ] && docker_args+="-e DEBUG=${DEBUG} "
+# Is a XDELTA local variable set? (Can not use XDELTA since XDELTA uses that itself.)
+[ -n "$DELTA" ] && docker_args+="-e DELTA=${DELTA} "
+# Is an email local variable set?
+[ -n "$EMAIL" ] && docker_args+="-e EMAIL=${EMAIL} "
+# Just make kerneldebs?
+[ -n "$JUSTDEBS" ] && docker_args+="-e JUSTDEBS=${JUSTDEBS} "
+[ ! -n "$JUSTDEBS" ] && docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
+# If lucky
+[ -n "$MOAR_RAM" ] && docker_args+="--tmpfs /build/source/rpi-linux:exec --tmpfs /build/source/kernel-build:exec "
+# Request kernel rebuild?
+[ -n "$REBUILD" ] && docker_args+="-e REBUILD=${REBUILD} "
 # Let XZ be disabled by default.
 [ -n "$XZ" ] && docker_args+="-e XZ=${XZ} "
 
-# Is an email local variable set?
-[ -n "$EMAIL" ] && docker_args+="-e EMAIL=${EMAIL} "
-
-# Is a XDELTA local variable set? (Can not use XDELTA since XDELTA uses that itself.)
-[ -n "$DELTA" ] && docker_args+="-e DELTA=${DELTA} "
-
-# DEBUG?
-[ -n "$DEBUG" ] && docker_args+="-e DEBUG=${DEBUG} "
-
-# Kernel build now set to be done with only gcc-cross-compiler available
-# except on aarch64!
-[ -n "$BUILDNATIVE" ] && docker_args+="-e BUILDNATIVE=${BUILDNATIVE} "
-
-# Re-fetch all git trees to cache
-[ -n "$CLEAN_GIT" ] && docker_args+="-e CLEAN_GIT=${CLEAN_GIT} "
-
-# Should we enable the arbitrary wait flag?
-[ -n "$ARBITRARY_WAIT" ] && docker_args+="-e ARBITRARY_WAIT=${ARBITRARY_WAIT} "
-
 # Make some tmpfs mounts for obvious temp folders
 docker_args+="--tmpfs /flag --tmpfs /tmp "
-
-# If lucky
-[ -n "$MOAR_RAM" ] && docker_args+="--tmpfs /build/source/rpi-linux:exec --tmpfs /build/source/kernel-build:exec "
 
 # Send in columns for display.
 shopt -s checkwinsize 
@@ -375,10 +337,6 @@ rm -rf $outdir/*.compile.log
 # Create Docker ccache volume if it does not exist as per https://stackoverflow.com/revisions/39652117/2
 echo "Creating docker cache volume $cache_volume if it does not exist."
 docker volume create --name $cache_volume
-
-
-
-
 
 # docker create -v /mnt/ccache:/ccache --name ccache $image
 echo -e "\nRunning build in docker:"

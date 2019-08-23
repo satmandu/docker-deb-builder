@@ -26,9 +26,16 @@ new_image="${base_dist}-preinstalled-server-arm64+raspi4"
 # Note that these only work for the chroot commands.
 silence_apt_flags="-o Dpkg::Use-Pty=0 -qq < /dev/null > /dev/null "
 silence_apt_update_flags="-o Dpkg::Use-Pty=0 < /dev/null > /dev/null "
+
+if [ "${BUILDHOST_ARCH}" = "aarch64" ]
+    then
+        unset BUILDNATIVE
+    else
+        BUILDNATIVE=1
+fi
+
 image_compressors=("lz4")
 [[ $XZ ]] && image_compressors=("lz4" "xz")
-
 
 # Quick build shell exit script
 cat <<-EOF> /usr/bin/killme
@@ -48,8 +55,6 @@ shopt -s checkwinsize
 #echo "COLS: $COLS COLUMNS: $COLUMNS" > /tmp/columns
 #env > /tmp/env
 COLUMNS="${COLS:-80}"
-
-
 
 # Set Time Stamp
 now=$(date +"%m_%d_%Y_%H%M%Z")
@@ -75,6 +80,12 @@ ccache -F 0 > /dev/null
 # Show ccache stats.
 echo "Build ccache stats:"
 ccache -s
+
+# Default flags as per gentoo sources and also:
+# https://community.arm.com/developer/tools-software/tools/b/tools-software-ides-blog/posts/compiler-flags-across-architectures-march-mtune-and-mcpu
+DEFAULTCFLAGS="-mcpu=cortex-a72 -ftree-vectorize -O2 -pipe -fomit-frame-pointer"
+CFLAGS=${CFLAGS:-${DEFAULTCFLAGS}}
+export CXXFLAGS="${CFLAGS}"
 
 # These environment variables are set at container invocation.
 # Create work directory.
