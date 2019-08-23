@@ -214,8 +214,7 @@ waitfor () {
     #[[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     #[[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     #[[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
-    local proc_file_base_raw=$(basename "${proc_base}")
-    local proc_file_base=${proc_file_base_raw:5}
+    local proc_file_base=$(basename "${proc_base}")
     #[[ -z ${proc_name} ]] && proc_name=main
     touch /flag/wait_${proc_file_base}_for_"${1}"
     printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${1} [/] "
