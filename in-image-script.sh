@@ -451,7 +451,7 @@ recreate_git () {
 }
 
 mv_arch () {
-#[[ $DEBUG ]] && startfunc
+[[ $DEBUG ]] && startfunc
         echo Replacing "${1}" with "${1}":"${2}"-cross.
         dest_arch=${2}
         local dest_arch_prefix="${dest_arch}-linux-gnu-"
@@ -472,7 +472,7 @@ mv_arch () {
             #cp ${dest_arch_prefix}${1} ${1}
             update-alternatives --install /usr/bin/"${1}" "${1}" /usr/bin/"${dest_arch_prefix}""${1}" 10
         fi
-#[[ $DEBUG ]] && endfunc
+[[ $DEBUG ]] && endfunc
 }
 
 # Main functions
