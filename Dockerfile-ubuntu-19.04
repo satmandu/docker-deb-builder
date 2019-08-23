@@ -1,6 +1,7 @@
 ARG VERSION_ID=19.04
 FROM ubuntu:${VERSION_ID}
 ARG VERSION_ID
+SHELL ["/bin/bash","-c"]
 RUN set -ex \
     && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
     && apt-get update \
