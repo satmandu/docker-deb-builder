@@ -1,5 +1,5 @@
 #!/bin/bash -e
-[[ $DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+#[[ $DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
 mkdir -p /flag || echo "Are you sure you didn't mean to run ./build-image ?"
 echo $BASHPID > /flag/main
@@ -198,6 +198,7 @@ endfunc
 
 
 waitfor () {
+    local wait_target=${1}
     [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
     local level_a=${FUNCNAME[1]:-main}
     local level_b=${FUNCNAME[2]:-_}
@@ -213,15 +214,15 @@ waitfor () {
     #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
     #[[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     #[[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
-    [[ -z ${wait_proc} ]] && local wait_proc=$(find /flag -name *${1} -print)
+    [[ -z ${wait_proc} ]] && local wait_proc=$(find /flag -name *${wait_target} -print)
     local wait_proc_base=$(basename "${wait_proc}")
     #[[ -z ${proc_name} ]] && proc_name=main
     touch /flag/wait_${proc_name}_for_${wait_proc_base:5}
-    printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${1} [/] "
+    printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${wait_target} [/] "
     local start_timeout=100000
 
     wait_file "/flag/done_${wait_proc_base:5}" $start_timeout
-    printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${1} [X] " && \
+    printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${wait_target} [X] " && \
     rm -f /flag/wait_${proc_name}_for_${wait_proc_base:5}
 }
 
@@ -1119,10 +1120,10 @@ startfunc
     # in dmesg until this issue is actually addressed.
     # DMA issues may be resolved with https://github.com/raspberrypi/linux/pull/3164 
     # So maybe ok to remove this.
-    if ! grep -qs 'sdhci.debug_quirks=96' /mnt/boot/firmware/cmdline.txt
-        then sed -i 's/rootwait/rootwait sdhci.debug_quirks=96/' \
-        /mnt/boot/firmware/cmdline.txt
-    fi
+#     if ! grep -qs 'sdhci.debug_quirks=96' /mnt/boot/firmware/cmdline.txt
+#         then sed -i 's/rootwait/rootwait sdhci.debug_quirks=96/' \
+#         /mnt/boot/firmware/cmdline.txt
+#     fi
     
 endfunc
 }
