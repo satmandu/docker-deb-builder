@@ -265,7 +265,7 @@ waitforstart () {
 
 startfunc () {
     local level="${1:-1}"
- #   [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
+    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
     local level_a=${FUNCNAME[1]:-main}
     local level_b=${FUNCNAME[2]:-_}
     local level_c=${FUNCNAME[3]:-_}
@@ -309,13 +309,13 @@ endfunc () {
 #         done
 #     pretty_proc_name=${proc_base}
     #local proc_name="${FUNCNAME[1]:-main}"
-   if [[ ! $DEBUG ]]
-        then 
-        if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_file_base:4}.*.log -print -quit)"
-            then
-                rm /tmp/${proc_file_base:4}.*.log || true
-        fi
-    fi
+#    if [[ ! $DEBUG ]]
+#         then 
+#         if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_file_base:4}.*.log -print -quit)"
+#             then
+#                 rm /tmp/${proc_file_base:4}.*.log || true
+#         fi
+#     fi
     mv -f /flag/strt_${proc_file_base} /flag/done_${proc_file_base}
     #if [ ! "${proc_name}" == "spinnerwait" ]
     #    then printf "%${COLUMNS}s\n" "Done: ${pretty_proc_name} [X] "
