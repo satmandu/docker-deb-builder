@@ -103,8 +103,8 @@ fi
 docker_args="-dt "
 
 # Are we mac or are we linux?
-SYSTEM=`uname`
-BUILDHOST_ARCH=`uname -m`
+SYSTEM=$(uname)
+BUILDHOST_ARCH=$(uname -m)
 docker_args+="-e BUILDHOST_ARCH=${BUILDHOST_ARCH} "
 
 # Check that mandatory parameters are valid
@@ -177,10 +177,10 @@ linux_cmd () {
 
 check_new_image_hash () {
     echo "* Checking image hash."
-    current_output=`curl --silent ${base_url}/SHA1SUMS`
+    current_output=$(curl --silent ${base_url}/SHA1SUMS)
     current=${current_output%% *}
     if [ "$(which sha1sum)" ]; then
-        local local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}.new`
+        local local_hash_output=$(sha1sum $(abspath ${srcdir})/${base_image}.new)
     else
         local local_hash_output=$(linux_cmd "sha1sum ${base_image}.new")
     fi
@@ -226,11 +226,11 @@ download_base_image () {
 }
 
 check_for_current_image () {
-    current_output=`curl --silent ${base_url}/SHA1SUMS`
+    current_output=$(curl --silent ${base_url}/SHA1SUMS)
     current=${current_output%% *}
     local local_hash_output
     if [ "$(which sha1sum)" ]; then 
-        local_hash_output=`sha1sum $(abspath ${srcdir})/${base_image}`
+        local_hash_output=$(sha1sum $(abspath ${srcdir})/${base_image})
     else
         local_hash_output=$(linux_cmd "sha1sum ${base_image}")
     fi
@@ -244,7 +244,7 @@ check_for_current_image () {
         echo $current
         echo "* New base image available."
         echo "* Trying to get current base image."
-        download_base_image && rm -rf "$(abspath ${srcdir})/${base_image%.xz}" || true
+        download_base_image && rm -rf "$(abspath ${srcdir:?})/${base_image%.xz}" || true
         [ "$curl_fail" ] && "* Download failed. Using existing image." || \
             echo ""
         else
@@ -263,7 +263,7 @@ if [ ! -f "$(abspath ${srcdir})/${base_image%.xz}" ] && [ ! -n "$JUSTDEBS" ]
     then 
         cd $(abspath ${srcdir})
         echo "* Extracting $(abspath ${srcdir})/${base_image%.xz} ."
-        if [ "$(which xz)" ]; then
+        if [ "$(command -v xz)" ]; then
             xz -vdk $(abspath ${srcdir})/${base_image}
         else
             linux_cmd "xz -vdk ${base_image}"
@@ -340,7 +340,7 @@ docker volume create --name $cache_volume
 echo -e "\nRunning build in docker:"
 echo -e "rm -f $cidfile ; docker run $docker_args $image /bin/bash -c \"$startcmd\"\n"
 rm -f $cidfile ; docker run $docker_args $image /bin/bash -c "$startcmd"
-build_cid=`cat $cidfile`
+build_cid=$(cat $cidfile)
 echo -e "\n"
 
 # Now lower priority of container.
@@ -348,9 +348,9 @@ echo -e "\n"
 
 # No idea what to do if not macos or Linux.
 PID_LIST=
-[ $SYSTEM == "Darwin" ] && PID_LIST=`pgrep com.docker.hyperkit`
-if [ $SYSTEM == "Linux" ]; then
-    container_pid=`pgrep ${PROG%.*}`
+[ "$SYSTEM" == "Darwin" ] && PID_LIST=$(pgrep com.docker.hyperkit)
+if [ "$SYSTEM" == "Linux" ]; then
+    container_pid=$(pgrep ${PROG%.*})
     findpids() {
             for pid in /proc/$1/task/* ; do
                     pid="$(basename "$pid")"
@@ -361,7 +361,7 @@ if [ $SYSTEM == "Linux" ]; then
             done
     }
 
-    findpids $container_pid
+    findpids "$container_pid"
 fi
 
 echo "Using sudo to renice build container to lowest priority:"
