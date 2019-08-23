@@ -216,13 +216,13 @@ waitfor () {
     [[ -z ${wait_proc} ]] && local wait_proc=$(find /flag -name *${1} -print)
     local wait_proc_base=$(basename "${wait_proc}")
     #[[ -z ${proc_name} ]] && proc_name=main
-    touch /flag/wait_${proc_name}_for_${wait_proc_base}
+    touch /flag/wait_${proc_name}_for_${wait_proc_base:5}
     printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${1} [/] "
     local start_timeout=100000
 
-    wait_file "/flag/done_${wait_proc_base}" $start_timeout
+    wait_file "/flag/done_${wait_proc_base:5}" $start_timeout
     printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${1} [X] " && \
-    rm -f /flag/wait_${proc_name}_for_${wait_proc_base}
+    rm -f /flag/wait_${proc_name}_for_${wait_proc_base:5}
 }
 
 waitforstart () {
@@ -420,7 +420,7 @@ startfunc
             git fetch --all ${git_flags} &>> /tmp/${proc_name}.git.log || true
             git reset --hard $pull_flags --quiet 2>> /tmp/${proc_name}.git.log
         else
-            echo -e "${proc_name}\nremote hash: ${remote_git}\nlocal hash: \
+            echo -e "${proc_name}\nremote hash: ${remote_git}\n local hash: \
 ${local_git}\n\r${proc_name} getting files from cache volume. 😎\n"
     fi
     cd "${src_cache}"/"${local_path}" 
