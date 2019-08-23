@@ -185,13 +185,21 @@ endfunc
 
 waitfor () {
     local proc_name=${FUNCNAME[1]:-main}
+    local parent_pid=${BASHPID}
+    local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
+    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
+    [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
+    [[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
+    local proc_file_base_raw=$(basename "${proc_file}")
+    local proc_file_base=${proc_file_base_raw:5}
     #[[ -z ${proc_name} ]] && proc_name=main
-    touch /flag/wait.${proc_name}_for_"${1}"
+    touch /flag/wait_${proc_file_base}_for_"${1}"
     printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${1} [/] "
     local start_timeout=100000
-    wait_file "/flag/done.${1}" $start_timeout
+
+    wait_file "/flag/done_${proc_file_base}" $start_timeout
     printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${1} [X] " && \
-    rm -f /flag/wait.${proc_name}_for_"${1}"
+    rm -f /flag/wait_${proc_file_base}_for_"${1}"
 }
 
 waitforstart () {
@@ -264,8 +272,11 @@ endfunc () {
     local parent_pid=${BASHPID}
     local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
     [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
+    [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
+    [[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
+    local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
+    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
     [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
-    #[[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${FUNCNAME[1]} -print)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
 #     local proc_temp=${proc_file_base}
