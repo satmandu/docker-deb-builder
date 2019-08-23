@@ -420,7 +420,7 @@ startfunc
             git fetch --all ${git_flags} &>> /tmp/${proc_name}.git.log || true
             git reset --hard $pull_flags --quiet 2>> /tmp/${proc_name}.git.log
         else
-            echo -e "${proc_name}\nremote hash: ${remote_git}\n local hash: \
+            echo -e "${proc_name} git info:\nremote hash: ${remote_git}\n local hash: \
 ${local_git}\n\r${proc_name} getting files from cache volume. 😎\n"
     fi
     cd "${src_cache}"/"${local_path}" 
@@ -428,7 +428,7 @@ ${local_git}\n\r${proc_name} getting files from cache volume. 😎\n"
     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
 %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
     --quiet 2> /dev/null)
-    echo -e "*${proc_name} Last Commits:\n$last_commit\n"
+    echo -e "*${proc_name} Last Git Commits:\n$last_commit\n"
     rsync -a "${src_cache}/${local_path}" "${workdir}"/
 endfunc
 }
