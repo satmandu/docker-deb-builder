@@ -1,5 +1,6 @@
 ARG VERSION_ID=19.04
-FROM ubuntu:${VERSION_ID}
+FROM arm64v8/ubuntu:${VERSION_ID} as stageforcopy
+FROM ubuntu:${VERSION_ID} as base
 ARG VERSION_ID
 SHELL ["/bin/bash","-c"]
 RUN set -ex \
@@ -65,7 +66,7 @@ RUN set -ex \
     && apt-get build-dep -y linux-image-generic \
     && apt-get upgrade -y \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
-COPY --from=arm64v8 /etc/apt/sources.list /etc/apt/sources.list.d/arm64.list
+COPY --from=stageforcopy /etc/apt/sources.list /etc/apt/sources.list.d/arm64.list
 RUN [[ ! $(uname -m) = aarch64 ]] \
     && ( \
     (sed -i 's/deb http/deb [arch=arm64] http/' \
