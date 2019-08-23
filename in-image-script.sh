@@ -169,8 +169,6 @@ flock 201
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
-
-         local start_timeout=100000
 #         if [[ -f "/flag/start.spinnerwait" ]]
 #         then
 #             PrintLog "${1} waiting" /tmp/spinnerwait.log
@@ -179,7 +177,7 @@ flock 201
 #             rm -f "/flag/done.spinnerwait"
 #         fi
         PrintLog "start.${1}" /tmp/spinnerwait.log
-        wait_file "${proc_file}" ${start_timeout} || \
+        wait_file "${proc_file}" || \
         PrintLog "${1} didn't start in $? seconds." /tmp/spinnerwait.log
         local job_id=$(< ${proc_file})
         PrintLog "Start wait for ${1}:${job_id} end." /tmp/spinnerwait.log
@@ -221,7 +219,7 @@ waitfor () {
     #[[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     local wait_proc=
     until [[ -n ${wait_proc} ]]; do
-        wait_proc=$(find /flag -name *${wait_target} -print)
+        wait_proc=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${wait_target}" -o -regex ".*done_([A-Za-z0-9]{3})_${wait_target}" \)
         sleep 1
     done
     local wait_proc_base=$(basename "${wait_proc}")
@@ -299,11 +297,12 @@ startfunc () {
 }
 
 endfunc () {
+    caller=${1}
     local parent_pid=${BASHPID}
     local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
     [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
-    [[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${1} -print)
+    [[ -z ${proc_file} ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
 #     local proc_temp=${proc_file_base}

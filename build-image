@@ -109,6 +109,13 @@ docker_args="-dt "
 SYSTEM=$(uname)
 BUILDHOST_ARCH=$(uname -m)
 docker_args+="-e BUILDHOST_ARCH=${BUILDHOST_ARCH} "
+if [ "${BUILDHOST_ARCH}" = "aarch64" ]
+    then
+        unset BUILDNATIVE
+    else
+        BUILDNATIVE=1
+fi
+docker_args+="-e BUILDNATIVE=${BUILDNATIVE} "
 
 # Check that mandatory parameters are valid
 #[ !    "$outdir"        ] && fatal "output directory was not given (-o DIR)"
