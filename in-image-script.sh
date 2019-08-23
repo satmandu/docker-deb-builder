@@ -515,13 +515,13 @@ PrintLog "setup multiarch"  /tmp/"${FUNCNAME[0]}".install.log
     [[ $BUILDNATIVE ]] && (
     mv_arch ld aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log 
     )
-    [[ $BUILDNATIVE ]] && (
+    [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
     mv_arch gcc-8 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
     )
-    [[ $BUILDNATIVE ]] && (
+    [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
     mv_arch g++-8 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
     )
-    [[ $BUILDNATIVE ]] && (
+    [[ $BUILDNATIVE ]] && [[ ${base_dist} = "bionic" ]] && (
     mv_arch cpp-8 aarch64 &>> /tmp/"${FUNCNAME[0]}".install.log || true
     )
     [[ $BUILDNATIVE ]] && [[ ! ${base_dist} = "bionic" ]] && (
