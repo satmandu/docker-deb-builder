@@ -263,6 +263,7 @@ startfunc () {
 endfunc () {
     parent_pid=${BASHPID}
     proc_file=$(grep -lw ${parent_pid} /flag/* || true)
+    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
     [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
     #[[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${FUNCNAME[1]} -print)
     local proc_file_base_raw=$(basename "${proc_file}")
