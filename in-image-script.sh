@@ -309,13 +309,13 @@ endfunc () {
 #         done
 #     pretty_proc_name=${proc_base}
     #local proc_name="${FUNCNAME[1]:-main}"
-#    if [[ ! $DEBUG ]]
-#         then 
-#         if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_file_base:4}.*.log -print -quit)"
-#             then
-#                 rm /tmp/${proc_file_base:4}.*.log || true
-#         fi
-#     fi
+   if [[ ! $DEBUG ]]
+        then 
+        if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_file_base:4}.*.log -print -quit)"
+            then
+                rm /tmp/${proc_file_base:4}.*.log || true
+        fi
+    fi
     mv -f /flag/strt_${proc_file_base} /flag/done_${proc_file_base}
     #if [ ! "${proc_name}" == "spinnerwait" ]
     #    then printf "%${COLUMNS}s\n" "Done: ${pretty_proc_name} [X] "
@@ -435,7 +435,7 @@ endfunc
 }
 
 recreate_git () {
-[[ $DEBUG ]] && startfunc
+#[[ $DEBUG ]] && startfunc
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
@@ -447,7 +447,7 @@ recreate_git () {
     cd "${src_cache}" &>> /tmp/"${FUNCNAME[2]}".git.log
     git clone ${git_flags} $clone_flags ${local_path} \
     &>> /tmp/"${FUNCNAME[2]}".git.log 
-[[ $DEBUG ]] && endfunc
+#[[ $DEBUG ]] && endfunc
 }
 
 mv_arch () {
