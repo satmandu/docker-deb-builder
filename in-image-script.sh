@@ -234,31 +234,45 @@ waitforstart () {
 startfunc () {
     local level="${1:-1}"
     [[ $DEBUG ]] && echo "FUNCNAME: 0.${FUNCNAME[0]} 1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} Level:${level}"
-    local pproc_name="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-\b \b}.${FUNCNAME[$((level+2))]:-\b \b}"
+    local proc_base="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-_}.${FUNCNAME[$((level+2))]:-_}.${FUNCNAME[$((level+3))]:-_}"
+    local proc_file=$(mktemp /flag/strt_XXX_${proc_base})
+    echo ${BASHPID} > "${proc_file}"
+    local pretty_proc_name="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-\b \b}.${FUNCNAME[$((level+2))]:-\b \b}..${FUNCNAME[$((level+3))]:-\b \b}"
     #[[ -z ${FUNCNAME[1]} ]] && proc_name=main
-    echo $BASHPID > /flag/start.${proc_name}
-    [[ ! -e /flag/start.${proc_name} ]] && touch /flag/start.${proc_name} || true
-    if [ ! "${proc_name}" == "spinnerwait" ] 
-        then printf "%${COLUMNS}s\n" "Started: ${proc_name} [ ] "
-    fi
+
+    [[ ! -e ${proc_file} ]] && touch ${proc_file}|| true
+    #if [ ! "${proc_name}" == "spinnerwait" ] 
+    #    then printf "%${COLUMNS}s\n" "Started: ${pretty_proc_name} [ ] "
+    #fi
+    printf "%${COLUMNS}s\n" "Started: ${pretty_proc_name} [ ] "
     
 }
 
 endfunc () {
-    local level="${1:-1}"
-    local proc_name="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-\b \b}.${FUNCNAME[$((level+2))]:-\b \b}"
+    proc_file=$(grep -lw ${BASHPID} /flag/*)
+    local proc_file_base_raw=$(basename "${proc_file}")
+    local proc_file_base=${proc_file_base_raw:5}
+    local proc_temp=${${proc_file_base}%.*}
+    local proc_base
+    until [[ $proc_temp = $proc_base ]]
+        do
+        proc_base=${proc_temp%.*}
+        proc_temp=${proc_base%.*}
+        done
+    pretty_proc_name=${proc_base}
     #local proc_name="${FUNCNAME[1]:-main}"
    if [[ ! $DEBUG ]]
         then 
-        if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_name}.*.log -print -quit)"
+        if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_file_base:4}.*.log -print -quit)"
             then
-                rm /tmp/${proc_name}.*.log || true
+                rm /tmp/${proc_file_base:4}.*.log || true
         fi
     fi
-    mv -f /flag/start.${proc_name} /flag/done.${proc_name}
-    if [ ! "${proc_name}" == "spinnerwait" ]
-        then printf "%${COLUMNS}s\n" "Done: ${proc_name} [X] "
-    fi
+    mv -f /flag/strt_${proc_file_base} /flag/done_${proc_file_base}
+    #if [ ! "${proc_name}" == "spinnerwait" ]
+    #    then printf "%${COLUMNS}s\n" "Done: ${pretty_proc_name} [X] "
+    #fi
+    printf "%${COLUMNS}s\n" "Done: ${pretty_proc_name} [X] "
 }
 
 
@@ -373,7 +387,7 @@ endfunc
 }
 
 recreate_git () {
-startfunc
+[[ $DEBUG ]] && startfunc
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
@@ -385,11 +399,11 @@ startfunc
     cd "${src_cache}" &>> /tmp/"${FUNCNAME[2]}".git.log
     git clone ${git_flags} $clone_flags ${local_path} \
     &>> /tmp/"${FUNCNAME[2]}".git.log 
-endfunc
+[[ $DEBUG ]] && endfunc
 }
 
 mv_arch () {
-startfunc
+[[ $DEBUG ]] && startfunc
         echo Replacing "${1}" with "${1}":"${2}"-cross.
         dest_arch=${2}
         local dest_arch_prefix="${dest_arch}-linux-gnu-"
@@ -410,7 +424,7 @@ startfunc
             #cp ${dest_arch_prefix}${1} ${1}
             update-alternatives --install /usr/bin/"${1}" "${1}" /usr/bin/"${dest_arch_prefix}""${1}" 10
         fi
-endfunc
+[[ $DEBUG ]] && endfunc
 }
 
 # Main functions
