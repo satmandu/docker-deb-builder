@@ -200,9 +200,42 @@ waitforstart () {
 }
 
 
+# startfunc () {
+#     local level="${1:-1}"
+#     local proc_name="${FUNCNAME[${level}]:-main}
+#     #local proc_name=${FUNCNAME[${level}]}
+#     #[[ -z ${proc_name} ]] && proc_name=main
+#     echo $BASHPID > /flag/start.${proc_name}
+#     [[ ! -e /flag/start.${proc_name} ]] && touch /flag/start.${proc_name} || true
+#     if [ ! "${proc_name}" == "spinnerwait" ] 
+#         then printf "%${COLUMNS}s\n" "Started: ${proc_name} [ ] "
+#     fi
+#     
+# }
+# 
+# endfunc () {
+#     local level="${1:-1}"
+#     local proc_name="${FUNCNAME[${level}]:-main}
+#     #local proc_name=${FUNCNAME[${level}]}
+#     #[[ -z ${proc_name} ]] && proc_name=main
+#    if [[ ! $DEBUG ]]
+#         then 
+#         if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_name}.*.log -print -quit)"
+#             then
+#                 rm /tmp/${proc_name}.*.log || true
+#         fi
+#     fi
+#     mv -f /flag/start.${proc_name} /flag/done.${proc_name}
+#     if [ ! "${proc_name}" == "spinnerwait" ]
+#         then printf "%${COLUMNS}s\n" "Done: ${proc_name} [X] "
+#     fi
+# }
+
 startfunc () {
-    local proc_name=${FUNCNAME[1]}
-    [[ -z ${proc_name} ]] && proc_name=main
+    local level="${1:-1}"
+    [[ $DEBUG ]] && echo "FUNCNAME: 0.${FUNCNAME[0]} 1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} Level:${level}"
+    local pproc_name="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-\b \b}.${FUNCNAME[$((level+2))]:-\b \b}"
+    #[[ -z ${FUNCNAME[1]} ]] && proc_name=main
     echo $BASHPID > /flag/start.${proc_name}
     [[ ! -e /flag/start.${proc_name} ]] && touch /flag/start.${proc_name} || true
     if [ ! "${proc_name}" == "spinnerwait" ] 
@@ -212,36 +245,9 @@ startfunc () {
 }
 
 endfunc () {
-    local proc_name=${FUNCNAME[1]}
-    [[ -z ${proc_name} ]] && proc_name=main
-   if [[ ! $DEBUG ]]
-        then 
-        if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_name}.*.log -print -quit)"
-            then
-                rm /tmp/${proc_name}.*.log || true
-        fi
-    fi
-    mv -f /flag/start.${proc_name} /flag/done.${proc_name}
-    if [ ! "${proc_name}" == "spinnerwait" ]
-        then printf "%${COLUMNS}s\n" "Done: ${proc_name} [X] "
-    fi
-}
-
-startfunclib () {
-  [[ $DEBUG ]] && echo "FUNCNAME: ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
-    local proc_name=${FUNCNAME[1]}.${FUNCNAME[2]} 
-    [[ -z ${FUNCNAME[1]} ]] && proc_name=main
-    echo $BASHPID > /flag/start.${proc_name}
-    [[ ! -e /flag/start.${proc_name} ]] && touch /flag/start.${proc_name} || true
-    if [ ! "${proc_name}" == "spinnerwait" ] 
-        then printf "%${COLUMNS}s\n" "Started: ${proc_name} [ ] "
-    fi
-    
-}
-
-endfunclib () {
-    local proc_name=${FUNCNAME[1]}.${FUNCNAME[2]}
-    [[ -z ${FUNCNAME[1]} ]] && proc_name=main
+    local level="${1:-1}"
+    local proc_name="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-\b \b}.${FUNCNAME[$((level+2))]:-\b \b}"
+    #local proc_name="${FUNCNAME[1]:-main}"
    if [[ ! $DEBUG ]]
         then 
         if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_name}.*.log -print -quit)"
@@ -300,7 +306,7 @@ arbitrary_wait_here () {
 # }
 
 git_get () {
-startfunclib
+startfunc
     local proc_name=${FUNCNAME[1]}
     [[ -z ${proc_name} ]] && proc_name=main
     local git_repo="${1}"
@@ -363,11 +369,11 @@ startfunclib
     --quiet 2> /dev/null)
     echo -e "*${proc_name} Last Commits:\n$last_commit\n"
     rsync -a "${src_cache}/${local_path}" "${workdir}"/
-endfunclib
+endfunc
 }
 
 recreate_git () {
-#startfunc
+startfunc
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
@@ -379,10 +385,11 @@ recreate_git () {
     cd "${src_cache}" &>> /tmp/"${FUNCNAME[2]}".git.log
     git clone ${git_flags} $clone_flags ${local_path} \
     &>> /tmp/"${FUNCNAME[2]}".git.log 
-#endfunc
+endfunc
 }
 
 mv_arch () {
+startfunc
         echo Replacing "${1}" with "${1}":"${2}"-cross.
         dest_arch=${2}
         local dest_arch_prefix="${dest_arch}-linux-gnu-"
@@ -403,6 +410,7 @@ mv_arch () {
             #cp ${dest_arch_prefix}${1} ${1}
             update-alternatives --install /usr/bin/"${1}" "${1}" /usr/bin/"${dest_arch_prefix}""${1}" 10
         fi
+endfunc
 }
 
 # Main functions
@@ -751,8 +759,8 @@ startfunc
     head -1 | awk -F '=' '{print $2}' | sed 's/"//g')
     PKGVER="$majorversion.$patchlevel.$sublevel"
     
-    kernelrev=$(git -C "${src_cache}"/rpi-linux rev-parse --short HEAD) > /dev/null
-    echo "$kernelrev" > /tmp/kernelrev
+    KERNELREV=$(git -C "${src_cache}"/rpi-linux rev-parse --short HEAD) > /dev/null
+    echo "$KERNELREV" > /tmp/KERNELREV
     cd "${workdir}"/rpi-linux
     git update-index --refresh &>> /tmp/"${FUNCNAME[0]}".compile.log || true
     git diff-index --quiet HEAD &>> /tmp/"${FUNCNAME[0]}".compile.log || true
@@ -772,11 +780,11 @@ startfunc
     { /source-ro/patch_kernel.sh ; true; }
     if [[ -e /tmp/APPLIED_KERNEL_PATCHES ]]
         then
-            KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${kernelrev}$(< /tmp/APPLIED_KERNEL_PATCHES)"
-            LOCALVERSION="-g$(< /tmp/kernelrev)$(< /tmp/APPLIED_KERNEL_PATCHES)"
+            KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${KERNELREV}$(< /tmp/APPLIED_KERNEL_PATCHES)"
+            LOCALVERSION="-g$(< /tmp/KERNELREV)$(< /tmp/APPLIED_KERNEL_PATCHES)"
         else
-            KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${kernelrev}"
-            LOCALVERSION="-g$(< /tmp/kernelrev)"
+            KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${KERNELREV}"
+            LOCALVERSION="-g$(< /tmp/KERNELREV)"
     fi
     
     echo "** Current Kernel Version: ${KERNEL_VERS}" 
