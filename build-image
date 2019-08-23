@@ -178,7 +178,7 @@ if [ "$depdir" ]; then
     docker_args+="-v $(abspath ${depdir}):/dependencies:ro "
 fi
 
-docker_args+="-dt -v $(abspath ${srcdir}):/source-ro:ro -v $(abspath ${outdir}):/output -v $(cd $PROG_DIR; pwd)/rpi4-build-start.sh:/rpi4-build-start.sh:ro "
+docker_args+="-dt -v $(abspath ${srcdir}):/source-ro:ro -v $(abspath ${outdir}):/output -v $(cd $PROG_DIR; pwd)/in-image-script.sh:/in-image-script.sh:ro "
 
 # Pass current UID and GID to container, so that it can change the
 # ownership of output files which are otherwise writen to outdir as
@@ -365,7 +365,7 @@ cidfile="$(cd $PROG_DIR; pwd)/build.cid"
 docker_args+="--cidfile=$cidfile "
 
 # If the build script fails, the log is still copied out.
-startcmd='/rpi4-build-start.sh ;  [ -e "/tmp/build.log" ] && (ls -crGg /flag > /tmp/build_fail_status.log ; grep "" /flag/* >> /tmp/build_fail_status.log ; mv /tmp/build.log /tmp/build_fail.log; cp /tmp/*.log /output/ ; chown $USER:$GROUP /output/*.log;  )  || exit 0'
+startcmd='/in-image-script.sh ;  [ -e "/tmp/build.log" ] && (ls -crGg /flag > /tmp/build_fail_status.log ; grep "" /flag/* >> /tmp/build_fail_status.log ; mv /tmp/build.log /tmp/build_fail.log; cp /tmp/*.log /output/ ; chown $USER:$GROUP /output/*.log;  )  || exit 0'
 # Clear old build failure log file.
 rm -f $outdir/build_fail.log
 rm -rf $outdir/build_fail_status.log
@@ -394,7 +394,7 @@ echo -e "\n"
 PID_LIST=
 [ $SYSTEM == "Darwin" ] && PID_LIST=`pgrep com.docker.hyperkit`
 if [ $SYSTEM == "Linux" ]; then
-    container_pid=`pgrep rpi4-build-start.sh`
+    container_pid=`pgrep in-image-script.sh`
     findpids() {
             for pid in /proc/$1/task/* ; do
                     pid="$(basename "$pid")"
