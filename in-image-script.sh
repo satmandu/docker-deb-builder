@@ -261,21 +261,21 @@ startfunc () {
 }
 
 endfunc () {
-    parent_pid=${BASHPID}
-    proc_file=$(grep -lw ${parent_pid} /flag/* || true)
+    local parent_pid=${BASHPID}
+    local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
     [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
     [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/*)
     #[[ -z ${proc_file} ]] && proc_file=$(find /flag -name strt_*${FUNCNAME[1]} -print)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
-    local proc_temp=${${proc_file_base}%.*}
-    local proc_base
-    until [[ $proc_temp = $proc_base ]]
-        do
-        proc_base=${proc_temp%.*}
-        proc_temp=${proc_base%.*}
-        done
-    pretty_proc_name=${proc_base}
+#     local proc_temp=${proc_file_base}
+#     local proc_base
+#     until [[ $proc_temp = $proc_base ]]
+#         do
+#         proc_base=${proc_temp%.*}
+#         proc_temp=${proc_base%.*}
+#         done
+#     pretty_proc_name=${proc_base}
     #local proc_name="${FUNCNAME[1]:-main}"
    if [[ ! $DEBUG ]]
         then 
@@ -288,7 +288,7 @@ endfunc () {
     #if [ ! "${proc_name}" == "spinnerwait" ]
     #    then printf "%${COLUMNS}s\n" "Done: ${pretty_proc_name} [X] "
     #fi
-    printf "%${COLUMNS}s\n" "Done: ${pretty_proc_name} [X] "
+    printf "%${COLUMNS}s\n" "Done: ${proc_file_base:4} [X] "
 }
 
 
