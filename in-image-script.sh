@@ -87,7 +87,7 @@ ccache -s
 #DEFAULTCFLAGS="-mcpu=cortex-a72 -ftree-vectorize -pipe -fomit-frame-pointer"
 DEFAULTCFLAGS="-mcpu=cortex-a72 -march=armv8-a+crc"
 CFLAGS=${CFLAGS:-${DEFAULTCFLAGS}}
-export CXXFLAGS="${CFLAGS}"
+#export CXXFLAGS="${CFLAGS}"
 
 # These environment variables are set at container invocation.
 # Create work directory.
@@ -1446,32 +1446,6 @@ startfunc
 endfunc
 }    
 
-xdelta3_image_export () {
-startfunc
-        echo "* Making xdelta3 binary diffs between current ${base_dist} base image"
-        echo "* and the new images."
-        xdelta3 -e -S none -I 0 -B 1812725760 -W 16777216 -fs \
-        "${workdir}"/old_image.img "${workdir}"/"${new_image}".img \
-        "${workdir}"/patch.xdelta
-        KERNEL_VERS=$(< /tmp/KERNEL_VERS)
-        for i in "${image_compressors[@]}"
-        do
-            echo "* Compressing patch.xdelta with $i and exporting."
-            compress_flags=""
-            [ "$i" == "lz4" ] && compress_flags="-m"
-            xdelta_patchout_compresscmd="$i -k $compress_flags \
-             ${workdir}/patch.xdelta"
-            $xdelta_patchout_compresscmd
-            cp "${workdir}/patch.xdelta.$i" \
-     "/output/${base_dist}-daily-preinstalled-server_${KERNEL_VERS}_${now}.xdelta3.$i"
-            #$xdelta_patchout_cpcmd
-            chown "$USER":"$GROUP" /output/"${base_dist}"-daily-preinstalled-server_"${KERNEL_VERS}"_"${now}".xdelta3."$i"
-            echo "Xdelta3 file exported to:"
-            echo "/output/${base_dist}-daily-preinstalled-server_${KERNEL_VERS}_${now}.xdelta3.$i"
-        done
-endfunc
-}
-
 export_log () {
 if [[ ! $JUSTDEBS ]];
     then
@@ -1533,8 +1507,6 @@ kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && image_and_chroot_cleanup
 [[ ! $JUSTDEBS ]] && image_unmount
 [[ ! $JUSTDEBS ]] && compressed_image_export &
-[[ ! $JUSTDEBS ]] && [[ $DELTA ]] && xdelta3_image_export
-[[ ! $JUSTDEBS ]] && [[ $DELTA ]] && waitfor "xdelta3_image_export"
 export_log
 # This stops the tail process.
 rm $TMPLOG

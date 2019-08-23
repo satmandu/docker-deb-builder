@@ -298,8 +298,6 @@ docker_args+="-e base_dist=${base_dist} "
 [ -n "$CLEAN_GIT" ] && docker_args+="-e CLEAN_GIT=${CLEAN_GIT} "
 # DEBUG?
 [ -n "$DEBUG" ] && docker_args+="-e DEBUG=${DEBUG} "
-# Is a XDELTA local variable set? (Can not use XDELTA since XDELTA uses that itself.)
-[ -n "$DELTA" ] && docker_args+="-e DELTA=${DELTA} "
 # Is an email local variable set?
 [ -n "$EMAIL" ] && docker_args+="-e EMAIL=${EMAIL} "
 # Just make kerneldebs?
