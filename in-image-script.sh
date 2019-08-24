@@ -742,15 +742,15 @@ startfunc
 
     echo "* Apt upgrading image using native qemu chroot."
     #echo "* There may be some errors here..." 
-    [[! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
+    [[ ! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
     linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 -y --purge" \
     &>> /tmp/"${FUNCNAME[0]}".install.log || true
-    [[! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
+    [[ ! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
     linux-image-4.15* linux-modules-4.15* -y --purge" \
     &>> /tmp/"${FUNCNAME[0]}".install.log || true
-    [[! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
+    [[ ! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -qq || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -qq)" || true &>> /tmp/"${FUNCNAME[0]}".install.log || true
     echo "* Image apt upgrade done."
     echo "* Installing wifi & networking tools to image."
