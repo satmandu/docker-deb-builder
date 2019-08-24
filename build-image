@@ -320,6 +320,8 @@ docker_args+="-e BASE_DIST=${BASE_DIST} "
 [ ! -n "$JUSTDEBS" ] && docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
 # If lucky
 [ -n "$MOAR_RAM" ] && docker_args+="--tmpfs /build/source/rpi-linux:exec --tmpfs /build/source/kernel-build:exec "
+# copy out uncompressed images
+[ -n "$RAWIMAGE" ] && docker_args+="-e RAWIMAGE=${RAWIMAGE} "
 # Request kernel rebuild?
 [ -n "$REBUILD" ] && docker_args+="-e REBUILD=${REBUILD} "
 # Let XZ be disabled by default.
