@@ -205,7 +205,7 @@ waitfor () {
     local wait_proc=
     until [[ -n ${wait_proc} ]]; do
         wait_proc=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${wait_target}" -o -regex ".*done_([A-Za-z0-9]{3})_${wait_target}" \) -print)
-        sleep 5
+        sleep 1
     done
 
     local wait_proc_raw=$(basename "${wait_proc}")
