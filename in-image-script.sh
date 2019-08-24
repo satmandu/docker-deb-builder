@@ -137,8 +137,8 @@ PrintLog(){
   information="${1}"
   logFile="${2}"
   [[ $DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
-  mkdir -p "$(dirname ${logFile})" &>/dev/null || true
-  touch "${logFile}" &> /tmp/PrintLog || true
+  [[ ! -e "${logFile}" ]] && (mkdir -p "$(dirname ${logFile})" &>/dev/null || true) && \
+  (touch "${logFile}" &> /tmp/PrintLog || true)
   [[ -e "${logFile}" ]] && echo "${information}" | ts >> "${logFile}"
 }
 
@@ -188,6 +188,7 @@ endfunc
 
 waitfor () {
     local wait_target=${1}
+    local silence=${2:-0}
     [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
     local level_a=${FUNCNAME[1]:-main}
 #     local level_b=${FUNCNAME[2]:-_}
@@ -201,7 +202,7 @@ waitfor () {
     #local proc_base=${level_a}
     local proc_name=${level_a}
     echo ${BASHPID} >> /flag/wait_${proc_name}_for_${wait_target}
-    printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${wait_target} [/] "
+[[ $silence = "0" ]] && printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${wait_target} [/] "
     #    local parent_pid=${BASHPID}
     #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
     #[[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
@@ -220,7 +221,7 @@ waitfor () {
     #[[ -z ${proc_name} ]] && proc_name=main
     local wait_file="/flag/done_${wait_proc_base}"
     [[ ! -f ${wait_file} ]] && wait_file ${wait_file}
-    printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${wait_target} [X] " && \
+[[ $silence = "0" ]] && printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${wait_target} [X] " && \
     rm -f /flag/wait_${proc_name}_for_${wait_proc_base}
     rm -f /flag/wait_${proc_name}_for_${wait_target}
 }
@@ -1437,17 +1438,17 @@ endfunc
 
 image_and_chroot_cleanup () {
 startfunc  
-    waitfor "rpi_firmware"
-    waitfor "armstub8-gic"
-    waitfor "non-free_firmware"
-    waitfor "rpi_userland"
-    waitfor "andrei_gherzan_uboot_fork"
-    waitfor "kernel_debs"
-    waitfor "rpi_config_txt_configuration"
-    waitfor "rpi_cmdline_txt_configuration"
-    waitfor "wifi_firmware_modification"
-    waitfor "first_boot_scripts_setup"
-    waitfor "added_scripts"
+    waitfor "rpi_firmware" 1
+    waitfor "armstub8-gic" 1
+    waitfor "non-free_firmware" 1
+    waitfor "rpi_userland" 1
+    waitfor "andrei_gherzan_uboot_fork" 1
+    waitfor "kernel_debs" 1
+    waitfor "rpi_config_txt_configuration" 1
+    waitfor "rpi_cmdline_txt_configuration" 1
+    waitfor "wifi_firmware_modification" 1
+    waitfor "first_boot_scripts_setup" 1
+    waitfor "added_scripts" 1
     waitfor "arm64_chroot_setup"
     waitfor "kernel_deb_install"
   
@@ -1459,7 +1460,7 @@ startfunc
     
     # binfmt wreaks havoc with the container AND THE HOST, so let it get 
     # installed at first boot.
-    umount /mnt/var/cache/apt
+    umount -l /mnt/var/cache/apt
     echo "Installing binfmt-support files for install at first boot."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives=/mnt/var/cache/apt/archives/ \
@@ -1477,11 +1478,11 @@ startfunc
         echo 'Type in "echo 1 > /flag/done.ok_to_unmount_image_after_build"'
         echo "in a shell into this container to continue."
     fi  
-    wait_file "/tmp/done.ok_to_umount_image_after_build"
+    wait_file "/flag/done.ok_to_umount_image_after_build"
     umount /mnt/build
     umount /mnt/run
     umount /mnt/ccache
-    rmdir /mnt/ccache
+    rm -rf /mnt/ccache
     umount /mnt/proc
     umount /mnt/dev/pts
     #umount /mnt/sys
@@ -1492,22 +1493,22 @@ endfunc
 
 image_unmount () {
 startfunc
-    waitfor "utility_scripts"
-    waitfor "rpi_firmware"
-    waitfor "armstub8-gic"
-    waitfor "non-free_firmware" 
-    waitfor "rpi_userland"
-    waitfor "andrei_gherzan_uboot_fork"
-    waitfor "kernelbuild_setup"
-    waitfor "kernel_debs"
-    waitfor "rpi_config_txt_configuration"
-    waitfor "rpi_cmdline_txt_configuration"
-    waitfor "wifi_firmware_modification"
-    waitfor "first_boot_scripts_setup"
-    waitfor "added_scripts"
-    waitfor "arm64_chroot_setup"
-    waitfor "image_apt_installs"
-    waitfor "kernel_deb_install"
+    waitfor "utility_scripts" 1
+    waitfor "rpi_firmware" 1
+    waitfor "armstub8-gic" 1
+    waitfor "non-free_firmware" 1 
+    waitfor "rpi_userland" 1
+    waitfor "andrei_gherzan_uboot_fork" 1
+    waitfor "kernelbuild_setup" 1
+    waitfor "kernel_debs" 1
+    waitfor "rpi_config_txt_configuration" 1
+    waitfor "rpi_cmdline_txt_configuration" 1
+    waitfor "wifi_firmware_modification" 1 
+    waitfor "first_boot_scripts_setup" 1
+    waitfor "added_scripts" 1
+    waitfor "arm64_chroot_setup" 1
+    waitfor "image_apt_installs" 1
+    waitfor "kernel_deb_install" 1
     waitfor "image_and_chroot_cleanup"
     
     echo "* Unmounting modified ${new_image}.img"
@@ -1531,7 +1532,7 @@ startfunc
         echo 'Type in "echo 1 > /flag/done.ok_to_exit_container_after_build"'
         echo "in a shell into this container to continue."
     fi 
-    wait_file "/tmp/done.ok_to_exit_container_after_build"
+    wait_file "/flag/done.ok_to_exit_container_after_build"
 endfunc
 }
 
