@@ -1431,6 +1431,7 @@ endfunc
 }
 
 image_and_chroot_cleanup () {
+startfunc  
     waitfor "rpi_firmware"
     waitfor "armstub8-gic"
     waitfor "non-free_firmware"
@@ -1444,7 +1445,7 @@ image_and_chroot_cleanup () {
     waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
     waitfor "kernel_deb_install"
-startfunc    
+  
     echo "* Finishing image setup."
     
     echo "* Cleaning up ARM64 chroot"
@@ -1486,6 +1487,24 @@ endfunc
 
 image_unmount () {
 startfunc
+    waitfor "utility_scripts"
+    waitfor "rpi_firmware"
+    waitfor "armstub8-gic"
+    waitfor "non-free_firmware" 
+    waitfor "rpi_userland"
+    waitfor "andrei_gherzan_uboot_fork"
+    waitfor "kernelbuild_setup"
+    waitfor "kernel_debs"
+    waitfor "rpi_config_txt_configuration"
+    waitfor "rpi_cmdline_txt_configuration"
+    waitfor "wifi_firmware_modification"
+    waitfor "first_boot_scripts_setup"
+    waitfor "added_scripts"
+    waitfor "arm64_chroot_setup"
+    waitfor "image_apt_installs"
+    waitfor "kernel_deb_install"
+    waitfor "image_and_chroot_cleanup"
+    
     echo "* Unmounting modified ${new_image}.img"
     loop_device=$(< /tmp/loop_device)
     umount -l /mnt/boot/firmware || (lsof +f -- /mnt/boot/firmware ; sleep 60 ; \
@@ -1513,7 +1532,7 @@ endfunc
 
 compressed_image_export () {
 startfunc
-
+    waitfor "image_unmount"
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     # Note that lz4 is much much faster than using xz.
     chown -R "$USER":"$GROUP" /build
