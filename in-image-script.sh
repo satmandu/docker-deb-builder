@@ -956,23 +956,25 @@ then
     # Look for Linux Image
     if test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-image-*"${KERNEL_VERS}"* -print -quit)"
     then
-        echo -e "${KERNEL_VERS} linux image on cache volume. 😎\n"
+        echo -e "${KERNEL_VERS} linux image deb on cache volume. 😎\n"
         cp "${apt_cache}"/linux-image-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
         echo "linux-image" >> /tmp/nodebs
     elif test -n "$(find /output/ -maxdepth 1 -name linux-image-*"${KERNEL_VERS}"* -print -quit)"
     then
-        echo -e "${KERNEL_VERS} linux image found in /output/. 😎\n"
+        echo -e "${KERNEL_VERS} linux image deb found in /output/. 😎\n"
         cp /output/linux-image-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
+        cp "${workdir}"/linux-image-*"${KERNEL_VERS}"*arm64.deb "${apt_cache}"/ 
         echo "linux-image" >> /tmp/nodebs
     elif test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-headers-*"${KERNEL_VERS}"* -print -quit)"
     then
-        echo -e "${KERNEL_VERS} linux headers on cache volume. 😎\n"
+        echo -e "${KERNEL_VERS} linux headers deb on cache volume. 😎\n"
         cp "${apt_cache}"/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
         echo "linux-image" >> /tmp/nodebs
     elif test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-headers-*"${KERNEL_VERS}"* -print -quit)"
     then
-        echo -e "${KERNEL_VERS} linux headers found in /output/. 😎\n"
+        echo -e "${KERNEL_VERS} linux headers deb found in /output/. 😎\n"
         cp /output/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
+        cp "${workdir}"/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${apt_cache}"/ 
         echo "linux-image" >> /tmp/nodebs
     else
         rm -f /tmp/nodebs || true
@@ -982,7 +984,7 @@ fi
     
 if [[ -e /tmp/nodebs ]]
 then
-    echo -e "Using existing ${KERNEL_VERS} debs from cache volume.\n \
+    echo -e "Using cached ${KERNEL_VERS} debs.\n \
     \rNo kernel needs to be built."
     #cp "${apt_cache}"/linux-image-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
     #cp "${apt_cache}"/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
