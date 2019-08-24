@@ -733,18 +733,24 @@ startfunc
     # These steps needed to allow x86_64 kernel programs to allow module installation.
     chroot /mnt /bin/bash -c "ln -sf /usr/x86_64-linux-gnu/lib64 /lib64 || true"
     chroot /mnt /bin/bash -c "ln -sf /usr/x86_64-linux-gnu/lib /lib/x86_64-linux-gnu || true"
-    echo "* Installing new kernel debs."
+    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
+    echo "* Installing ${KERNEL_VERS} debs to image."
+    cp "${workdir}"/*.deb /mnt/tmp/
+    # Try installing the generated debs in chroot before we do anything else.
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" \
     &>> /tmp/"${FUNCNAME[0]}".install.log || true
 
     echo "* Apt upgrading image using native qemu chroot."
     #echo "* There may be some errors here..." 
+    [[! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
     linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 -y --purge" \
     &>> /tmp/"${FUNCNAME[0]}".install.log || true
+    [[! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
     linux-image-4.15* linux-modules-4.15* -y --purge" \
     &>> /tmp/"${FUNCNAME[0]}".install.log || true
+    [[! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -qq || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -qq)" || true &>> /tmp/"${FUNCNAME[0]}".install.log || true
     echo "* Image apt upgrade done."
     echo "* Installing wifi & networking tools to image."
@@ -960,12 +966,10 @@ startfunc
     waitfor "added_scripts"
     waitfor "image_apt_installs"
 
-    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
-    # Try installing the generated debs in chroot before we do anything else.
-    cp "${workdir}"/*.deb /mnt/tmp/
+
+
     waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
-    echo "* Installing ${KERNEL_VERS} debs to image."
 #     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
 #     linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 -y --purge" \
 #     &>> /tmp/"${FUNCNAME[0]}".install.log || true
