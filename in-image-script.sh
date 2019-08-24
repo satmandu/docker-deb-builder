@@ -1587,7 +1587,7 @@ kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && added_scripts &
 [[ ! $JUSTDEBS ]] && arm64_chroot_setup &
 [[ ! $JUSTDEBS ]] && image_apt_installs &
-[[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
+#[[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
 [[ ! $JUSTDEBS ]] && kernel_deb_install
 [[ ! $JUSTDEBS ]] && image_and_chroot_cleanup
 [[ ! $JUSTDEBS ]] && image_unmount
