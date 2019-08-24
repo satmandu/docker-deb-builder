@@ -362,7 +362,7 @@ arbitrary_wait_here () {
 # }
 
 git_get () {
-startfunc
+#startfunc
     local proc_name=${FUNCNAME[1]}
     [[ -z ${proc_name} ]] && proc_name=main
     local git_repo="${1}"
@@ -425,7 +425,7 @@ ${local_git}\n\r${proc_name} getting files from cache volume. 😎\n"
     --quiet 2> /dev/null)
     echo -e "*${proc_name} Last Git Commits:\n$last_commit\n"
     rsync -a "${src_cache}/${local_path}" "${workdir}"/
-endfunc
+#endfunc
 }
 
 recreate_git () {
