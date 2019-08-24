@@ -1529,7 +1529,7 @@ startfunc
     waitfor "kernel_deb_install" 1
     waitfor "image_and_chroot_cleanup"
     
-    echo "* Unmounting modified ${new_image}.img"
+    echo "* Unmounting modified ${new_image}.img (This may take a minute or two.)"
     loop_device=$(< /tmp/loop_device)
     umount -l /mnt/boot/firmware || (lsof +f -- /mnt/boot/firmware ; sleep 60 ; \
     umount -l /mnt/boot/firmware) || true
@@ -1537,7 +1537,7 @@ startfunc
     e4defrag /mnt >/dev/null || true
     umount -l /mnt || (lsof +f -- /mnt ; sleep 60 ; umount /mnt) || true
     #guestunmount /mnt
-
+    echo "* Checking partitions on ${new_image}.img"
     fsck.ext4 -fy /dev/mapper/"${loop_device}"p2 || true
     fsck.vfat -wa /dev/mapper/"${loop_device}"p1 || true
     kpartx -dv "${workdir}"/"${new_image}".img &>> /tmp/"${FUNCNAME[0]}".cleanup.log || true
