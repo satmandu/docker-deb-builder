@@ -297,7 +297,7 @@ startfunc () {
 endfunc () {
     caller=${1}
     local parent_pid=${BASHPID}
-    local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
+    local proc_file=$(grep -lw ${parent_pid} /flag/* 2>/dev/null || true)
     [[ ${proc_file} = "/flag/main" ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
    # [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
