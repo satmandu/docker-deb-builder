@@ -258,7 +258,7 @@ endfunc () {
     [[ $level_c = "main" ]] && verbose_proc=${level_a}.${level_b}
 
     local parent_pid=${BASHPID}
-    local proc_file=$(grep -lw ${parent_pid} --exclude= waiting* /flag/* 2>/dev/null || true)
+    local proc_file=$(grep -lw ${parent_pid} --exclude=waiting* /flag/* 2>/dev/null || true)
     #local proc_file=$(echo "${proc_file_raw}" | head -n 1 | awk 'NR == 1{print $1}')
     #local proc_file=$(echo ${proc_file_raw%% *}| grep -v waiting)
     [[ ${proc_file} = "/flag/main" ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
