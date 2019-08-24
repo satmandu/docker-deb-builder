@@ -393,9 +393,11 @@ startfunc
       
     if [ ! "${remote_git}" = "${local_git}" ] || [[ $CLEAN_GIT ]] 
         then
+            PrintLog "proc_name: ${proc_name}. Git local/remote hash ! match." /tmp/git_get.log
             # Does the local repo even exist?
             if [[ ! -d "${src_cache}/${local_path}/.git" ]] || [[ $CLEAN_GIT ]]  
                 then
+                    PrintLog "proc_name: ${proc_name}-> recreate." /tmp/git_get.log
                     recreate_git "${git_repo}" "${local_path}" ${git_branch}
             fi
             # Is the requested branch the same as the local saved branch?
@@ -441,6 +443,7 @@ startfunc
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
+PrintLog "recreate: ${FUNCNAME[2]}, git_repo: ${git_repo}, local_path: ${local_path}, git_branch: ${git_branch}" /tmp/git_get.log
     #local git_flags=" --quiet --depth=1 "
     local git_flags=" --depth=1 "
     local git_extra_flags=" -b ${git_branch} "
