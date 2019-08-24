@@ -965,12 +965,10 @@ startfunc
     waitfor "kernel_debs"
     waitfor "image_mount"
     waitfor "added_scripts"
-    waitfor "image_apt_installs"
-
-
-
     waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
+    waitfor "image_apt_installs"
+    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
 #     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
 #     linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 -y --purge" \
 #     &>> /tmp/"${FUNCNAME[0]}".install.log || true
