@@ -145,6 +145,7 @@ PrintLog(){
 # Via https://superuser.com/a/917073
 wait_file() {
   local file="${1}"; shift
+  [[ -f "${file}" ]] && return
   local wait_seconds="${1:-100000}"; shift # 100000 seconds as default timeout
     PrintLog "${FUNCNAME[1]}->file: ${file}, seconds: ${wait_seconds}" /tmp/wait.log
     [[ -f "${file}" ]] && (PrintLog "${file} found" /tmp/wait_file.log && return )
