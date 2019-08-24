@@ -806,8 +806,8 @@ startfunc
     
     # Use kernel patch script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
-    [[ -e /source-ro/patch_kernel-${kernel_branch}.sh ]] && { /source-ro/patch_kernel-"${kernel_branch}".sh ;true; } || \
-    { /source-ro/patch_kernel.sh ; true; }
+    [[ -e /source-ro/scripts/patch_kernel-${kernel_branch}.sh ]] && { /source-ro/scripts/patch_kernel-"${kernel_branch}".sh ;true; } || \
+    { /source-ro/scripts/patch_kernel.sh ; true; }
     if [[ -e /tmp/APPLIED_KERNEL_PATCHES ]]
         then
             KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${KERNELREV}$(< /tmp/APPLIED_KERNEL_PATCHES)"
@@ -843,13 +843,13 @@ startfunc
     cd "${workdir}"/kernel-build
     # Use kernel config modification script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
-    if [[ -e /source-ro/conform_config-${kernel_branch}.sh ]]
+    if [[ -e /source-ro/scripts/conform_config-${kernel_branch}.sh ]]
         then 
-            cp /source-ro/conform_config-"${kernel_branch}".sh \
+            cp /source-ro/scripts/conform_config-"${kernel_branch}".sh \
             "${workdir}"/kernel-build/conform_config.sh
-    elif [[ -e /source-ro/conform_config.sh ]]
+    elif [[ -e /source-ro/scripts/conform_config.sh ]]
         then
-        cp /source-ro/conform_config.sh "${workdir}"/kernel-build/
+        cp /source-ro/scripts/conform_config.sh "${workdir}"/kernel-build/
     fi
     "${workdir}"/kernel-build/conform_config.sh
 
@@ -1232,7 +1232,7 @@ startfunc
     #-d /etc/flash-kernel/bootscript/bootscr.rpi \
     #/boot/firmware/boot.scr" &>> /tmp/${FUNCNAME[0]}.compile.log
     [[ !  -f /mnt/etc/flash-kernel/bootscript/bootscr.rpi ]] && \
-    cp /source-ro/bootscr.rpi /mnt/etc/flash-kernel/bootscript/bootscr.rpi
+    cp /source-ro/scripts/bootscr.rpi /mnt/etc/flash-kernel/bootscript/bootscr.rpi
     mkimage -A arm64 -O linux -T script \
     -d /mnt/etc/flash-kernel/bootscript/bootscr.rpi \
     /mnt/boot/firmware/boot.scr &>> /tmp/"${FUNCNAME[0]}".compile.log
