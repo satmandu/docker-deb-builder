@@ -158,7 +158,7 @@ spinnerwait () {
 (
 startfunc
 flock 201 
-    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
+    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${1}" -o -regex ".*done_([A-Za-z0-9]{3})_${1}" \) -print)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
@@ -260,8 +260,7 @@ endfunc () {
     local parent_pid=${BASHPID}
     local proc_file_raw=$(grep -lw ${parent_pid} /flag/* 2>/dev/null || true)
     #local proc_file=$(echo "${proc_file_raw}" | head -n 1 | awk '{print $1}')
-    local proc_file_raw2=${proc_file_raw%% *}
-    local proc_file=$(echo ${proc_file_raw2} | grep -v waiting)
+    local proc_file=$(echo ${proc_file_raw%% *}| grep -v waiting)
     [[ ${proc_file} = "/flag/main" ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
     local proc_file_base_raw=$(basename "${proc_file}")
