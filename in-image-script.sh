@@ -730,8 +730,8 @@ startfunc
     --no-install-recommends \
     qemu-user qemu libc6-amd64-cross" &>> /tmp/"${FUNCNAME[0]}".install.log || true
     # These steps needed to allow x86_64 kernel programs to allow module installation.
-    chroot /mnt /bin/bash -c "ln -s /usr/x86_64-linux-gnu/lib64 /lib64"
-    chroot /mnt /bin/bash -c "ln -s /usr/x86_64-linux-gnu/lib /lib/x86_64-linux-gnu"
+    chroot /mnt /bin/bash -c "ln -sf /usr/x86_64-linux-gnu/lib64 /lib64 || true"
+    chroot /mnt /bin/bash -c "ln -sf /usr/x86_64-linux-gnu/lib /lib/x86_64-linux-gnu || true"
     echo "* Apt upgrading image using native qemu chroot."
     #echo "* There may be some errors here..." 
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
