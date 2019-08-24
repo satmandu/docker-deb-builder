@@ -126,10 +126,10 @@ docker_args+="-e BUILDNATIVE=${BUILDNATIVE} "
 
 build_container () {
     echo "Build container ${image} not found."
-    if [ "$BASE_DIST" == "bionic" ] || [ "${image}" =~ bionic ]; then
+    if [ "$BASE_DIST" == "bionic" ] || [[ "${image}" =~ bionic ]]; then
         echo "Creating Ubuntu Bionic build container."
         docker build -t ${image} -f Dockerfile-ubuntu-bionic .
-    elif [ "${image}" =~ eoan ] || [ ${image} =~ 19.10 ]; then
+    elif [[ "${image}" =~ eoan ]] || [[ "${image}" =~ 19.10 ]]; then
         echo "Creating Ubuntu Eoan build container."
         docker build -t ${image} -f Dockerfile-ubuntu-19.10 .
     else
