@@ -212,12 +212,13 @@ waitfor () {
         sleep 10
     done
 
-    local wait_proc_base=$(basename "${wait_proc}")
+    local wait_proc_raw=$(basename "${wait_proc}")
+    local wait_proc_base=${wait_proc_raw:5}
     echo ${BASHPID} >> /flag/wait_${proc_name}_for_${wait_proc_base}
     echo ${wait_proc} >> /flag/wait_${proc_name}_for_${wait_proc_base}
     echo ${wait_proc} >> /flag/wait_${proc_name}_for_${wait_target}
     #[[ -z ${proc_name} ]] && proc_name=main
-    local wait_file="/flag/${wait_proc_base}"
+    local wait_file="/flag/done_${wait_proc_base}"
     [[ ! -f ${wait_file} ]] && wait_file ${wait_file}
     printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${wait_target} [X] " && \
     rm -f /flag/wait_${proc_name}_for_${wait_proc_base}
@@ -716,7 +717,7 @@ endfunc
 arm64_chroot_setup () {
 startfunc  
     waitfor "image_mount"
-  
+    sleep 5
     echo "* Setup ARM64 chroot"
     cp /usr/bin/qemu-aarch64-static /mnt/usr/bin
     
