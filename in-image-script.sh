@@ -205,9 +205,9 @@ waitfor () {
     local level_b=${FUNCNAME[2]:-_}
     local level_c=${FUNCNAME[3]:-_}
     local level_d=${FUNCNAME[4]:-_}
-    local proc_base=${level_a}.${level_b}.${level_c}.${level_d}
-    [[ $level_d = "main" ]] && proc_base=${level_a}.${level_b}.${level_c}
-    [[ $level_c = "main" ]] && proc_base=${level_a}.${level_b}
+    #local proc_base=${level_a}.${level_b}.${level_c}.${level_d}
+    #[[ $level_d = "main" ]] && proc_base=${level_a}.${level_b}.${level_c}
+    #[[ $level_c = "main" ]] && proc_base=${level_a}.${level_b}
     [[ $level_b = "main" ]] && proc_base=${level_a}
     #local proc_name=${FUNCNAME[1]:-main}
     local proc_name=${proc_base}
