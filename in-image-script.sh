@@ -276,7 +276,9 @@ startfunc () {
     #[[ $level_c = "main" ]] && proc_base=${level_a}.${level_b}
     [[ $level_c = "main" ]] && proc_base=${level_a}
     [[ $level_b = "main" ]] && proc_base=${level_a}
-
+    local verbose_proc=${proc_base}
+    [[ $level_d = "main" ]] && verbose_proc=${level_a}.${level_b}.${level_c}
+    [[ $level_c = "main" ]] && verbose_proc=${level_a}.${level_b}
 
 #proc_base="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-_}.${FUNCNAME[$((level+2))]:-_}.${FUNCNAME[$((level+3))]:-_}"
     local proc_file=$(mktemp /flag/strt_XXX_${proc_base})
@@ -289,13 +291,27 @@ startfunc () {
     #if [ ! "${proc_name}" == "spinnerwait" ] 
     #    then printf "%${COLUMNS}s\n" "Started: ${pretty_proc_name} [ ] "
     #fi
-    printf "%${COLUMNS}s\n" "Started: ${proc_base} [ ] "
-    echo -e 
+    printf "%${COLUMNS}s\n" "Started: ${verbose_proc} [ ] "
+    #echo -e 
     
 }
 
 endfunc () {
     caller=${1}
+    local level_a=${FUNCNAME[1]:-main}
+    local level_b=${FUNCNAME[2]:-_}
+    local level_c=${FUNCNAME[3]:-_}
+    local level_d=${FUNCNAME[4]:-_}
+    local proc_base=${level_a}.${level_b}.${level_c}.${level_d}
+    #[[ $level_d = "main" ]] && proc_base=${level_a}.${level_b}.${level_c}
+    [[ $level_d = "main" ]] && proc_base=${level_a}
+    #[[ $level_c = "main" ]] && proc_base=${level_a}.${level_b}
+    [[ $level_c = "main" ]] && proc_base=${level_a}
+    [[ $level_b = "main" ]] && proc_base=${level_a}
+    local verbose_proc=${proc_base}
+    [[ $level_d = "main" ]] && verbose_proc=${level_a}.${level_b}.${level_c}
+    [[ $level_c = "main" ]] && verbose_proc=${level_a}.${level_b}
+
     local parent_pid=${BASHPID}
     local proc_file=$(grep -lw ${parent_pid} /flag/* 2>/dev/null || true)
     [[ ${proc_file} = "/flag/main" ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
@@ -323,7 +339,8 @@ endfunc () {
     #if [ ! "${proc_name}" == "spinnerwait" ]
     #    then printf "%${COLUMNS}s\n" "Done: ${pretty_proc_name} [X] "
     #fi
-    printf "%${COLUMNS}s\n" "Done: ${proc_file_base:4} [X] "
+    #printf "%${COLUMNS}s\n" "Done: ${proc_file_base:4} [X] "
+    printf "%${COLUMNS}s\n" "Done: ${verbose_proc} [X] "
 }
 
 
@@ -1477,7 +1494,7 @@ startfunc
         echo 'Type in "echo 1 > /flag/done.ok_to_unmount_image_after_build"'
         echo "in a shell into this container to continue."
     fi  
-    wait_file "/flag/done.ok_to_umount_image_after_build"
+    wait_file "/flag/done.ok_to_unmount_image_after_build"
     umount /mnt/build
     umount /mnt/run
     umount /mnt/ccache
@@ -1583,7 +1600,8 @@ endfunc
 # The shell command would be something like this:
 # docker exec -it `cat ~/docker-rpi4-imagebuilder/build.cid` /bin/bash
 # Note that this flag is looked for in the image_and_chroot_cleanup function
-echo 1 > /flag/done.ok_to_umount_image_after_build
+echo 1 > /flag/done.ok_to_unmount_image_after_build
+
 
 # For debugging.
 echo 1 > /flag/done.ok_to_continue_after_mount_image
