@@ -635,8 +635,9 @@ endfunc ${BASHPID}
 }
 
 image_extract () {
-    waitfor "base_image_check"
 startfunc 
+    waitfor "base_image_check"
+
     if [[ -f "/source-ro/${base_image%.xz}" ]] 
         then
             cp "/source-ro/${base_image%.xz}" "${workdir}"/"$new_image".img
@@ -657,8 +658,9 @@ endfunc
 }
 
 image_mount () {
-    waitfor "image_extract"
 startfunc 
+    waitfor "image_extract"
+
     [[ -f "/output/loop_device" ]] && ( old_loop_device=$(< /output/loop_device) ; \
     dmsetup remove -f /dev/mapper/"${old_loop_device}"p2 &> /dev/null || true; \
     dmsetup remove -f /dev/mapper/"${old_loop_device}"p1 &> /dev/null || true; \
@@ -706,8 +708,9 @@ endfunc
 }
 
 arm64_chroot_setup () {
+startfunc  
     waitfor "image_mount"
-startfunc    
+  
     echo "* Setup ARM64 chroot"
     cp /usr/bin/qemu-aarch64-static /mnt/usr/bin
     
@@ -734,9 +737,10 @@ endfunc
 }
 
 image_apt_installs () {
+startfunc  
         waitfor "arm64_chroot_setup"
         waitfor "utility_scripts"
-startfunc    
+  
     echo "* Starting apt update."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     update &>> /tmp/"${FUNCNAME[0]}".install.log | grep packages | cut -d '.' -f 1  || true
@@ -780,9 +784,10 @@ endfunc
 
 
 rpi_firmware () {
+startfunc  
     git_get "https://github.com/Hexxeh/rpi-firmware" "rpi-firmware"
     waitfor "image_mount"
-startfunc    
+  
     cd "${workdir}"/rpi-firmware
     echo "* Installing current RPI firmware."
     
@@ -799,8 +804,9 @@ endfunc
 }
 
 kernelbuild_setup () {
+startfunc   
     git_get "$kernelgitrepo" "rpi-linux" "$kernel_branch"
-startfunc    
+ 
     majorversion=$(grep VERSION "${src_cache}"/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
     patchlevel=$(grep PATCHLEVEL "${src_cache}"/rpi-linux/Makefile | \
@@ -851,9 +857,10 @@ endfunc
 }
     
 kernel_build () {
+startfunc
     waitfor "kernelbuild_setup"
     waitfor "compiler_setup"
-startfunc
+
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     LOCALVERSION=$(< /tmp/LOCALVERSION)
 
@@ -909,8 +916,9 @@ endfunc
 
 
 kernel_debs () {
-    waitfor "kernelbuild_setup"
 startfunc
+    waitfor "kernelbuild_setup"
+
 
 # Don't remake debs if they already exist in output.
 KERNEL_VERS=$(< /tmp/KERNEL_VERS)
@@ -971,11 +979,12 @@ fi
 }   
 
 kernel_deb_install () {
+startfunc
     waitfor "kernel_debs"
     waitfor "image_mount"
     waitfor "added_scripts"
     waitfor "image_apt_installs"
-startfunc
+
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     # Try installing the generated debs in chroot before we do anything else.
     cp "${workdir}"/*.deb /mnt/tmp/
@@ -1006,8 +1015,9 @@ endfunc
 
 
 armstub8-gic () {
+startfunc 
     git_get "https://github.com/raspberrypi/tools.git" "rpi-tools"
-startfunc    
+   
     cd "${workdir}"/rpi-tools/armstubs
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make armstub8-gic.bin &>> /tmp/"${FUNCNAME[0]}".compile.log
     waitfor "image_mount"
@@ -1016,9 +1026,10 @@ endfunc
 }
 
 non-free_firmware () {
+startfunc 
     git_get "https://github.com/RPi-Distro/firmware-nonfree" "firmware-nonfree"
     waitfor "image_mount"
-startfunc    
+   
 
     mkdir -p ${libpath}/firmware
     cp -af "${workdir}"/firmware-nonfree/*  ${libpath}/firmware
@@ -1028,8 +1039,9 @@ endfunc
 
 
 rpi_config_txt_configuration () {
+startfunc 
     waitfor "image_mount"
-startfunc    
+   
     echo "* Making /boot/firmware/config.txt modifications."
     
     cat <<-EOF >> /mnt/boot/firmware/config.txt
@@ -1095,8 +1107,9 @@ endfunc
 }
 
 rpi_cmdline_txt_configuration () {
+startfunc 
     waitfor "image_mount"
-startfunc    
+   
     echo "* Making /boot/firmware/cmdline.txt modifications."
     
     # Seeing possible sdcard issues, so be safe for now.
@@ -1125,9 +1138,10 @@ endfunc
 
 
 rpi_userland () {
+startfunc
     git_get "https://github.com/raspberrypi/userland" "rpi-userland"
     waitfor "image_mount"
-startfunc
+
     echo "* Installing Raspberry Pi userland source."
     cd "${workdir}"
     mkdir -p /mnt/opt/vc
@@ -1177,9 +1191,10 @@ endfunc
 }
 
 wifi_firmware_modification () {
+startfunc  
     waitfor "image_mount"
     waitfor "non-free_firmware"
-startfunc    
+  
     #echo "* Modifying wireless firmware if necessary."
     # as per https://andrei.gherzan.ro/linux/raspbian-rpi4-64/
         
@@ -1256,8 +1271,9 @@ endfunc
 }
 
 first_boot_scripts_setup () {
+startfunc  
     waitfor "image_mount"
-startfunc    
+  
     echo "* Creating first start cleanup script."
     cat <<-'EOF' > /mnt/etc/rc.local
 	#!/bin/sh -e
@@ -1323,8 +1339,9 @@ endfunc
 } 
 
 added_scripts () {
+startfunc  
     waitfor "image_mount"
-startfunc    
+  
 
     ## This script allows flash-kernel to create the uncompressed kernel file
     #  on the boot partition.
@@ -1514,6 +1531,7 @@ endfunc
 }    
 
 export_log () {
+startfunc
 if [[ ! $JUSTDEBS ]];
     then
     waitfor "compressed_image_export"
@@ -1521,7 +1539,7 @@ if [[ ! $JUSTDEBS ]];
     waitfor "kernel_debs"
 fi
 
-startfunc
+
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     echo "* Build log at: build-log-${KERNEL_VERS}_${now}.log"
     cat $TMPLOG > /output/build-log-"${KERNEL_VERS}"_"${now}".log
