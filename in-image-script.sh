@@ -699,6 +699,7 @@ endfunc
 image_apt_installs () {
 startfunc  
         waitfor "utility_scripts"
+        waitfor "added_scripts"
         waitfor "kernel_debs"
         # Following removed since calling from arm64_chroot_setup
         #waitfor "arm64_chroot_setup"
