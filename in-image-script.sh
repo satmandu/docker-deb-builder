@@ -691,13 +691,16 @@ startfunc
     mkdir -p /mnt/build
     mount -o bind /build /mnt/build
     echo "* ARM64 chroot setup is complete."  
+    image_apt_installs &
+    spinnerwait image_apt_installs
 endfunc
 }
 
 image_apt_installs () {
 startfunc  
-        waitfor "arm64_chroot_setup"
         waitfor "utility_scripts"
+        # Following removed since calling from arm64_chroot_setup
+        #waitfor "arm64_chroot_setup"
   
     echo "* Starting apt update."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
@@ -1507,6 +1510,7 @@ fi
     echo "* Build log at: build-log-${KERNEL_VERS}_${now}.log"
     cat $TMPLOG > /output/build-log-"${KERNEL_VERS}"_"${now}".log
     chown "$USER":"$GROUP" /output/build-log-"${KERNEL_VERS}"_"${now}".log
+    echo "** Build appears to have completed successfully. **"
     
 endfunc
 }
@@ -1550,7 +1554,7 @@ kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && first_boot_scripts_setup &
 [[ ! $JUSTDEBS ]] && added_scripts &
 [[ ! $JUSTDEBS ]] && arm64_chroot_setup &
-[[ ! $JUSTDEBS ]] && image_apt_installs &
+#[[ ! $JUSTDEBS ]] && image_apt_installs &
 #[[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
 [[ ! $JUSTDEBS ]] && kernel_deb_install &
 [[ ! $JUSTDEBS ]] && image_and_chroot_cleanup &
