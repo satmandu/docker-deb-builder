@@ -259,7 +259,8 @@ endfunc () {
 
     local parent_pid=${BASHPID}
     local proc_file_raw=$(grep -lw ${parent_pid} /flag/* 2>/dev/null || true)
-    local proc_file=$(echo "${proc_file_raw}" | head -n 1 | awk '{print $1}')
+    #local proc_file=$(echo "${proc_file_raw}" | head -n 1 | awk '{print $1}')
+    local proc_file=${proc_file_raw%% *}
     [[ ${proc_file} = "/flag/main" ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
     local proc_file_base_raw=$(basename "${proc_file}")
