@@ -722,7 +722,6 @@ endfunc
 arm64_chroot_setup () {
 startfunc  
     waitfor "image_mount"
-    sleep 5
     echo "* Setup ARM64 chroot"
     cp /usr/bin/qemu-aarch64-static /mnt/usr/bin
     
