@@ -311,13 +311,13 @@ endfunc () {
 #         done
 #     pretty_proc_name=${proc_base}
     #local proc_name="${FUNCNAME[1]:-main}"
-   if [[ ! $DEBUG ]]
-        then 
-        if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_file_base:4}.*.log -print -quit)"
-            then
-                rm /tmp/${proc_file_base:4}*.log || true
-        fi
-    fi
+#    if [[ ! $DEBUG ]]
+#         then 
+#         if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_file_base:4}.*.log -print -quit)"
+#             then
+#                 rm /tmp/${proc_file_base:4}*.log || true
+#         fi
+#     fi
     mv -f /flag/${proc_file_base_raw:?} /flag/done_${proc_file_base}
     #if [ ! "${proc_name}" == "spinnerwait" ]
     #    then printf "%${COLUMNS}s\n" "Done: ${pretty_proc_name} [X] "
