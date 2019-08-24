@@ -201,7 +201,7 @@ waitfor () {
     #local proc_name=${FUNCNAME[1]:-main}
     #local proc_base=${level_a}
     local proc_name=${level_a}
-    echo ${BASHPID} >> /flag/wait_${proc_name}_for_${wait_target}
+    echo ${BASHPID} >> /flag/waiting_${proc_name}_for_${wait_target}
 [[ $silence = "0" ]] && printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${wait_target} [/] "
     #    local parent_pid=${BASHPID}
     #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
@@ -215,15 +215,15 @@ waitfor () {
 
     local wait_proc_raw=$(basename "${wait_proc}")
     local wait_proc_base=${wait_proc_raw:5}
-    echo ${BASHPID} >> /flag/wait_${proc_name}_for_${wait_proc_base}
-    echo ${wait_proc} >> /flag/wait_${proc_name}_for_${wait_proc_base}
-    echo ${wait_proc} >> /flag/wait_${proc_name}_for_${wait_target}
+    echo ${BASHPID} >> /flag/waiting_${proc_name}_for_${wait_proc_base}
+    echo ${wait_proc} >> /flag/waiting_${proc_name}_for_${wait_proc_base}
+    echo ${wait_proc} >> /flag/waiting_${proc_name}_for_${wait_target}
     #[[ -z ${proc_name} ]] && proc_name=main
     local wait_file="/flag/done_${wait_proc_base}"
     [[ ! -f ${wait_file} ]] && wait_file ${wait_file}
 [[ $silence = "0" ]] && printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${wait_target} [X] " && \
-    rm -f /flag/wait_${proc_name}_for_${wait_proc_base}
-    rm -f /flag/wait_${proc_name}_for_${wait_target}
+    rm -f /flag/waiting_${proc_name}_for_${wait_proc_base}
+    rm -f /flag/waiting_${proc_name}_for_${wait_target}
 }
 
 # waitforstart () {
@@ -1511,22 +1511,6 @@ endfunc
 
 image_unmount () {
 startfunc
-    waitfor "utility_scripts" 1
-    waitfor "rpi_firmware" 1
-    waitfor "armstub8-gic" 1
-    waitfor "non-free_firmware" 1 
-    waitfor "rpi_userland" 1
-    waitfor "andrei_gherzan_uboot_fork" 1
-    waitfor "kernelbuild_setup" 1
-    waitfor "kernel_debs" 1
-    waitfor "rpi_config_txt_configuration" 1
-    waitfor "rpi_cmdline_txt_configuration" 1
-    waitfor "wifi_firmware_modification" 1 
-    waitfor "first_boot_scripts_setup" 1
-    waitfor "added_scripts" 1
-    waitfor "arm64_chroot_setup" 1
-    waitfor "image_apt_installs" 1
-    waitfor "kernel_deb_install" 1
     waitfor "image_and_chroot_cleanup"
     
     echo "* Unmounting modified ${new_image}.img (This may take a minute or two.)"
