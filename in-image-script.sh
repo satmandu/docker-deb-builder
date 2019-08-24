@@ -1494,9 +1494,13 @@ startfunc
     chown -R "$USER":"$GROUP" /build
     cd "${workdir}"
     [[ $RAWIMAGE ]] && cp "${workdir}/${new_image}.img" \
-         "/output/${new_image}-${KERNEL_VERS}_${now}.img"
-    [[ $RAWIMAGE ]] && chown "$USER":"$GROUP" /output/"${new_image}"-"${KERNEL_VERS}"_"${now}".img.
-    [[ $RAWIMAGE ]] && echo "${new_image}-${KERNEL_VERS}_${now}.img created." 
+    /output/
+   #      "/output/${new_image}-${KERNEL_VERS}_${now}.img"
+    [[ $RAWIMAGE ]] && chown "$USER":"$GROUP" \
+     *.img
+    #/output/"${new_image}"-"${KERNEL_VERS}"_"${now}".img.
+
+    #[[ $RAWIMAGE ]] && echo "${new_image}-${KERNEL_VERS}_${now}.img created." 
     for i in "${image_compressors[@]}"
     do
      echo "* Compressing ${new_image} with $i and exporting."
