@@ -1417,7 +1417,7 @@ startfunc
     waitfor "first_boot_scripts_setup" 1
     waitfor "added_scripts" 1
     waitfor "arm64_chroot_setup"
-    waitfor "kernel_deb_install"
+    waitfor "kernel_nondeb_install"
   
     echo "* Finishing image setup."
     
