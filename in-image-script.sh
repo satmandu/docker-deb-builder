@@ -699,6 +699,7 @@ endfunc
 image_apt_installs () {
 startfunc  
         waitfor "utility_scripts"
+        waitfor "kernel_debs"
         # Following removed since calling from arm64_chroot_setup
         #waitfor "arm64_chroot_setup"
   
@@ -732,6 +733,10 @@ startfunc
     # These steps needed to allow x86_64 kernel programs to allow module installation.
     chroot /mnt /bin/bash -c "ln -sf /usr/x86_64-linux-gnu/lib64 /lib64 || true"
     chroot /mnt /bin/bash -c "ln -sf /usr/x86_64-linux-gnu/lib /lib/x86_64-linux-gnu || true"
+    echo "* Installing new kernel debs."
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" \
+    &>> /tmp/"${FUNCNAME[0]}".install.log || true
+
     echo "* Apt upgrading image using native qemu chroot."
     #echo "* There may be some errors here..." 
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
@@ -948,7 +953,7 @@ fi
  endfunc
 }   
 
-kernel_deb_install () {
+kernel_nondeb_install () {
 startfunc
     waitfor "kernel_debs"
     waitfor "image_mount"
@@ -967,8 +972,8 @@ startfunc
 #     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
 #     linux-image-4.15* linux-modules-4.15* -y --purge" \
 #     &>> /tmp/"${FUNCNAME[0]}".install.log || true
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" \
-    &>> /tmp/"${FUNCNAME[0]}".install.log || true
+#     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" \
+#     &>> /tmp/"${FUNCNAME[0]}".install.log || true
     cp /mnt/boot/initrd.img-"${KERNEL_VERS}" /mnt/boot/firmware/initrd.img
     cp /mnt/boot/vmlinuz-"${KERNEL_VERS}" /mnt/boot/firmware/vmlinuz
     vmlinuz_type=$(file -bn /mnt/boot/firmware/vmlinuz)
@@ -1478,7 +1483,7 @@ startfunc
 endfunc
 }
 
-compressed_image_export () {
+image_export () {
 startfunc
     waitfor "image_unmount"
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
@@ -1511,7 +1516,7 @@ export_log () {
 startfunc
 if [[ ! $JUSTDEBS ]];
     then
-    waitfor "compressed_image_export"
+    waitfor "image_export"
     else
     waitfor "kernel_debs"
 fi
@@ -1567,10 +1572,10 @@ kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && arm64_chroot_setup &
 #[[ ! $JUSTDEBS ]] && image_apt_installs &
 #[[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
-[[ ! $JUSTDEBS ]] && kernel_deb_install &
+[[ ! $JUSTDEBS ]] && kernel_nondeb_install &
 [[ ! $JUSTDEBS ]] && image_and_chroot_cleanup &
 [[ ! $JUSTDEBS ]] && image_unmount &
-[[ ! $JUSTDEBS ]] && compressed_image_export &
+[[ ! $JUSTDEBS ]] && image_export &
 export_log
 # This stops the tail process.
 rm $TMPLOG
