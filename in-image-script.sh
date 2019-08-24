@@ -317,7 +317,7 @@ endfunc () {
                 rm /tmp/${proc_file_base:4}*.log || true
         fi
     fi
-    mv -f ${proc_file_base_raw:?} /flag/done_${proc_file_base}
+    mv -f /flag/${proc_file_base_raw:?} /flag/done_${proc_file_base}
     #if [ ! "${proc_name}" == "spinnerwait" ]
     #    then printf "%${COLUMNS}s\n" "Done: ${pretty_proc_name} [X] "
     #fi
