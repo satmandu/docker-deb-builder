@@ -718,6 +718,7 @@ startfunc
     net-tools rng-tools -qq &>> /tmp/"${FUNCNAME[0]}".install.log || true
     # This setup DOES get around the issues with kernel
     # module support binaries built in amd64 instead of arm64.
+    # This happend for instance with Ubuntu Mainline kernel builds.
     #echo "* Downloading qemu-user-static"
     # qemu-user-binfmt needs to be installed after reboot though otherwise there 
     # are container problems.
@@ -732,7 +733,13 @@ startfunc
     chroot /mnt /bin/bash -c "ln -s /usr/x86_64-linux-gnu/lib64 /lib64"
     chroot /mnt /bin/bash -c "ln -s /usr/x86_64-linux-gnu/lib /lib/x86_64-linux-gnu"
     echo "* Apt upgrading image using native qemu chroot."
-    #echo "* There may be some errors here due to" 
+    #echo "* There may be some errors here..." 
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
+    linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 -y --purge" \
+    &>> /tmp/"${FUNCNAME[0]}".install.log || true
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
+    linux-image-4.15* linux-modules-4.15* -y --purge" \
+    &>> /tmp/"${FUNCNAME[0]}".install.log || true
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -qq || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -qq)" || true &>> /tmp/"${FUNCNAME[0]}".install.log || true
     echo "* Image apt upgrade done."
     echo "* Installing wifi & networking tools to image."
@@ -954,12 +961,12 @@ startfunc
     waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
     echo "* Installing ${KERNEL_VERS} debs to image."
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
-    linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 -y --purge" \
-    &>> /tmp/"${FUNCNAME[0]}".install.log || true
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
-    linux-image-4.15* linux-modules-4.15* -y --purge" \
-    &>> /tmp/"${FUNCNAME[0]}".install.log || true
+#     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
+#     linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 -y --purge" \
+#     &>> /tmp/"${FUNCNAME[0]}".install.log || true
+#     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
+#     linux-image-4.15* linux-modules-4.15* -y --purge" \
+#     &>> /tmp/"${FUNCNAME[0]}".install.log || true
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" \
     &>> /tmp/"${FUNCNAME[0]}".install.log || true
     cp /mnt/boot/initrd.img-"${KERNEL_VERS}" /mnt/boot/firmware/initrd.img
