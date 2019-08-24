@@ -868,9 +868,9 @@ cat <<-EOF> "${workdir}"/kernel_compile.sh
 	make -j${nprocs} CFLAGS=${CFLAGS} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=${workdir}/kernel-build/ bindeb-pkg
 EOF
     cd "${workdir}"/rpi-linux
-   # [[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
-    #grep --line-buffered -v libfakeroot-sysv.so
-     [[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& grep --line-buffered -v libfakeroot-sysv.so >> /tmp/"${FUNCNAME[0]}".compile.log 
+    [[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
+    grep --line-buffered -v libfakeroot-sysv.so
+     #[[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& grep --line-buffered -v libfakeroot-sysv.so >> /tmp/"${FUNCNAME[0]}".compile.log 
     cd "${workdir}"/kernel-build
     # This file should be EMPTY if all goes well.
     find . -executable ! -type d -exec file {} \; | grep x86-64 \
