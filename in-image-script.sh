@@ -369,13 +369,14 @@ arbitrary_wait_here () {
 # }
 
 git_get () {
-#startfunc
+startfunc
     local proc_name=${FUNCNAME[1]}
     [[ -z ${proc_name} ]] && proc_name=main
     local git_repo="${1}"
     local local_path="${2}"
     local git_branch="${3}"
     [ -n "${3}" ] || git_branch="master"
+    PrintLog "proc_name: ${proc_name}, git_repo: ${git_repo}, local_path: ${local_path}, git_branch: ${git_branch}" /tmp/git_get.log
 #     PrintLog "${src_cache}/${local_path}" /tmp/git_get.log
 #     PrintLog "${workdir}/${local_path}" /tmp/git_get.log
     PrintLog $(mkdir -p "${src_cache}/${local_path}") /tmp/git_get.log
@@ -432,11 +433,11 @@ ${local_git}\n\r${proc_name} getting files from cache volume. 😎\n"
     --quiet 2> /dev/null)
     echo -e "*${proc_name} Last Git Commits:\n$last_commit\n"
     rsync -a "${src_cache}/${local_path}" "${workdir}"/
-#endfunc
+endfunc
 }
 
 recreate_git () {
-[[ $DEBUG ]] && startfunc
+startfunc
     local git_repo="$1"
     local local_path="$2"
     local git_branch="$3"
@@ -448,7 +449,7 @@ recreate_git () {
     cd "${src_cache}" &>> /tmp/"${FUNCNAME[2]}".git.log
     git clone ${git_flags} $clone_flags ${local_path} \
     &>> /tmp/"${FUNCNAME[2]}".git.log 
-[[ $DEBUG ]] && endfunc
+endfunc
 }
 
 mv_arch () {
