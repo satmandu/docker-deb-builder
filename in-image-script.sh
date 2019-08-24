@@ -379,8 +379,8 @@ startfunc
     PrintLog "proc_name: ${proc_name}, git_repo: ${git_repo}, local_path: ${local_path}, git_branch: ${git_branch}" /tmp/git_get.log
 #     PrintLog "${src_cache}/${local_path}" /tmp/git_get.log
 #     PrintLog "${workdir}/${local_path}" /tmp/git_get.log
-    PrintLog $(mkdir -p "${src_cache}/${local_path}") /tmp/git_get.log
-    PrintLog $(mkdir -p "${workdir}/${local_path}") /tmp/git_get.log
+    mkdir -p "${src_cache}/${local_path}"
+    mkdir -p "${workdir}/${local_path}"
     
     local remote_git=$(git_check "${git_repo}" "${git_branch}")
     local local_git=$(local_check "${src_cache}/${local_path}" "${git_branch}")
@@ -390,7 +390,7 @@ startfunc
     local clone_flags=" ${git_repo} $git_extra_flags "
     local pull_flags="origin/${git_branch}"
     #echo -e "${proc_name}\nremote hash: ${remote_git}\nlocal hash: ${local_git}"
-      
+    PrintLog "${proc_name}->remote hash: ${remote_git}, local hash: ${local_git}" /tmp/git_get.log
     if [ ! "${remote_git}" = "${local_git}" ] || [[ $CLEAN_GIT ]] 
         then
             PrintLog "proc_name: ${proc_name}. Git local/remote hash ! match." /tmp/git_get.log
