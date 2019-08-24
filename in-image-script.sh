@@ -200,7 +200,7 @@ waitfor () {
     #local proc_name=${FUNCNAME[1]:-main}
     #local proc_base=${level_a}
     local proc_name=${level_a}
-    touch /flag/wait_${proc_name}_for_${wait_target}
+    echo ${BASHPID} >> /flag/wait_${proc_name}_for_${wait_target}
     printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${wait_target} [/] "
     #    local parent_pid=${BASHPID}
     #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
@@ -211,12 +211,17 @@ waitfor () {
         wait_proc=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${wait_target}" -o -regex ".*done_([A-Za-z0-9]{3})_${wait_target}" \) -print)
         sleep 10
     done
+
     local wait_proc_base=$(basename "${wait_proc}")
+    echo ${BASHPID} >> /flag/wait_${proc_name}_for_${wait_proc_base}
+    echo ${wait_proc} >> /flag/wait_${proc_name}_for_${wait_proc_base}
+    echo ${wait_proc} >> /flag/wait_${proc_name}_for_${wait_target}
     #[[ -z ${proc_name} ]] && proc_name=main
-    local wait_file="/flag/done_${wait_proc_base:5}"
+    local wait_file="/flag/${wait_proc_base}"
     [[ ! -f ${wait_file} ]] && wait_file ${wait_file}
     printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${wait_target} [X] " && \
     rm -f /flag/wait_${proc_name}_for_${wait_proc_base}
+    rm -f /flag/wait_${proc_name}_for_${wait_target}
 }
 
 # waitforstart () {
@@ -309,10 +314,10 @@ endfunc () {
         then 
         if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_file_base:4}.*.log -print -quit)"
             then
-                rm /tmp/${proc_file_base:4}.*.log || true
+                rm /tmp/${proc_file_base:4}*.log || true
         fi
     fi
-    mv -f /flag/strt_${proc_file_base} /flag/done_${proc_file_base}
+    mv -f ${proc_file_base_raw:?} /flag/done_${proc_file_base}
     #if [ ! "${proc_name}" == "spinnerwait" ]
     #    then printf "%${COLUMNS}s\n" "Done: ${pretty_proc_name} [X] "
     #fi
