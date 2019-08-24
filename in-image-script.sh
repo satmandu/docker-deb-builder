@@ -153,33 +153,18 @@ wait_file() {
 
 
 spinnerwait () {
-startfunc
 (
+startfunc
 flock 201 
     [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
-#     local level_a=${FUNCNAME[1]:-main}
-#     local level_b=${FUNCNAME[2]:-_}
-#     local level_c=${FUNCNAME[3]:-_}
-#     local level_d=${FUNCNAME[4]:-_}
-#     local proc_name=${FUNCNAME[1]:-main}
-#     local parent_pid=${BASHPID}
-#     #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
-    #[[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[2]} /flag/* || true)
-    #[[ -z ${proc_file} ]] && proc_file=$(grep -lw ${1} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${1}" -o -regex ".*done_([A-Za-z0-9]{3})_${1}" \) -print)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
-#         if [[ -f "/flag/start.spinnerwait" ]]
-#         then
-#             PrintLog "${1} waiting" /tmp/spinnerwait.log
-#             wait_file "/flag/done.spinnerwait" ${start_timeout}
-#             PrintLog "${1} done waiting" /tmp/spinnerwait.log
-#             rm -f "/flag/done.spinnerwait"
-#         fi
         PrintLog "start.${1}" /tmp/spinnerwait.log
         wait_file "${proc_file}" || \
         PrintLog "${1} didn't start in $? seconds." /tmp/spinnerwait.log
         local job_id=$(< ${proc_file})
+        [[ ${job_id} = ${mainPID} ]] && return
         PrintLog "Start wait for ${1}:${job_id} end." /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP "${job_id}" &>/dev/null)
@@ -193,8 +178,8 @@ flock 201
         PrintLog "${1}:${job_id} done." /tmp/spinnerwait.log
         PrintLog "${1}:${job_id} pgrep exit:$(pgrep -cxP "${job_id}")" /tmp/spinnerwait.log
         PrintLog "${1}:${job_id} $(pstree -p)" /tmp/spinnerwait.log
-) 201>/flag/spinnerwait
 endfunc
+) 201>/flag/spinnerwait
 }
 
 
@@ -202,15 +187,16 @@ waitfor () {
     local wait_target=${1}
     [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
     local level_a=${FUNCNAME[1]:-main}
-    local level_b=${FUNCNAME[2]:-_}
-    local level_c=${FUNCNAME[3]:-_}
-    local level_d=${FUNCNAME[4]:-_}
+#     local level_b=${FUNCNAME[2]:-_}
+#     local level_c=${FUNCNAME[3]:-_}
+#     local level_d=${FUNCNAME[4]:-_}
     #local proc_base=${level_a}.${level_b}.${level_c}.${level_d}
     #[[ $level_d = "main" ]] && proc_base=${level_a}.${level_b}.${level_c}
     #[[ $level_c = "main" ]] && proc_base=${level_a}.${level_b}
-    [[ $level_b = "main" ]] && proc_base=${level_a}
+    #[[ $level_b = "main" ]] && proc_base=${level_a}
     #local proc_name=${FUNCNAME[1]:-main}
-    local proc_name=${proc_base}
+    #local proc_base=${level_a}
+    local proc_name=${level_a}
     touch /flag/wait_${proc_name}_for_${wait_target}
     printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${wait_target} [/] "
     #    local parent_pid=${BASHPID}
@@ -224,16 +210,16 @@ waitfor () {
     done
     local wait_proc_base=$(basename "${wait_proc}")
     #[[ -z ${proc_name} ]] && proc_name=main
-    local start_timeout=100000
-    wait_file "/flag/done_${wait_proc_base:5}" $start_timeout
+    local wait_file="/flag/done_${wait_proc_base:5}"
+    [[ ! -f ${wait_file} ]] && wait_file ${wait_file}
     printf "%${COLUMNS}s\r\n\r" "${proc_name} noticed: ${wait_target} [X] " && \
     rm -f /flag/wait_${proc_name}_for_${wait_proc_base}
 }
 
-waitforstart () {
-    local start_timeout=10000
-    wait_file "/flag/start.${1}" $start_timeout
-}
+# waitforstart () {
+#     local start_timeout=10000
+#     wait_file "/flag/start.${1}" $start_timeout
+# }
 
 
 # startfunc () {
@@ -270,24 +256,24 @@ waitforstart () {
 startfunc () {
     local level="${1:-1}"
     [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
-    local level_a=${FUNCNAME[1]:-main}
-    local level_b=${FUNCNAME[2]:-_}
-    local level_c=${FUNCNAME[3]:-_}
-    local level_d=${FUNCNAME[4]:-_}
-    local proc_base=${level_a}.${level_b}.${level_c}.${level_d}
-    [[ $level_d = "main" ]] && proc_base=${level_a}.${level_b}.${level_c}
-    [[ $level_c = "main" ]] && proc_base=${level_a}.${level_b}
+#     local level_a=${FUNCNAME[1]:-main}
+#     local level_b=${FUNCNAME[2]:-_}
+#     local level_c=${FUNCNAME[3]:-_}
+#     local level_d=${FUNCNAME[4]:-_}
+#     local proc_base=${level_a}.${level_b}.${level_c}.${level_d}
+#     [[ $level_d = "main" ]] && proc_base=${level_a}.${level_b}.${level_c}
+#     [[ $level_c = "main" ]] && proc_base=${level_a}.${level_b}
     [[ $level_b = "main" ]] && proc_base=${level_a}
 
 
 #proc_base="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-_}.${FUNCNAME[$((level+2))]:-_}.${FUNCNAME[$((level+3))]:-_}"
     local proc_file=$(mktemp /flag/strt_XXX_${proc_base})
     echo ${BASHPID} > "${proc_file}"
-    [[ ${BASHPID} = ${mainPID} ]] && echo ${proc_base} > "${proc_file}"
+    #[[ ${BASHPID} = ${mainPID} ]] && echo ${proc_base} > "${proc_file}"
 #${FUNCNAME[${level}]:-main} = local pretty_proc_name="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-\b \b}.${FUNCNAME[$((level+2))]:-\b \b}.${FUNCNAME[$((level+3))]:-\b \b}"
     #[[ -z ${FUNCNAME[1]} ]] && proc_name=main
 
-    [[ ! -e ${proc_file} ]] && touch ${proc_file}|| true
+    #[[ ! -e ${proc_file} ]] && touch ${proc_file}|| true
     #if [ ! "${proc_name}" == "spinnerwait" ] 
     #    then printf "%${COLUMNS}s\n" "Started: ${pretty_proc_name} [ ] "
     #fi
@@ -300,8 +286,8 @@ endfunc () {
     caller=${1}
     local parent_pid=${BASHPID}
     local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
-    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
-    [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
+    [[ ${proc_file} = "/flag/main" ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
+   # [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
