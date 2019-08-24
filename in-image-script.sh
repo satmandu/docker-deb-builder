@@ -1588,9 +1588,9 @@ kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && arm64_chroot_setup &
 [[ ! $JUSTDEBS ]] && image_apt_installs &
 #[[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
-[[ ! $JUSTDEBS ]] && kernel_deb_install
-[[ ! $JUSTDEBS ]] && image_and_chroot_cleanup
-[[ ! $JUSTDEBS ]] && image_unmount
+[[ ! $JUSTDEBS ]] && kernel_deb_install &
+[[ ! $JUSTDEBS ]] && image_and_chroot_cleanup &
+[[ ! $JUSTDEBS ]] && image_unmount &
 [[ ! $JUSTDEBS ]] && compressed_image_export &
 export_log
 # This stops the tail process.
