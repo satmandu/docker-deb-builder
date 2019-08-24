@@ -25,7 +25,6 @@ new_image="${BASE_DIST}-preinstalled-server-arm64+raspi4"
 # Comment out the following if apt is throwing errors silently.
 # Note that these only work for the chroot commands.
 silence_apt_flags="-o Dpkg::Use-Pty=0 -qq < /dev/null > /dev/null "
-silence_apt_update_flags="-o Dpkg::Use-Pty=0 < /dev/null > /dev/null "
 
 if [ "${BUILDHOST_ARCH}" = "aarch64" ]
     then
