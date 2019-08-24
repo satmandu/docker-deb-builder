@@ -358,7 +358,6 @@ arbitrary_wait_here () {
         echo 'Type in "echo 1 > /flag/done.ok_to_continue_after_here"'
         echo "in a shell into this container to continue."
     fi 
-    #waitfor "ok_to_continue_after_here"
     wait_file "/flag/done.ok_to_continue_after_here"
 }
 
@@ -698,7 +697,7 @@ startfunc
         echo 'Type in "echo 1 > /flag/done.ok_to_continue_after_mount_image"'
         echo "in a shell into this container to continue."
     fi 
-    waitfor "ok_to_continue_after_mount_image"
+    wait_file "ok_to_continue_after_mount_image"
     
     mount /dev/mapper/"${loop_device}"p2 /mnt
     mount /dev/mapper/"${loop_device}"p1 /mnt/boot/firmware
@@ -1459,7 +1458,7 @@ startfunc
         echo 'Type in "echo 1 > /flag/done.ok_to_unmount_image_after_build"'
         echo "in a shell into this container to continue."
     fi  
-    waitfor "ok_to_umount_image_after_build"
+    wait_file "ok_to_umount_image_after_build"
     umount /mnt/build
     umount /mnt/run
     umount /mnt/ccache
@@ -1495,7 +1494,7 @@ startfunc
         echo 'Type in "echo 1 > /flag/done.ok_to_exit_container_after_build"'
         echo "in a shell into this container to continue."
     fi 
-    waitfor "ok_to_exit_container_after_build"
+    wait_file "ok_to_exit_container_after_build"
 endfunc
 }
 
