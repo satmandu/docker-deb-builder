@@ -188,7 +188,7 @@ endfunc
 waitfor () {
     local wait_target=${1}
     local silence=${2:-0}
-    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
+    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
     local level_a=${FUNCNAME[1]:-main}
 #     local level_b=${FUNCNAME[2]:-_}
 #     local level_c=${FUNCNAME[3]:-_}
@@ -205,7 +205,7 @@ waitfor () {
     local wait_proc=
     until [[ -n ${wait_proc} ]]; do
         wait_proc=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${wait_target}" -o -regex ".*done_([A-Za-z0-9]{3})_${wait_target}" \) -print)
-        sleep 10
+        sleep 1
     done
 
     local wait_proc_raw=$(basename "${wait_proc}")
@@ -223,8 +223,7 @@ waitfor () {
 
 
 startfunc () {
-    local level="${1:-1}"
-    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}Level:${level}"
+    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
     local level_a=${FUNCNAME[1]:-main}
     local level_b=${FUNCNAME[2]:-_}
     local level_c=${FUNCNAME[3]:-_}
@@ -260,7 +259,7 @@ endfunc () {
 
     local parent_pid=${BASHPID}
     local proc_file_raw=$(grep -lw ${parent_pid} /flag/* 2>/dev/null || true)
-    local proc_file=$(echo "${proc_file_raw}" | head -n 1 )
+    local proc_file=$(echo "${proc_file_raw}" | awk 'NR==1{print $1}')
     [[ ${proc_file} = "/flag/main" ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
     local proc_file_base_raw=$(basename "${proc_file}")
