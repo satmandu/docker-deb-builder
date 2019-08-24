@@ -203,10 +203,6 @@ waitfor () {
     local proc_name=${level_a}
     echo ${BASHPID} >> /flag/waiting_${proc_name}_for_${wait_target}
 [[ $silence = "0" ]] && printf "%${COLUMNS}s\r\n\r" "${proc_name} waits for: ${wait_target} [/] "
-    #    local parent_pid=${BASHPID}
-    #local proc_file=$(grep -lw ${parent_pid} /flag/* || true)
-    #[[ ${proc_file} = "/flag/main" ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
-    #[[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     local wait_proc=
     until [[ -n ${wait_proc} ]]; do
         wait_proc=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${wait_target}" -o -regex ".*done_([A-Za-z0-9]{3})_${wait_target}" \) -print)
@@ -226,42 +222,6 @@ waitfor () {
     rm -f /flag/waiting_${proc_name}_for_${wait_target}
 }
 
-# waitforstart () {
-#     local start_timeout=10000
-#     wait_file "/flag/start.${1}" $start_timeout
-# }
-
-
-# startfunc () {
-#     local level="${1:-1}"
-#     local proc_name="${FUNCNAME[${level}]:-main}
-#     #local proc_name=${FUNCNAME[${level}]}
-#     #[[ -z ${proc_name} ]] && proc_name=main
-#     echo $BASHPID > /flag/start.${proc_name}
-#     [[ ! -e /flag/start.${proc_name} ]] && touch /flag/start.${proc_name} || true
-#     if [ ! "${proc_name}" == "spinnerwait" ] 
-#         then printf "%${COLUMNS}s\n" "Started: ${proc_name} [ ] "
-#     fi
-#     
-# }
-# 
-# endfunc () {
-#     local level="${1:-1}"
-#     local proc_name="${FUNCNAME[${level}]:-main}
-#     #local proc_name=${FUNCNAME[${level}]}
-#     #[[ -z ${proc_name} ]] && proc_name=main
-#    if [[ ! $DEBUG ]]
-#         then 
-#         if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_name}.*.log -print -quit)"
-#             then
-#                 rm /tmp/${proc_name}.*.log || true
-#         fi
-#     fi
-#     mv -f /flag/start.${proc_name} /flag/done.${proc_name}
-#     if [ ! "${proc_name}" == "spinnerwait" ]
-#         then printf "%${COLUMNS}s\n" "Done: ${proc_name} [X] "
-#     fi
-# }
 
 startfunc () {
     local level="${1:-1}"
@@ -280,20 +240,9 @@ startfunc () {
     [[ $level_d = "main" ]] && verbose_proc=${level_a}.${level_b}.${level_c}
     [[ $level_c = "main" ]] && verbose_proc=${level_a}.${level_b}
 
-#proc_base="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-_}.${FUNCNAME[$((level+2))]:-_}.${FUNCNAME[$((level+3))]:-_}"
     local proc_file=$(mktemp /flag/strt_XXX_${proc_base})
     echo ${BASHPID} > "${proc_file}"
-    #[[ ${BASHPID} = ${mainPID} ]] && echo ${proc_base} > "${proc_file}"
-#${FUNCNAME[${level}]:-main} = local pretty_proc_name="${FUNCNAME[${level}]:-main}.${FUNCNAME[$((level++))]:-\b \b}.${FUNCNAME[$((level+2))]:-\b \b}.${FUNCNAME[$((level+3))]:-\b \b}"
-    #[[ -z ${FUNCNAME[1]} ]] && proc_name=main
-
-    #[[ ! -e ${proc_file} ]] && touch ${proc_file}|| true
-    #if [ ! "${proc_name}" == "spinnerwait" ] 
-    #    then printf "%${COLUMNS}s\n" "Started: ${pretty_proc_name} [ ] "
-    #fi
     printf "%${COLUMNS}s\n" "Started: ${verbose_proc} [ ] "
-    #echo -e 
-    
 }
 
 endfunc () {
@@ -303,9 +252,7 @@ endfunc () {
     local level_c=${FUNCNAME[3]:-_}
     local level_d=${FUNCNAME[4]:-_}
     local proc_base=${level_a}.${level_b}.${level_c}.${level_d}
-    #[[ $level_d = "main" ]] && proc_base=${level_a}.${level_b}.${level_c}
     [[ $level_d = "main" ]] && proc_base=${level_a}
-    #[[ $level_c = "main" ]] && proc_base=${level_a}.${level_b}
     [[ $level_c = "main" ]] && proc_base=${level_a}
     [[ $level_b = "main" ]] && proc_base=${level_a}
     local verbose_proc=${proc_base}
@@ -313,33 +260,19 @@ endfunc () {
     [[ $level_c = "main" ]] && verbose_proc=${level_a}.${level_b}
 
     local parent_pid=${BASHPID}
-    local proc_file=$(grep -lw ${parent_pid} /flag/* 2>/dev/null || true)
+    local proc_file=$(grep -lw ${parent_pid} /flag/* 2>/dev/null | head -n 1 || true)
     [[ ${proc_file} = "/flag/main" ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
-   # [[ -z ${proc_file} ]] && proc_file=$(grep -lw ${FUNCNAME[1]} /flag/* || true)
     [[ -z ${proc_file} ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${caller}" -o -regex ".*done_([A-Za-z0-9]{3})_${caller}" \) -print)
     local proc_file_base_raw=$(basename "${proc_file}")
     local proc_file_base=${proc_file_base_raw:5}
-#     local proc_temp=${proc_file_base}
-#     local proc_base
-#     until [[ $proc_temp = $proc_base ]]
-#         do
-#         proc_base=${proc_temp%.*}
-#         proc_temp=${proc_base%.*}
-#         done
-#     pretty_proc_name=${proc_base}
-    #local proc_name="${FUNCNAME[1]:-main}"
-#    if [[ ! $DEBUG ]]
-#         then 
-#         if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_file_base:4}.*.log -print -quit)"
-#             then
-#                 rm /tmp/${proc_file_base:4}*.log || true
-#         fi
-#     fi
+   if [[ ! $DEBUG ]]
+        then 
+        if test -n "$(find /tmp -maxdepth 1 ! -name 'spinnerwait.*' -name ${proc_file_base:4}.*.log -print -quit)"
+            then
+                rm /tmp/${proc_file_base:4}*.log || true
+        fi
+    fi
     mv -f /flag/${proc_file_base_raw:?} /flag/done_${proc_file_base}
-    #if [ ! "${proc_name}" == "spinnerwait" ]
-    #    then printf "%${COLUMNS}s\n" "Done: ${pretty_proc_name} [X] "
-    #fi
-    #printf "%${COLUMNS}s\n" "Done: ${proc_file_base:4} [X] "
     printf "%${COLUMNS}s\n" "Done: ${verbose_proc} [X] "
 }
 
@@ -395,8 +328,6 @@ startfunc
     local git_branch="${3}"
     [ -n "${3}" ] || git_branch="master"
     PrintLog "proc_name: ${proc_name}, git_repo: ${git_repo}, local_path: ${local_path}, git_branch: ${git_branch}" /tmp/git_get.log
-#     PrintLog "${src_cache}/${local_path}" /tmp/git_get.log
-#     PrintLog "${workdir}/${local_path}" /tmp/git_get.log
     mkdir -p "${src_cache}/${local_path}"
     mkdir -p "${workdir}/${local_path}"
     
@@ -407,7 +338,6 @@ startfunc
     local git_flags=" --quiet --depth=1 "
     local clone_flags=" ${git_repo} $git_extra_flags "
     local pull_flags="origin/${git_branch}"
-    #echo -e "${proc_name}\nremote hash: ${remote_git}\nlocal hash: ${local_git}"
     PrintLog "${proc_name}->remote hash: ${remote_git}, local hash: ${local_git}" /tmp/git_get.log
     if [ ! "${remote_git}" = "${local_git}" ] || [[ $CLEAN_GIT ]] 
         then
