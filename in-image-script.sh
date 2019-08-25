@@ -174,7 +174,7 @@ flock 201
             do 
             tput rc
             printf "%${COLUMNS}s\r" "${1} .$s"
-            sleep .1
+            sleep .05
             done
         done
         PrintLog "${1}:${job_id} done." /tmp/spinnerwait.log
@@ -205,7 +205,7 @@ waitfor () {
     local wait_proc=
     until [[ -n ${wait_proc} ]]; do
         wait_proc=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${wait_target}" -o -regex ".*done_([A-Za-z0-9]{3})_${wait_target}" \) -print)
-        sleep 1
+        sleep $(echo "scale=2; $(( $RANDOM % 50 ))/100" | bc)
     done
 
     local wait_proc_raw=$(basename "${wait_proc}")
