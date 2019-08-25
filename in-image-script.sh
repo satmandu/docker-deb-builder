@@ -162,7 +162,7 @@ startfunc
     [[ -z ${spin_target_file} ]] && spin_target_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${1}" -o -regex ".*done_([A-Za-z0-9]{3})_${1}" \) -print)
     until [[ -n ${spin_target_file} ]]; do
         spin_target_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${spin_target}" -o -regex ".*done_([A-Za-z0-9]{3})_${spin_target}" \) -print)
-        sleep $(echo "scale=2; .5+$(( $RANDOM % 50 ))/100" | bc)
+        sleep $(echo "scale=2; .5+$(( RANDOM % 50 ))/100" | bc)
     done
     local spin_target_file_base_raw=$(basename "${spin_target_file}")
     local spin_target_file_base=${spin_target_file_base_raw:5}
@@ -181,7 +181,7 @@ startfunc
             do 
             tput rc
             printf "%${COLUMNS}s\r" "${1} .$s"
-            sleep .016
+            sleep .06
             done
         done
         PrintLog "${1}:${job_id} done." /tmp/spinnerwait.log
@@ -213,7 +213,7 @@ waitfor () {
     local wait_proc=
     until [[ -n ${wait_proc} ]]; do
         wait_proc=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${wait_target}" -o -regex ".*done_([A-Za-z0-9]{3})_${wait_target}" \) -print)
-        sleep $(echo "scale=2; .5+$(( $RANDOM % 50 ))/100" | bc)
+        sleep $(echo "scale=2; .5+$(( RANDOM % 50 ))/100" | bc)
     done
 
     local wait_proc_raw=$(basename "${wait_proc}")
