@@ -581,7 +581,7 @@ startfunc
     #wget_fail=0
     #wget -nv ${base_image_url} -O ${base_image} || wget_fail=1
     curl_fail=0
-    curl -o "$base_image_url" "${base_image}" || curl_fail=1
+    curl -o "$base_image_url" "${base_image}"
 endfunc
 }
 
