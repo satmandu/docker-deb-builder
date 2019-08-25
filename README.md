@@ -97,6 +97,16 @@ git pull ; JUSTDEBS=1 REBUILD=1 ./build-image
 Note that the u-boot in the ubuntu package [u-boot-rpi](https://packages.ubuntu.com/eoan/u-boot-rpi) doesn't yet support the RPI. 
 The u-boot here has been compiled from @agherzan's WIP u-boot [fork here](https://github.com/agherzan/u-boot/tree/ag/v2019.07-rpi4-wip).
 
+## Resetting your build setup (useful if you're having compilation problems and suspect that you have a corrupted cache.)
+
+1. Remove your local git cloned folder.
+```rm -rf ~/docker-rpi4-imagebuilder```
+
+2. Remove the docker cache volume this setup uses.
+```docker volume rm rpi4-imagebuilder-cache```
+
+3. Start again with the steps above.
+
 
 
 ## Note that running this repeatedly will create much container cruft.
