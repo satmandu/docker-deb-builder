@@ -4,6 +4,7 @@
 mkdir -p /flag || echo "Are you sure you didn't mean to run ./build-image ?"
 echo $BASHPID > /flag/main
 mainPID=$BASHPID
+echo "mainPID=${BASHPID}" >> /tmp/env.txt
 # The above is used for, amongst other things, the tail log process.
 
 # Set to "/bin/bash -e" only when debugging.
@@ -231,6 +232,7 @@ waitfor () {
 
 
 startfunc () {
+. /tmp/env.txt
     [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
     local level_a=${FUNCNAME[1]:-main}
     local level_b=${FUNCNAME[2]:-_}
@@ -440,6 +442,7 @@ endfunc
 
 utility_scripts () {
 startfunc
+. /tmp/env.txt
 # Apt concurrency manager wrapper via
 # https://askubuntu.com/posts/375031/revisions
 cat <<'EOF'> /usr/bin/chroot-apt-wrapper
@@ -608,8 +611,6 @@ startfunc
     if [[ -f "/source-ro/${base_image%.xz}" ]] 
         then
             cp "/source-ro/${base_image%.xz}" "${workdir}"/"$new_image".img
-        [[ $DELTA ]] && (ln -s "/source-ro/${base_image%.xz}" \
-            "${workdir}"/old_image.img &)
         else
             local size
             local filename   
@@ -618,7 +619,6 @@ startfunc
             pvcmd="pv -s ${size} -cfperb -N "xzcat:${base_image}" ${workdir}/$base_image"
             echo "$pvcmd"
             $pvcmd | xzcat > "${workdir}"/"$new_image".img
-        [[ $DELTA ]] && (cp "${workdir}"/"$new_image".img "${workdir}"/old_image.img &)
     fi
 
 endfunc
@@ -627,7 +627,7 @@ endfunc
 image_mount () {
 startfunc 
     waitfor "image_extract"
-
+. /tmp/env.txt
     [[ -f "/output/loop_device" ]] && ( old_loop_device=$(< /output/loop_device) ; \
     dmsetup remove -f /dev/mapper/"${old_loop_device}"p2 &> /dev/null || true; \
     dmsetup remove -f /dev/mapper/"${old_loop_device}"p1 &> /dev/null || true; \
@@ -664,10 +664,11 @@ startfunc
     # Ubuntu after bionic symlinks /lib to /usr/lib
     if [[ -L "/mnt/lib" && -d "/mnt/lib" ]]
     then
-        libpath="/mnt/usr/lib"
+        MNTLIBPATH="/mnt/usr/lib"
     else
-        libpath="/mnt/lib"
+        MNTLIBPATH="/mnt/lib"
     fi
+    echo "MNTLIBPATH=${MNTLIBPATH}" >> /tmp/env.txt
     # Guestmount is at least an order of magnitude slower than using loopback device.
     #guestmount -a ${new_image}.img -m /dev/sda2 -m /dev/sda1:/boot/firmware --rw /mnt -o dev
     
@@ -675,8 +676,9 @@ endfunc
 }
 
 arm64_chroot_setup () {
-startfunc  
+startfunc
     waitfor "image_mount"
+. /tmp/env.txt
     echo "* Setup ARM64 chroot"
     cp /usr/bin/qemu-aarch64-static /mnt/usr/bin
     
@@ -709,6 +711,7 @@ startfunc
         waitfor "utility_scripts"
         waitfor "added_scripts"
         waitfor "kernel_debs"
+. /tmp/env.txt
         # Following removed since calling from arm64_chroot_setup
         #waitfor "arm64_chroot_setup"
   
@@ -775,7 +778,7 @@ rpi_firmware () {
 startfunc  
     git_get "https://github.com/Hexxeh/rpi-firmware" "rpi-firmware"
     waitfor "image_mount"
-  
+. /tmp/env.txt  
     cd "${workdir}"/rpi-firmware
     echo "* Installing current RPI firmware."
     
@@ -794,7 +797,7 @@ endfunc
 kernelbuild_setup () {
 startfunc   
     git_get "$kernelgitrepo" "rpi-linux" "$kernel_branch"
- 
+. /tmp/env.txt 
     majorversion=$(grep VERSION "${src_cache}"/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
     patchlevel=$(grep PATCHLEVEL "${src_cache}"/rpi-linux/Makefile | \
@@ -811,6 +814,7 @@ startfunc
     
     KERNELREV=$(git -C "${src_cache}"/rpi-linux rev-parse --short HEAD) > /dev/null
     echo "$KERNELREV" > /tmp/KERNELREV
+    echo "KERNELREV=${KERNELREV}" >> /tmp/env.txt
     cd "${workdir}"/rpi-linux
     git update-index --refresh &>> /tmp/"${FUNCNAME[0]}".compile.log || true
     git diff-index --quiet HEAD &>> /tmp/"${FUNCNAME[0]}".compile.log || true
@@ -839,7 +843,9 @@ startfunc
     
     echo "** Current Kernel Version: ${KERNEL_VERS}" 
     echo "${KERNEL_VERS}" > /tmp/KERNEL_VERS
+    echo "KERNEL_VERS=${KERNEL_VERS}" >> /tmp/env.txt
     echo "${LOCALVERSION}" > /tmp/LOCALVERSION
+    echo "LOCALVERSION=${LOCALVERSION}" >> /tmp/env.txt
     arbitrary_wait_here
 endfunc
 }
@@ -848,7 +854,7 @@ kernel_build () {
 startfunc
     waitfor "kernelbuild_setup"
     waitfor "compiler_setup"
-
+. /tmp/env.txt
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     LOCALVERSION=$(< /tmp/LOCALVERSION)
 
@@ -906,7 +912,7 @@ endfunc
 kernel_debs () {
 startfunc
     waitfor "kernelbuild_setup"
-
+. /tmp/env.txt
 
 # Don't remake debs if they already exist in output.
 KERNEL_VERS=$(< /tmp/KERNEL_VERS)
@@ -976,6 +982,7 @@ startfunc
     waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
     waitfor "image_apt_installs"
+. /tmp/env.txt
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
 #     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
 #     linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 -y --purge" \
@@ -1003,7 +1010,7 @@ endfunc
 armstub8-gic () {
 startfunc 
     git_get "https://github.com/raspberrypi/tools.git" "rpi-tools"
-   
+. /tmp/env.txt   
     cd "${workdir}"/rpi-tools/armstubs
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make armstub8-gic.bin &>> /tmp/"${FUNCNAME[0]}".compile.log
     waitfor "image_mount"
@@ -1015,10 +1022,9 @@ non-free_firmware () {
 startfunc 
     git_get "https://github.com/RPi-Distro/firmware-nonfree" "firmware-nonfree"
     waitfor "image_mount"
-   
-
-    mkdir -p ${libpath}/firmware
-    cp -af "${workdir}"/firmware-nonfree/*  ${libpath}/firmware
+. /tmp/env.txt
+    mkdir -p ${MNTLIBPATH}/firmware
+    cp -af "${workdir}"/firmware-nonfree/*  ${MNTLIBPATH}/firmware
 
 endfunc
 }
@@ -1027,7 +1033,7 @@ endfunc
 rpi_config_txt_configuration () {
 startfunc 
     waitfor "image_mount"
-   
+ . /tmp/env.txt  
     echo "* Making /boot/firmware/config.txt modifications."
     
     cat <<-EOF >> /mnt/boot/firmware/config.txt
@@ -1095,7 +1101,7 @@ endfunc
 rpi_cmdline_txt_configuration () {
 startfunc 
     waitfor "image_mount"
-   
+ . /tmp/env.txt  
     echo "* Making /boot/firmware/cmdline.txt modifications."
     
     # Seeing possible sdcard issues, so be safe for now.
@@ -1127,7 +1133,7 @@ rpi_userland () {
 startfunc
     git_get "https://github.com/raspberrypi/userland" "rpi-userland"
     waitfor "image_mount"
-
+. /tmp/env.txt
     echo "* Installing Raspberry Pi userland source."
     cd "${workdir}"
     mkdir -p /mnt/opt/vc
@@ -1180,14 +1186,14 @@ wifi_firmware_modification () {
 startfunc  
     waitfor "image_mount"
     waitfor "non-free_firmware"
-  
+. /tmp/env.txt
     #echo "* Modifying wireless firmware if necessary."
     # as per https://andrei.gherzan.ro/linux/raspbian-rpi4-64/
         
     if ! grep -qs 'boardflags3=0x44200100' \
-        ${libpath}/firmware/brcm/brcmfmac43455-sdio.txt
+        ${MNTLIBPATH}/firmware/brcm/brcmfmac43455-sdio.txt
     then sed -i -r 's/0x48200100/0x44200100/' \
-        ${libpath}/firmware/brcm/brcmfmac43455-sdio.txt
+        ${MNTLIBPATH}/firmware/brcm/brcmfmac43455-sdio.txt
     fi
 endfunc
 }
@@ -1195,6 +1201,7 @@ endfunc
 andrei_gherzan_uboot_fork () {
 startfunc
     git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"   
+. /tmp/env.txt
     cd "${workdir}"/u-boot
 #    curl -O https://github.com/satmandu/u-boot/commit/b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
@@ -1240,8 +1247,8 @@ startfunc
     cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/uboot.bin
     cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.bin
     cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.img
-    mkdir -p  ${libpath}/u-boot/rpi_4/
-    cp "${workdir}"/u-boot/u-boot.bin  ${libpath}/u-boot/rpi_4/
+    mkdir -p  ${MNTLIBPATH}/u-boot/rpi_4/
+    cp "${workdir}"/u-boot/u-boot.bin  ${MNTLIBPATH}/u-boot/rpi_4/
     # This can be done without chroot by just having u-boot-tools on the build
     # container
     #chroot /mnt /bin/bash -c "mkimage -A arm64 -O linux -T script \
@@ -1259,7 +1266,7 @@ endfunc
 first_boot_scripts_setup () {
 startfunc  
     waitfor "image_mount"
-  
+. /tmp/env.txt  
     echo "* Creating first start cleanup script."
     cat <<-'EOF' > /mnt/etc/rc.local
 	#!/bin/sh -e
@@ -1327,8 +1334,7 @@ endfunc
 added_scripts () {
 startfunc  
     waitfor "image_mount"
-  
-
+. /tmp/env.txt  
     ## This script allows flash-kernel to create the uncompressed kernel file
     #  on the boot partition.
     mkdir -p /mnt/etc/kernel/postinst.d
@@ -1425,7 +1431,7 @@ startfunc
     waitfor "added_scripts" 1
     waitfor "arm64_chroot_setup"
     waitfor "kernel_nondeb_install"
-  
+. /tmp/env.txt 
     echo "* Finishing image setup."
     
     echo "* Cleaning up ARM64 chroot"
@@ -1468,7 +1474,7 @@ endfunc
 image_unmount () {
 startfunc
     waitfor "image_and_chroot_cleanup"
-    
+. /tmp/env.txt    
     echo "* Unmounting modified ${new_image}.img (This may take a minute or two.)"
     loop_device=$(< /tmp/loop_device)
     umount -l /mnt/boot/firmware || (lsof +f -- /mnt/boot/firmware ; sleep 60 ; \
@@ -1499,6 +1505,7 @@ endfunc
 image_export () {
 startfunc
     waitfor "image_unmount"
+. /tmp/env.txt
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     # Note that lz4 is much much faster than using xz.
     chown -R "$USER":"$GROUP" /build
@@ -1535,7 +1542,7 @@ if [[ ! $JUSTDEBS ]];
     else
     waitfor "kernel_debs"
 fi
-
+. /tmp/env.txt
 
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     echo "* Build log at: build-log-${KERNEL_VERS}_${now}.log"
