@@ -155,18 +155,25 @@ wait_file() {
 
 
 spinnerwait () {
-(
 startfunc
-flock 201 
+    spin_target=${1}
     [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
-    [[ -z ${proc_file} ]] && proc_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${1}" -o -regex ".*done_([A-Za-z0-9]{3})_${1}" \) -print)
-    local proc_file_base_raw=$(basename "${proc_file}")
-    local proc_file_base=${proc_file_base_raw:5}
+    local spin_target_file
+    [[ -z ${spin_target_file} ]] && spin_target_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${1}" -o -regex ".*done_([A-Za-z0-9]{3})_${1}" \) -print)
+    until [[ -n ${spin_target_file} ]]; do
+        spin_target_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${spin_target}" -o -regex ".*done_([A-Za-z0-9]{3})_${spin_target}" \) -print)
+        sleep $(echo "scale=2; .5+$(( $RANDOM % 50 ))/100" | bc)
+    done
+    local spin_target_file_base_raw=$(basename "${spin_target_file}")
+    local spin_target_file_base=${spin_target_file_base_raw:5}
         PrintLog "start.${1}" /tmp/spinnerwait.log
-        wait_file "${proc_file}" || \
+        [[ -e "/flag/done_${spin_target_file_base}" ]] && return
+        wait_file "/flag/strt_${spin_target_file_base}" || \
         PrintLog "${1} didn't start in $? seconds." /tmp/spinnerwait.log
-        local job_id=$(< ${proc_file})
+        local job_id=$(< ${spin_target_file})
         [[ ${job_id} = ${mainPID} ]] && return
+        (
+        flock 201 
         PrintLog "Start wait for ${1}:${job_id} end." /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP "${job_id}" &>/dev/null)
@@ -174,14 +181,15 @@ flock 201
             do 
             tput rc
             printf "%${COLUMNS}s\r" "${1} .$s"
-            sleep .05
+            sleep .016
             done
         done
         PrintLog "${1}:${job_id} done." /tmp/spinnerwait.log
+        ) 201>/flag/spinnerwait
         PrintLog "${1}:${job_id} pgrep exit:$(pgrep -cxP "${job_id}")" /tmp/spinnerwait.log
         PrintLog "${1}:${job_id} $(pstree -p)" /tmp/spinnerwait.log
 endfunc
-) 201>/flag/spinnerwait
+
 }
 
 
