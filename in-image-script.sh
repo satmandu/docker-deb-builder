@@ -743,8 +743,8 @@ startfunc
     --no-install-recommends \
     qemu-user qemu libc6-amd64-cross" &>> /tmp/"${FUNCNAME[0]}".install.log || true
     # These steps needed to allow x86_64 kernel programs to allow module installation.
-    chroot /mnt /bin/bash -c "ln -sf /usr/x86_64-linux-gnu/lib64 /lib64 || true"
-    chroot /mnt /bin/bash -c "ln -sf /usr/x86_64-linux-gnu/lib /lib/x86_64-linux-gnu || true"
+    chroot /mnt /bin/bash -c "ln -rsf /usr/x86_64-linux-gnu/lib64 /lib64 || true"
+    chroot /mnt /bin/bash -c "ln -rsf /usr/x86_64-linux-gnu/lib /lib/x86_64-linux-gnu || true"
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     echo "* Installing ${KERNEL_VERS} debs to image."
     cp "${workdir}"/*.deb /mnt/tmp/
