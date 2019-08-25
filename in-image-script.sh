@@ -1464,17 +1464,19 @@ startfunc
     echo "* Unmounting modified ${new_image}.img (This may take a minute or two.)"
     loop_device=$(< /tmp/loop_device)
     umount -l /mnt/boot/firmware || (lsof +f -- /mnt/boot/firmware ; sleep 60 ; \
-    umount -l /mnt/boot/firmware) || true
+    umount -f /mnt/boot/firmware) || true
+    umount -f /mnt/boot/firmware || true
     #umount /mnt || (mount | grep /mnt)
     e4defrag /mnt >/dev/null || true
-    umount -l /mnt || (lsof +f -- /mnt ; sleep 60 ; umount /mnt) || true
+    umount -l /mnt || (lsof +f -- /mnt ; sleep 60 ; umount -f /mnt) || true
+    umount -f /mnt || true
     #guestunmount /mnt
     echo "* Checking partitions on ${new_image}.img"
-    fsck.ext4 -fy /dev/mapper/"${loop_device}"p2 || true
-    fsck.vfat -wa /dev/mapper/"${loop_device}"p1 || true
+    fsck.ext4 -fy /dev/mapper/${loop_device}p2 || true
+    fsck.vfat -wa /dev/mapper/${loop_device}p1 || true
     kpartx -dv "${workdir}"/"${new_image}".img &>> /tmp/"${FUNCNAME[0]}".cleanup.log || true
-    losetup -d /dev/"$loop_device" &>/dev/null || true
-    dmsetup remove -f /dev/"$loop_device" &>/dev/null || true
+    losetup -d /dev/${loop_device} &>/dev/null || true
+    dmsetup remove -f /dev/${loop_device} &>/dev/null || true
     dmsetup info &>> /tmp/"${FUNCNAME[0]}".cleanup.log || true
     # To stop here "rm /flag/done.ok_to_exit_container_after_build".
     if [ ! -f /flag/done.ok_to_exit_container_after_build ]; then
@@ -1494,13 +1496,11 @@ startfunc
     chown -R "$USER":"$GROUP" /build
     cd "${workdir}"
     [[ $RAWIMAGE ]] && cp "${workdir}/${new_image}.img" \
-    /output/
-   #      "/output/${new_image}-${KERNEL_VERS}_${now}.img"
+    "/output/${new_image}-${KERNEL_VERS}_${now}.img"
     [[ $RAWIMAGE ]] && chown "$USER":"$GROUP" \
-     *.img
-    #/output/"${new_image}"-"${KERNEL_VERS}"_"${now}".img.
+     "/output/${new_image}-${KERNEL_VERS}_${now}.img"
 
-    #[[ $RAWIMAGE ]] && echo "${new_image}-${KERNEL_VERS}_${now}.img created." 
+    [[ $RAWIMAGE ]] && echo "${new_image}-${KERNEL_VERS}_${now}.img created." 
     for i in "${image_compressors[@]}"
     do
      echo "* Compressing ${new_image} with $i and exporting."
@@ -1578,7 +1578,6 @@ kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && added_scripts &
 [[ ! $JUSTDEBS ]] && arm64_chroot_setup &
 #[[ ! $JUSTDEBS ]] && image_apt_installs &
-#[[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
 [[ ! $JUSTDEBS ]] && kernel_nondeb_install &
 [[ ! $JUSTDEBS ]] && image_and_chroot_cleanup &
 [[ ! $JUSTDEBS ]] && image_unmount &
