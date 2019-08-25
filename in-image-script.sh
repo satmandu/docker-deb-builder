@@ -700,7 +700,7 @@ startfunc
     mount -o bind /build /mnt/build
     echo "* ARM64 chroot setup is complete."  
     image_apt_installs &
-    spinnerwait image_apt_installs
+    #spinnerwait image_apt_installs
 endfunc
 }
 
@@ -1590,6 +1590,7 @@ kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && image_and_chroot_cleanup &
 [[ ! $JUSTDEBS ]] && image_unmount &
 [[ ! $JUSTDEBS ]] && image_export &
+spinnerwait image_apt_installs
 export_log
 # This stops the tail process.
 rm $TMPLOG
