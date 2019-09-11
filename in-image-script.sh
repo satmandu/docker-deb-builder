@@ -158,7 +158,8 @@ wait_file() {
 }
 
 # Via https://unix.stackexchange.com/a/163819
-occur() { while case "$1" in (*"$2"*) set -- \
+occur() {
+        while case "$1" in (*"$2"*) set -- \
         "${1#*"$2"}" "$2" "${3:-0}" "$((${4:-0}+1))";;
         (*) return "$((${4:-0}<${3:-1}))";;esac
         do : "${_occur:+$((_occur=$4))}";done
@@ -262,7 +263,7 @@ startfunc () {
     local proc_file=$(mktemp /flag/strt_XXX_${proc_base})
     echo ${BASHPID} > "${proc_file}"
     printf "%${COLUMNS}s\n" "Started: ${verbose_proc} [ ] "
-    occur ${proc_base} spinnerwait && ( spinner_proc_array[${spinner_idx}]="${proc_base}") || true
+    occur "${proc_base}" "spinnerwait" "1" && ( spinner_proc_array[${spinner_idx}]="${proc_base}") || true
 }
 
 endfunc () {
