@@ -342,7 +342,7 @@ cidfile="$(cd $PROG_DIR; pwd)/build.cid"
 docker_args+="--cidfile=$cidfile "
 
 # If the build script fails, the log is still copied out.
-startcmd='/in-image-script.sh ;  [ -e "/tmp/build.log" ] && (ls -crGg /flag > /tmp/build_fail_status.log ; grep "" /flag/* >> /tmp/build_fail_status.log ; mv /tmp/build.log /tmp/build_fail.log; cp /tmp/*.log /output/ ; chown $USER:$GROUP /output/*.log;  )  || exit 0'
+startcmd='/in-image-script.sh ;  [ -e "/tmp/build.log" ] && (ls -crGg /flag > /tmp/build_fail_status.log ; grep "" /flag/* >> /tmp/build_fail_status.log ; pstree -p >> /tmp/build_fail_status.log ; mv /tmp/build.log /tmp/build_fail.log; cp /tmp/*.log /output/ ; chown $USER:$GROUP /output/*.log;  )  || exit 0'
 # Clear old build failure log file.
 rm -f $outdir/build_fail.log
 rm -rf $outdir/build_fail_status.log
