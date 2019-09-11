@@ -112,6 +112,7 @@ nprocs=$(($(nproc) + 1))
 
 # Set Spinner index to avoid conflicts with multiple instances.
 spinner_idx=0
+declare -a spinner_proc_array
 
 # echo "Starting local container software installs."
 # apt-get -o dir::cache::archives="${apt_cache}" install curl moreutils -y &>> /tmp/main.install.log 
