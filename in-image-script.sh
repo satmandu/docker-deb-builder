@@ -110,6 +110,9 @@ git config --global core.abbrev 9
 # Set this once:
 nprocs=$(($(nproc) + 1))
 
+# Set Spinner index to avoid conflicts with multiple instances.
+spinner_idx=0
+
 # echo "Starting local container software installs."
 # apt-get -o dir::cache::archives="${apt_cache}" install curl moreutils -y &>> /tmp/main.install.log 
 # [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install lsof -y &>> /tmp/main.install.log 
@@ -154,10 +157,18 @@ wait_file() {
     [[ -f "${file}" ]] && PrintLog "${file} found" /tmp/wait_file.log
 }
 
+# Via https://unix.stackexchange.com/a/163819
+occur() { while case "$1" in (*"$2"*) set -- \
+        "${1#*"$2"}" "$2" "${3:-0}" "$((${4:-0}+1))";;
+        (*) return "$((${4:-0}<${3:-1}))";;esac
+        do : "${_occur:+$((_occur=$4))}";done
+}
 
 spinnerwait () {
+((spinner_idx++))
 startfunc
-    spin_target=${1}
+    local spinner_proc_file=${spinner_proc_array[${spinner_idx}]}
+    local spin_target=${1}
     [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
     local spin_target_file
     [[ -z ${spin_target_file} ]] && spin_target_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${1}" -o -regex ".*done_([A-Za-z0-9]{3})_${1}" \) -print)
@@ -175,6 +186,7 @@ startfunc
         [[ ${job_id} = ${mainPID} ]] && return
         (
         flock 201 
+        echo ${job_id} > "${spinner_proc_file}"
         PrintLog "Start wait for ${1}:${job_id} end." /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP "${job_id}" &>/dev/null)
@@ -192,7 +204,6 @@ startfunc
 endfunc
 
 }
-
 
 waitfor () {
     local wait_target=${1}
@@ -251,6 +262,7 @@ startfunc () {
     local proc_file=$(mktemp /flag/strt_XXX_${proc_base})
     echo ${BASHPID} > "${proc_file}"
     printf "%${COLUMNS}s\n" "Started: ${verbose_proc} [ ] "
+    occur ${proc_base} spinnerwait && ( spinner_proc_array[${spinner_idx}]="${proc_base}") || true
 }
 
 endfunc () {
