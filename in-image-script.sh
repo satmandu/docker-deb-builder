@@ -719,7 +719,7 @@ startfunc
     mount -o bind /build /mnt/build
     echo "* ARM64 chroot setup is complete."  
     image_apt_installs &
-    #spinnerwait image_apt_installs
+[[ $DEBUG ]] && spinnerwait image_apt_installs
 endfunc
 }
 
