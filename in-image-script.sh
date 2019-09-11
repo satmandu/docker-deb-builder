@@ -172,7 +172,7 @@ spinnerwait () {
 startfunc
     local spinner_proc_file=${spinner_proc_array[${spinner_idx}]}
     local spin_target=${1}
-    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
+    #[[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
     local spin_target_file
     [[ -z ${spin_target_file} ]] && spin_target_file=$(find /flag -regextype egrep \( -regex ".*strt_([A-Za-z0-9]{3})_${1}" -o -regex ".*done_([A-Za-z0-9]{3})_${1}" \) -print)
     until [[ -n ${spin_target_file} ]]; do
@@ -211,7 +211,7 @@ endfunc
 waitfor () {
     local wait_target=${1}
     local silence=${2:-0}
-    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
+    #[[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
     local level_a=${FUNCNAME[1]:-main}
 #     local level_b=${FUNCNAME[2]:-_}
 #     local level_c=${FUNCNAME[3]:-_}
@@ -247,7 +247,7 @@ waitfor () {
 
 startfunc () {
 . /tmp/env.txt
-    [[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
+    #[[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
     local level_a=${FUNCNAME[1]:-main}
     local level_b=${FUNCNAME[2]:-_}
     local level_c=${FUNCNAME[3]:-_}
