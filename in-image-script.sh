@@ -264,7 +264,8 @@ startfunc () {
     local proc_file=$(mktemp /flag/strt_XXX_${proc_base})
     echo ${BASHPID} > "${proc_file}"
     printf "%${COLUMNS}s\n" "Started: ${verbose_proc} [ ] "
-    occur "${proc_base}" "spinnerwait" "1" && ( spinner_proc_array[${spinner_idx}]="${proc_base}") || true
+    #occur "${proc_base}" "spinnerwait" "1" && echo "count: $_occur"
+    #occur "${proc_base}" "spinnerwait" "1" && ( spinner_proc_array[${spinner_idx}]="${proc_base}") || true
 }
 
 endfunc () {
@@ -976,7 +977,7 @@ else
     [[ $REBUILD ]] && echo -e "🧐 Rebuild requested.\r😮Building ${KERNEL_VERS} ."
     
     (kernel_build &) || echo "kernel_build died"
-    spinnerwait kernel_build  || echo "spinnerwait kernel_build died"
+    ##spinnerwait kernel_build  || echo "spinnerwait kernel_build died"
     # This may have changed, so reload:
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     echo "* Copying out git *${KERNEL_VERS}* kernel debs."
@@ -1612,7 +1613,7 @@ kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && image_and_chroot_cleanup &
 [[ ! $JUSTDEBS ]] && image_unmount &
 [[ ! $JUSTDEBS ]] && image_export &
-spinnerwait image_apt_installs
+[[ ! $JUSTDEBS ]] && spinnerwait image_apt_installs
 export_log
 # This stops the tail process.
 rm $TMPLOG
