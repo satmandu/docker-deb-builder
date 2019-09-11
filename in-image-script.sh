@@ -140,7 +140,7 @@ function abspath {
 PrintLog(){
   information="${1}"
   logFile="${2}"
-  [[ $DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
+#[[ $DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
   [[ ! -e "${logFile}" ]] && (mkdir -p "$(dirname ${logFile})" &>/dev/null || true) && \
   (touch "${logFile}" &> /tmp/PrintLog || true)
   [[ -e "${logFile}" ]] && echo "${information}" | ts >> "${logFile}"
@@ -168,7 +168,7 @@ occur() {
 
 spinnerwait () {
 ((spinner_idx++))
-[[ $DEBUG ]] && echo $spinner_idx
+[[ $DEBUG ]] && echo "Spinner_idx: ${spinner_idx}"
 startfunc
     local spinner_proc_file=${spinner_proc_array[${spinner_idx}]}
     local spin_target=${1}
