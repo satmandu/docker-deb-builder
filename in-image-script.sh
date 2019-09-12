@@ -843,10 +843,11 @@ startfunc
     mkdir -p "${workdir}"/kernel-build
     cd "${workdir}"/rpi-linux
     
-    
-    [ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
-    wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.3.y/arch/arm64/configs/bcm2711_defconfig \
-    -O arch/arm64/configs/bcm2711_defconfig
+    defconfig=bcm2711_defconfig
+    #[ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
+    #wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.3.y/arch/arm64/configs/bcm2711_defconfig \
+    #-O arch/arm64/configs/bcm2711_defconfig
+    [ ! -f arch/arm64/configs/bcm2711_defconfig ] && defconfig=defconfig
     
     # Use kernel patch script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
@@ -883,7 +884,7 @@ startfunc
  
     cd "${workdir}"/rpi-linux
     make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O="${workdir}"/kernel-build \
-    LOCALVERSION="${LOCALVERSION}" bcm2711_defconfig &>> /tmp/"${FUNCNAME[0]}".compile.log
+    LOCALVERSION="${LOCALVERSION}" ${defconfig} &>> /tmp/"${FUNCNAME[0]}".compile.log
     
     
     cd "${workdir}"/kernel-build
@@ -981,7 +982,8 @@ else
     [[ $REBUILD ]] && echo -e "🧐 Rebuild requested.\r😮Building ${KERNEL_VERS} ."
     
     (kernel_build &) || echo "kernel_build died"
-    [[ $DEBUG ]] && (spinnerwait kernel_build || echo "spinnerwait kernel_build died" )
+    #[[ $DEBUG ]] && (spinnerwait kernel_build || echo "spinnerwait kernel_build died" )
+    (spinnerwait kernel_build || echo "spinnerwait kernel_build died" )
     # This may have changed, so reload:
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     echo "* Copying out git *${KERNEL_VERS}* kernel debs."
