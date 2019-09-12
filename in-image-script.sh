@@ -267,6 +267,7 @@ startfunc () {
     local proc_file=$(mktemp /flag/strt_XXX_${proc_base})
     echo ${BASHPID} > "${proc_file}"
     printf "%${COLUMNS}s\n" "Started: ${verbose_proc} [ ] "
+    [[ $DEBUG ]] && echo "${proc_base}"
     occur "${proc_base}" "spinnerwait" "1" && echo "count: $_occur"
     occur "${proc_base}" "spinnerwait" "1" && ( spinner_proc_array[${spinner_idx}]="${proc_base}") || true
 }
