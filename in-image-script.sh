@@ -171,6 +171,7 @@ spinnerwait () {
 [[ $DEBUG ]] && echo "Spinner_idx: ${spinner_idx}"
 startfunc
     local spinner_proc_file=${spinner_proc_array[${spinner_idx}]}
+    echo ${spinner_proc_array[*]}
     local spin_target=${1}
     #[[ $DEBUG ]] && echo "FUNCNAME:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}"
     local spin_target_file
@@ -189,7 +190,8 @@ startfunc
         [[ ${job_id} = ${mainPID} ]] && return
         (
         flock 201 
-        echo ${job_id} > "${spinner_proc_file}"
+        echo "${spinner_proc_file}"
+        echo ${job_id} > ${spinner_proc_file}
         PrintLog "Start wait for ${1}:${job_id} end." /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP "${job_id}" &>/dev/null)
