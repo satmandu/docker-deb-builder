@@ -218,3 +218,7 @@ unset_kernel_config CONFIG_SND_RPI_WM8804_SOUNDCARD
 
 unset_kernel_config CONFIG_RTL8187
 unset_kernel_config CONFIG_RTL8192CU 
+# This is needed for for zfs to compile without GPL-incompatible module zfs.ko uses GPL-only symbol 'preempt_schedule_notrace' error
+unset_kernel_config CONFIG_PREEMPT
+unset_kernel_config PREEMPT_RT_FULL
+set_kernel_config CONFIG_PREEMPT_VOLUNTARY y
