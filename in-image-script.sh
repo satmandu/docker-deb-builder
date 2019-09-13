@@ -820,10 +820,10 @@ startfunc
 . /tmp/env.txt 
     majorversion=$(grep VERSION "${src_cache}"/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
-    echo "majorversion=${majorversion}" >> /tmp/env.txt
+    echo "MAJORVERSION=${majorversion}" >> /tmp/env.txt
     patchlevel=$(grep PATCHLEVEL "${src_cache}"/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
-    echo "patchlevel=${patchlevel}" >> /tmp/env.txt
+    echo "PATCHLEVEL=${patchlevel}" >> /tmp/env.txt
     sublevel=$(grep SUBLEVEL "${src_cache}"/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
     extraversion=$(grep EXTRAVERSION "${src_cache}"/rpi-linux/Makefile | \
@@ -853,7 +853,7 @@ startfunc
     
     # Use kernel patch script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
-    [[ -e /source-ro/scripts/patch_kernel-${majorversion}.${patchlevel}.sh ]] && { /source-ro/scripts/patch_kernel-${majorversion}.${patchlevel}.sh ;true; } || \
+    [[ -e /source-ro/scripts/patch_kernel-${MAJORVERSION}.${PATCHLEVEL}.sh ]] && { /source-ro/scripts/patch_kernel-${MAJORVERSION}.${PATCHLEVEL}.sh ;true; } || \
     { /source-ro/scripts/patch_kernel.sh ; true; }
     if [[ -e /tmp/APPLIED_KERNEL_PATCHES ]]
         then
@@ -892,9 +892,9 @@ startfunc
     cd "${workdir}"/kernel-build
     # Use kernel config modification script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
-    if [[ -e /source-ro/scripts/conform_config-${majorversion}.${patchlevel}.sh ]]
+    if [[ -e /source-ro/scripts/conform_config-${MAJORVERSION}.${PATCHLEVEL}.sh ]]
         then 
-            cp /source-ro/scripts/conform_config-${majorversion}.${patchlevel}.sh \
+            cp /source-ro/scripts/conform_config-${MAJORVERSION}.${PATCHLEVEL}.sh \
             "${workdir}"/kernel-build/conform_config.sh
     elif [[ -e /source-ro/scripts/conform_config.sh ]]
         then
