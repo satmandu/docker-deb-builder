@@ -115,7 +115,7 @@ spinner_idx=0
 declare -a spinner_proc_array
 
 # echo "Starting local container software installs."
-# apt-get -o dir::cache::archives="${apt_cache}" install curl moreutils -y &>> /tmp/main.install.log 
+apt-get -o dir::cache::archives="${apt_cache}" install checkinstall -y &>> /tmp/main.install.log 
 # [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install lsof -y &>> /tmp/main.install.log 
 # [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install xdelta3 -y &>> /tmp/main.install.log 
 # [[ ! $JUSTDEBS ]] && apt-get -o dir::cache::archives="${apt_cache}" install e2fsprogs -y &>> /tmp/main.install.log 
@@ -1136,18 +1136,7 @@ startfunc
     if ! grep -qs 'fsck.mode=force' /mnt/boot/firmware/cmdline.txt
         then sed -i 's/rootwait/rootwait fsck.mode=force/' /mnt/boot/firmware/cmdline.txt
     fi
-    
-    # There are still DMA memory issues with >1Gb memory access so do this as per
-    # https://github.com/raspberrypi/linux/issues/3032#issuecomment-511214995
-    # This disables logging of the SD card DMA getting disabled, which happens
-    # anyways, so hopefully this is only a temporary workaround to having logspam
-    # in dmesg until this issue is actually addressed.
-    # DMA issues may be resolved with https://github.com/raspberrypi/linux/pull/3164 
-    # So maybe ok to remove this.
-#     if ! grep -qs 'sdhci.debug_quirks=96' /mnt/boot/firmware/cmdline.txt
-#         then sed -i 's/rootwait/rootwait sdhci.debug_quirks=96/' \
-#         /mnt/boot/firmware/cmdline.txt
-#     fi
+  
     
 endfunc
 }
@@ -1163,7 +1152,8 @@ startfunc
     mkdir -p /mnt/opt/vc
     cd "${workdir}"/rpi-userland/
     CROSS_COMPILE=aarch64-linux-gnu- ./buildme --aarch64 /mnt &>> /tmp/"${FUNCNAME[0]}".compile.log
-    
+[[ $DEBUG ]] && checkinstall -D --install=no --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d%H%M)-git" --fstrans=yes -y 
+[[ $DEBUG ]] && cp *.deb /output/
     echo '/opt/vc/lib' > /mnt/etc/ld.so.conf.d/vc.conf 
     
     mkdir -p /mnt/etc/environment.d
