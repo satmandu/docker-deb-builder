@@ -1152,8 +1152,6 @@ startfunc
     mkdir -p /mnt/opt/vc
     cd "${workdir}"/rpi-userland/
     CROSS_COMPILE=aarch64-linux-gnu- ./buildme --aarch64 /mnt &>> /tmp/"${FUNCNAME[0]}".compile.log
-[[ $DEBUG ]] && checkinstall -D --install=no --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d%H%M)-git" --fstrans=yes -y 
-[[ $DEBUG ]] && cp *.deb /output/
     echo '/opt/vc/lib' > /mnt/etc/ld.so.conf.d/vc.conf 
     
     mkdir -p /mnt/etc/environment.d
@@ -1193,6 +1191,10 @@ EOF
 	Defaults env_keep+="XAUTHORIZATION XAUTHORITY TZ PS2 PS1 PATH LS_COLORS KRB5CCNAME HOSTNAME HOME DISPLAY COLORS"
 EOF
 	chmod 0440 /mnt/etc/sudoers.d/display
+[[ $DEBUG ]] && cd "${workdir}"/rpi-userland/build/arm-linux/release/
+[[ $DEBUG ]] && ARM64=on checkinstall -D --install=no --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d%H%M)-git" --fstrans=yes -y 
+[[ $DEBUG ]] && cp *.deb /output/
+
 endfunc
 }
 
