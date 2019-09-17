@@ -402,8 +402,10 @@ startfunc
             
             # sync to local branch
             mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}"
-            git fetch --all ${git_flags} &>> /tmp/${proc_name}.git.log || true
-            git reset --hard $pull_flags --quiet 2>> /tmp/${proc_name}.git.log
+            # Recreate in lieu of syncing git.
+            #git fetch --all ${git_flags} &>> /tmp/${proc_name}.git.log || true
+            #git reset --hard $pull_flags --quiet 2>> /tmp/${proc_name}.git.log
+            recreate_git ${git_repo} ${local_path} ${git_branch}
         else
             echo -e "${proc_name} git info:\nremote hash: ${remote_git}\n local hash: \
 ${local_git}\n\r${proc_name} getting files from cache volume. 😎\n"
