@@ -1202,6 +1202,12 @@ EOF
 endfunc
 }
 
+rpi_eeprom_firmware () {
+mkdir -p /lib/firmware/raspberrypi/bootloader
+}
+
+
+
 wifi_firmware_modification () {
 startfunc  
     waitfor "image_mount"
@@ -1343,6 +1349,7 @@ EOF
 	/usr/sbin/update-initramfs -c -k all
 	sed -i 's/\/etc\/rc.local.temp\ \&//' /etc/rc.local 
 	touch /etc/cloud/cloud-init.disabled
+	ldconfig
 	rm -- "$0"
 	exit 0
 EOF
