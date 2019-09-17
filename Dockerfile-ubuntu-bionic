@@ -15,6 +15,7 @@ RUN set -ex \
                ca-certificates \
                ccache \
                cdbs \
+               checkinstall \
                cmake \
                cpio \
                curl \
