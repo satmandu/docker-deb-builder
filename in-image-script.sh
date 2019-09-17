@@ -1183,7 +1183,7 @@ EOF
     SUDOPATH="${SUDOPATH:-/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin}"
     SUDOPATH+=":/opt/vc/bin:/opt/vc/sbin"
     # Add path to sudo
-    mkdir -p /etc/sudoers.d
+    mkdir -p /mnt/etc/sudoers.d
     echo "* Adding rpi util path to sudo."
     cat <<-EOF >> /mnt/etc/sudoers.d/rpi
 	Defaults secure_path=$SUDOPATH
