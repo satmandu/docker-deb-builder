@@ -389,8 +389,10 @@ startfunc
                     echo "Kernel git branch mismatch!"
                     printf "%${COLUMNS}s\n" "${proc_name} refreshing cache files from git."
                     mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}"
-                    git checkout ${git_branch} || recreate_git ${git_repo} \
-                    ${local_path} ${git_branch}
+                    # Just recreate_git always
+                    # git checkout ${git_branch} || recreate_git ${git_repo} \
+                    #${local_path} ${git_branch}
+                    recreate_git ${git_repo} ${local_path} ${git_branch}
                 else
                     echo -e "${proc_name}\nremote hash: \
                     ${remote_git}\nlocal hash:${local_git}\n"
