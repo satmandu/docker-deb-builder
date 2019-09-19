@@ -273,6 +273,7 @@ startfunc () {
 }
 
 endfunc () {
+. /tmp/env.txt
     caller=${1}
     local level_a=${FUNCNAME[1]:-main}
     local level_b=${FUNCNAME[2]:-_}
