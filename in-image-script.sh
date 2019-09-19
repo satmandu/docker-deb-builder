@@ -389,7 +389,7 @@ startfunc
                 then 
                     echo "Kernel git branch mismatch!"
                     printf "%${COLUMNS}s\n" "${proc_name} refreshing cache files from git."
-                    mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}"
+                    mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}" || exit 1
                     # Just recreate_git always
                     # git checkout ${git_branch} || recreate_git ${git_repo} \
                     #${local_path} ${git_branch}
@@ -402,7 +402,7 @@ startfunc
             
             
             # sync to local branch
-            mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}"
+            mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}" || exit 1
             # Recreate in lieu of syncing git.
             #git fetch --all ${git_flags} &>> /tmp/${proc_name}.git.log || true
             #git reset --hard $pull_flags --quiet 2>> /tmp/${proc_name}.git.log
@@ -411,7 +411,7 @@ startfunc
             echo -e "${proc_name} git info:\nremote hash: ${remote_git}\n local hash: \
 ${local_git}\n\r${proc_name} getting files from cache volume. 😎\n"
     fi
-    cd "${src_cache}"/"${local_path}" 
+    cd "${src_cache}"/"${local_path}" || exit 1
     last_commit=$(git log --graph \
     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
 %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
@@ -432,7 +432,7 @@ PrintLog "recreate: ${FUNCNAME[2]}, git_repo: ${git_repo}, local_path: ${local_p
     local git_extra_flags=" -b ${git_branch} "
     local clone_flags=" ${git_repo} $git_extra_flags "
     rm -rf "${src_cache:?}/${local_path}" &>> /tmp/"${FUNCNAME[2]}".git.log
-    cd "${src_cache}" &>> /tmp/"${FUNCNAME[2]}".git.log
+    cd "${src_cache}" &>> /tmp/"${FUNCNAME[2]}".git.log || exit 1
     git clone ${git_flags} $clone_flags ${local_path} \
     &>> /tmp/"${FUNCNAME[2]}".git.log 
 endfunc
@@ -608,7 +608,7 @@ startfunc
     echo "* Downloading ${base_image} ."
     #wget_fail=0
     #wget -nv ${base_image_url} -O ${base_image} || wget_fail=1
-    curl_fail=0
+    #curl_fail=0
     curl -o "$base_image_url" "${base_image}"
 endfunc
 }
@@ -616,7 +616,7 @@ endfunc
 base_image_check () {
 startfunc
     echo "* Checking for downloaded ${base_image} ."
-    cd "${workdir}"
+    cd "${workdir}" || exit 1
     if [ ! -f /"${base_image}" ]; then
         download_base_image
     else
@@ -665,7 +665,7 @@ startfunc
     #dmsetup remove_all
     dmsetup info
     losetup -a
-    cd "${workdir}"
+    cd "${workdir}" || exit 1
     echo "* Mounting: ${new_image}.img"
     
     loop_device=$(kpartx -avs "${new_image}".img \
@@ -804,7 +804,7 @@ startfunc
     git_get "https://github.com/Hexxeh/rpi-firmware" "rpi-firmware"
     waitfor "image_mount"
 . /tmp/env.txt  
-    cd "${workdir}"/rpi-firmware
+    cd "${workdir}"/rpi-firmware || exit 1
     echo "* Installing current RPI firmware."
     
     cp bootcode.bin /mnt/boot/firmware/
@@ -842,13 +842,13 @@ startfunc
     KERNELREV=$(git -C "${src_cache}"/rpi-linux rev-parse --short HEAD) > /dev/null
     echo "$KERNELREV" > /tmp/KERNELREV
     echo "KERNELREV=${KERNELREV}" >> /tmp/env.txt
-    cd "${workdir}"/rpi-linux
+    cd "${workdir}"/rpi-linux || exit 1
     git update-index --refresh &>> /tmp/"${FUNCNAME[0]}".compile.log || true
     git diff-index --quiet HEAD &>> /tmp/"${FUNCNAME[0]}".compile.log || true
     
 
     mkdir -p "${workdir}"/kernel-build
-    cd "${workdir}"/rpi-linux
+    cd "${workdir}"/rpi-linux || exit 1
     
     defconfig=bcm2711_defconfig
     #[ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
@@ -914,18 +914,18 @@ startfunc
     olddefconfig &>> /tmp/"${FUNCNAME[0]}".compile.log  || true
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     echo "* Making ${KERNEL_VERS} kernel debs."
-    cd "${workdir}"/rpi-linux
+    cd "${workdir}"/rpi-linux || exit 1
 
 cat <<-EOF> "${workdir}"/kernel_compile.sh
 	#!/bin/bash
-	cd ${workdir}/rpi-linux
+	cd ${workdir}/rpi-linux || exit 1
 	make -j${nprocs} CFLAGS=${CFLAGS} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=${workdir}/kernel-build/ bindeb-pkg
 EOF
-    cd "${workdir}"/rpi-linux
+    cd "${workdir}"/rpi-linux || exit 1
     [[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
     grep --line-buffered -v libfakeroot-sysv.so
      #[[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& grep --line-buffered -v libfakeroot-sysv.so >> /tmp/"${FUNCNAME[0]}".compile.log 
-    cd "${workdir}"/kernel-build
+    cd "${workdir}"/kernel-build || exit 1
     # This file should be EMPTY if all goes well.
     find . -executable ! -type d -exec file {} \; | grep x86-64 \
      >> /tmp/"${FUNCNAME[0]}".compile.log
@@ -1029,7 +1029,7 @@ startfunc
         cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
     else
         cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
-        cd /mnt/boot/firmware/ ; gunzip -f /mnt/boot/firmware/kernel8.img.nouboot.gz \
+        cd /mnt/boot/firmware/ || exit 1 ; gunzip -f /mnt/boot/firmware/kernel8.img.nouboot.gz \
         &>> /tmp/"${FUNCNAME[0]}".install.log
     fi
 endfunc
@@ -1040,7 +1040,7 @@ armstub8-gic () {
 startfunc 
     git_get "https://github.com/raspberrypi/tools.git" "rpi-tools"
 . /tmp/env.txt   
-    cd "${workdir}"/rpi-tools/armstubs
+    cd "${workdir}"/rpi-tools/armstubs || exit 1
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make armstub8-gic.bin &>> /tmp/"${FUNCNAME[0]}".compile.log
     waitfor "image_mount"
     cp "${workdir}"/rpi-tools/armstubs/armstub8-gic.bin /mnt/boot/firmware/armstub8-gic.bin
@@ -1153,9 +1153,9 @@ startfunc
     waitfor "image_mount"
 . /tmp/env.txt
     echo "* Installing Raspberry Pi userland source."
-    cd "${workdir}"
+    cd "${workdir}" || exit 1
     mkdir -p /mnt/opt/vc
-    cd "${workdir}"/rpi-userland/
+    cd "${workdir}"/rpi-userland/ || exit 1
     CROSS_COMPILE=aarch64-linux-gnu- ./buildme --aarch64 /mnt &>> /tmp/"${FUNCNAME[0]}".compile.log
     echo '/opt/vc/lib' > /mnt/etc/ld.so.conf.d/vc.conf 
     
@@ -1196,7 +1196,7 @@ EOF
 	Defaults env_keep+="XAUTHORIZATION XAUTHORITY TZ PS2 PS1 PATH LS_COLORS KRB5CCNAME HOSTNAME HOME DISPLAY COLORS"
 EOF
 	chmod 0440 /mnt/etc/sudoers.d/display
-[[ $DEBUG ]] && cd "${workdir}"/rpi-userland/build/arm-linux/release/
+[[ $DEBUG ]] && cd "${workdir}"/rpi-userland/build/arm-linux/release/ || exit 1
 [[ $DEBUG ]] && ARM64=on checkinstall -D --install=no --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d%H%M)-git" --fstrans=yes -y 
 [[ $DEBUG ]] && cp *.deb /output/
 
@@ -1229,7 +1229,7 @@ andrei_gherzan_uboot_fork () {
 startfunc
     git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"   
 . /tmp/env.txt
-    cd "${workdir}"/u-boot
+    cd "${workdir}"/u-boot || exit 1
 #    curl -O https://github.com/satmandu/u-boot/commit/b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
     echo "CONFIG_LZ4=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
@@ -1537,7 +1537,7 @@ startfunc
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     # Note that lz4 is much much faster than using xz.
     chown -R "$USER":"$GROUP" /build
-    cd "${workdir}"
+    cd "${workdir}" || exit 1
     [[ $RAWIMAGE ]] && cp "${workdir}/${new_image}.img" \
     "/output/${new_image}-${KERNEL_VERS}_${now}.img"
     [[ $RAWIMAGE ]] && chown "$USER":"$GROUP" \
