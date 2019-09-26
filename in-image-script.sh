@@ -959,17 +959,20 @@ then
         cp /output/linux-image-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
         cp "${workdir}"/linux-image-*"${KERNEL_VERS}"*arm64.deb "${apt_cache}"/ 
         echo "linux-image" >> /tmp/nodebs
-    elif test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-headers-*"${KERNEL_VERS}"* -print -quit)"
+    else
+        rm -f /tmp/nodebs || true
+    fi
+    if test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-headers-*"${KERNEL_VERS}"* -print -quit)"
     then
         echo -e "${KERNEL_VERS} linux headers deb on cache volume. 😎\n"
         cp "${apt_cache}"/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
         echo "linux-image" >> /tmp/nodebs
-    elif test -n "$(find "${apt_cache}" -maxdepth 1 -name linux-headers-*"${KERNEL_VERS}"* -print -quit)"
+    elif test -n "$(find /output/ -maxdepth 1 -name linux-headers-*"${KERNEL_VERS}"* -print -quit)"
     then
         echo -e "${KERNEL_VERS} linux headers deb found in /output/. 😎\n"
         cp /output/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${workdir}"/
         cp "${workdir}"/linux-headers-*"${KERNEL_VERS}"*arm64.deb "${apt_cache}"/ 
-        echo "linux-image" >> /tmp/nodebs
+        echo "linux-headers" >> /tmp/nodebs
     else
         rm -f /tmp/nodebs || true
     fi
@@ -1382,10 +1385,12 @@ startfunc
 	
 	# If kernel8.img does not look like u-boot, then assume u-boot
 	# is not being used.
-	if [ $(file /boot/firmware/kernel8.img | grep -vq "PCX") ]; then
+	if [ ! $(file /boot/firmware/kernel8.img | grep -vq "PCX") ]; then
+	    # uboot not being used, save kernel as kernel8.img
 	    gunzip -c -f ${KERNEL_INSTALLED_PATH} > /boot/firmware/kernel8.img && \
 	cp /boot/firmware/kernel8.img /boot/firmware/kernel8.img.nouboot
 	    else
+	    # uboot found, do not overwrite it.
 	    gunzip -c -f ${KERNEL_INSTALLED_PATH} > /boot/firmware/kernel8.img.nouboot
 	fi
 	
