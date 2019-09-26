@@ -309,11 +309,13 @@ endfunc () {
 
 
 
-git_check () {
+git_remote_check () {
     local git_base="$1"
     local git_branch="$2"
     [ -n "$2" ] || git_branch="master"
     local git_output=$(git ls-remote "${git_base}" refs/heads/${git_branch})
+    [ -n "${git_output}" ] || git_output=$(git ls-remote "${git_base}" "${git_branch}")
+    [ -n "${git_output}" ] || git_output="Git Remote Error!"
     local git_hash
     local discard 
     read -r git_hash discard< <(echo "${git_output}")
@@ -362,7 +364,7 @@ startfunc
     mkdir -p "${src_cache}/${local_path}"
     mkdir -p "${workdir}/${local_path}"
     
-    local remote_git=$(git_check "${git_repo}" "${git_branch}")
+    local remote_git=$(git_remote_check "${git_repo}" "${git_branch}")
     local local_git=$(local_check "${src_cache}/${local_path}" "${git_branch}")
     
     [ -z ${git_branch} ] && git_extra_flags= || git_extra_flags=" -b ${git_branch} "
