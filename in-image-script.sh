@@ -1235,13 +1235,15 @@ startfunc
 endfunc
 }
 
-andrei_gherzan_uboot_fork () {
+patched_uboot () {
 startfunc
-    git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"   
+    git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"
+    #git_get "https://github.com/u-boot/u-boot.git" "u-boot" "v2019.10-rc4"
 . /tmp/env.txt
     cd "${workdir}"/u-boot || exit 1
 #    curl -O https://github.com/satmandu/u-boot/commit/b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
+     patch -p1 < /source-ro/patches/0002-raspberrypi-Disable-simple-framebuffer-support.patch
     echo "CONFIG_LZ4=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_GZIP=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_BZIP2=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
@@ -1282,8 +1284,8 @@ startfunc
     waitfor "image_mount"
     echo "* Installing Andrei Gherzan's RPI uboot fork to image."
     cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/uboot.bin
-    cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.bin
-    cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.img
+    #cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.bin
+    #cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.img
     mkdir -p  ${MNTLIBPATH}/u-boot/rpi_4/
     cp "${workdir}"/u-boot/u-boot.bin  ${MNTLIBPATH}/u-boot/rpi_4/
     # This can be done without chroot by just having u-boot-tools on the build
@@ -1393,7 +1395,7 @@ startfunc
 	# If kernel8.img does not look like u-boot, then assume u-boot
 	# is not being used.
 	if [ ! $(file /boot/firmware/kernel8.img | grep -vq "PCX") ]; then
-	    # uboot not being used, save kernel as kernel8.img
+	    # Assume uboot is not being used, save kernel as kernel8.img
 	    gunzip -c -f ${KERNEL_INSTALLED_PATH} > /boot/firmware/kernel8.img && \
 	cp /boot/firmware/kernel8.img /boot/firmware/kernel8.img.nouboot
 	    else
@@ -1462,7 +1464,7 @@ startfunc
     waitfor "armstub8-gic" 1
     waitfor "non-free_firmware" 1
     waitfor "rpi_userland" 1
-    waitfor "andrei_gherzan_uboot_fork" 1
+    waitfor "patched_uboot" 1
     waitfor "kernel_debs" 1
     waitfor "rpi_config_txt_configuration" 1
     waitfor "rpi_cmdline_txt_configuration" 1
@@ -1624,7 +1626,7 @@ compiler_setup &
 [[ ! $JUSTDEBS ]] && armstub8-gic &
 [[ ! $JUSTDEBS ]] && non-free_firmware & 
 [[ ! $JUSTDEBS ]] && rpi_userland &
-[[ ! $JUSTDEBS ]] && andrei_gherzan_uboot_fork &
+[[ ! $JUSTDEBS ]] && patched_uboot &
 kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && rpi_config_txt_configuration &
 [[ ! $JUSTDEBS ]] && rpi_cmdline_txt_configuration &
