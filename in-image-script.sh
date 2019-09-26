@@ -1454,6 +1454,24 @@ EOF
 	# not have the required u-boot for the RPI4 yet.
 EOF
 
+    # Keep wifi up despite tendency to drop out.
+    echo "* Creating /usr/local/bin/wpaping.sh ."
+    cat <<-EOF >> /usr/local/bin/wpaping.sh
+	#!/bin/bash
+	#
+	# Loop forever doing wpa_cli SCAN commands
+	#
+	
+	sleeptime=120  # number of seconds to sleep. 2 minutes (120 seconds) is a good value
+	
+	while [ 1 ];
+	do
+	        wpa_cli -i wlan0 scan
+	            sleep $sleeptime
+	    done
+EOF
+
+chroot /mnt /bin/bash -c "(crontab -l ; echo "*/5 * * * * /usr/local/bin/wpaping.sh") | crontab -"
 
 endfunc
 }
