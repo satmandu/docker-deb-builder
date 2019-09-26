@@ -900,7 +900,7 @@ startfunc
     make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O="${workdir}"/kernel-build \
     LOCALVERSION="${LOCALVERSION}" ${defconfig} &>> /tmp/"${FUNCNAME[0]}".compile.log
     
-    [[ $RPIALL ]] && scripts/kconfig/merge_config.sh -y arch/arm64/configs/bcmrpi3_defconfig arch/arm64/configs/bcm2711_defconfig -O="${workdir}"/kernel-build
+    [[ $RPIALL ]] && scripts/kconfig/merge_config.sh -y -O "${workdir}"/kernel-build arch/arm64/configs/bcmrpi3_defconfig arch/arm64/configs/bcm2711_defconfig &>> /tmp/"${FUNCNAME[0]}".compile.log
 
     cd "${workdir}"/kernel-build
     # Use kernel config modification script from sakaki- found at 
