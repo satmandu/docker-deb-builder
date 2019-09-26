@@ -793,8 +793,8 @@ startfunc
     linux-headers-5.0* linux-headers-5.3.*-y --purge" \
     &>> /tmp/"${FUNCNAME[0]}".install.log || true
     [[ ! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
-    [[ ! $JUSTDEBS ]] && chroot /mnt /bin/bash -c "echo zfs-dkms zfs-dkms/note-incompatible-licenses note | debconf-set-selections" || true
-    [[ ! $JUSTDEBS ]] && chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install --no-install-recommends -y zfs-dkms" || true
+    [[ $ZFS ]] && chroot /mnt /bin/bash -c "echo zfs-dkms zfs-dkms/note-incompatible-licenses note | debconf-set-selections" || true
+    [[ $ZFS ]] && chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install --no-install-recommends -y zfs-dkms" || true
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -qq || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -qq)" || true &>> /tmp/"${FUNCNAME[0]}".install.log || true
     echo "* Image apt upgrade done."
     echo "* Installing wifi & networking tools to image."
@@ -857,11 +857,13 @@ startfunc
     mkdir -p "${workdir}"/kernel-build
     cd "${workdir}"/rpi-linux || exit 1
     
-    defconfig=bcm2711_defconfig
+    [[ ! $RPIALL  ]] && defconfig=bcm2711_defconfig
     #[ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
     #wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.3.y/arch/arm64/configs/bcm2711_defconfig \
     #-O arch/arm64/configs/bcm2711_defconfig
     [ ! -f arch/arm64/configs/bcm2711_defconfig ] && defconfig=defconfig
+    
+    [[ $RPIALL  ]] && scripts/kconfig/merge_config.sh -y -m arch/arm64/configs/bcmrpi3_defconfig arch/arm64/configs/bcm2711_defconfig
     
     # Use kernel patch script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
@@ -897,8 +899,8 @@ startfunc
 
  
     cd "${workdir}"/rpi-linux
-    make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O="${workdir}"/kernel-build \
-    LOCALVERSION="${LOCALVERSION}" ${defconfig} &>> /tmp/"${FUNCNAME[0]}".compile.log
+    [[ ! $RPIALL  ]] && make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O="${workdir}"/kernel-build \
+    [[ ! $RPIALL  ]] && LOCALVERSION="${LOCALVERSION}" ${defconfig} &>> /tmp/"${FUNCNAME[0]}".compile.log
     
     
     cd "${workdir}"/kernel-build
