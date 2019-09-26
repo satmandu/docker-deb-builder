@@ -813,7 +813,7 @@ startfunc
 . /tmp/env.txt  
     cd "${workdir}"/rpi-firmware || exit 1
     echo "* Installing current RPI firmware."
-    
+    # Note that this is overkill and much of these aren't needed for rpi4.
     cp bootcode.bin /mnt/boot/firmware/
     cp ./*.elf* /mnt/boot/firmware/
     cp ./*.dat* /mnt/boot/firmware/
