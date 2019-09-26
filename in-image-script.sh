@@ -857,13 +857,11 @@ startfunc
     mkdir -p "${workdir}"/kernel-build
     cd "${workdir}"/rpi-linux || exit 1
     
-    [[ ! $RPIALL  ]] && defconfig=bcm2711_defconfig
+    [[ ! $RPIALL ]] && defconfig=bcm2711_defconfig
     #[ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
     #wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.3.y/arch/arm64/configs/bcm2711_defconfig \
     #-O arch/arm64/configs/bcm2711_defconfig
     [ ! -f arch/arm64/configs/bcm2711_defconfig ] && defconfig=defconfig
-    
-    [[ $RPIALL  ]] && scripts/kconfig/merge_config.sh -y -m arch/arm64/configs/bcmrpi3_defconfig arch/arm64/configs/bcm2711_defconfig
     
     # Use kernel patch script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
@@ -899,10 +897,11 @@ startfunc
 
  
     cd "${workdir}"/rpi-linux
-    [[ ! $RPIALL  ]] && make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O="${workdir}"/kernel-build \
-    [[ ! $RPIALL  ]] && LOCALVERSION="${LOCALVERSION}" ${defconfig} &>> /tmp/"${FUNCNAME[0]}".compile.log
+    make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O="${workdir}"/kernel-build \
+    LOCALVERSION="${LOCALVERSION}" ${defconfig} &>> /tmp/"${FUNCNAME[0]}".compile.log
     
-    
+    [[ $RPIALL ]] && scripts/kconfig/merge_config.sh -y -m arch/arm64/configs/bcmrpi3_defconfig arch/arm64/configs/bcm2711_defconfig
+
     cd "${workdir}"/kernel-build
     # Use kernel config modification script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
