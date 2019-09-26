@@ -862,7 +862,8 @@ startfunc
     #wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.3.y/arch/arm64/configs/bcm2711_defconfig \
     #-O arch/arm64/configs/bcm2711_defconfig
     [ ! -f arch/arm64/configs/bcm2711_defconfig ] && defconfig=defconfig
-    
+    [[ -n "${defconfig}" ]] || defconfig=defconfig
+    echo "defconfig=${defconfig}" >> /tmp/env.txt
     # Use kernel patch script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
     [[ -e /source-ro/scripts/patch_kernel-${MAJORVERSION}.${PATCHLEVEL}.sh ]] && { /source-ro/scripts/patch_kernel-${MAJORVERSION}.${PATCHLEVEL}.sh ;true; } || \
