@@ -1247,6 +1247,7 @@ startfunc
 #    curl -O https://github.com/satmandu/u-boot/commit/b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #     patch -p1 < /source-ro/patches/0002-raspberrypi-Disable-simple-framebuffer-support.patch
+#     patch -p1 < /source-ro/patches/U-Boot-board-rpi4-fix-instantiating-PL011-driver.patch
     [[ $RPIALL ]] && patch -p1 < /source-ro/patches/RPi-one-binary-for-RPi3-4-and-RPi1-2.patch
     [[ $RPIALL ]] && echo "CONFIG_USB_DWC2=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     [[ $RPIALL ]] && echo "CONFIG_USB_ETHER_LAN78XX=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
@@ -1256,10 +1257,11 @@ startfunc
     [[ $RPIALL ]] && echo "CONFIG_DM_USB=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     [[ $RPIALL ]] && echo "CONFIG_USB_KEYBOARD=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     [[ $RPIALL ]] && echo "CONFIG_USB_HOST_ETHER=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo "CONFIG_OF_EMBED=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo "CONFIG_OF_BOARD=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     [[ $RPIALL ]] && echo "CONFIG_USE_PREBOOT=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     [[ $RPIALL ]] && echo 'CONFIG_PREBOOT="usb start"' >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     [[ $RPIALL ]] && echo "CONFIG_MISC_INIT_R=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo "CONFIG_ARM64" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_LZ4=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_GZIP=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_BZIP2=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
