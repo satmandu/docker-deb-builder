@@ -223,5 +223,6 @@ unset_kernel_config CONFIG_PREEMPT
 unset_kernel_config PREEMPT_RT_FULL
 set_kernel_config CONFIG_PREEMPT_VOLUNTARY y
 # Remove upstream mmc modules as per https://lists.ubuntu.com/archives/kernel-team/2018-April/091646.html
-unset_kernel_config CONFIG_MMC_SDHCI_IPROC
-unset_kernel_config CONFIG_MMC_BCM2835
+#unset_kernel_config CONFIG_MMC_BCM2835
+# This is needed as per https://github.com/raspberrypi/linux/pull/3045/commits/4a14d01965a86370d78d474b486a45e343f28f66
+#set_kernel_config CONFIG_MMC_SDHCI_IPROC
