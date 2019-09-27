@@ -1240,13 +1240,26 @@ endfunc
 
 patched_uboot () {
 startfunc
-    git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"
-    #git_get "https://github.com/u-boot/u-boot.git" "u-boot" "v2019.10-rc4"
+    [[ ! $RPIALL ]] && git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"
+    [[ $RPIALL ]] && git_get "https://github.com/u-boot/u-boot.git" "u-boot" "master"
 . /tmp/env.txt
     cd "${workdir}"/u-boot || exit 1
 #    curl -O https://github.com/satmandu/u-boot/commit/b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
-     patch -p1 < /source-ro/patches/0002-raspberrypi-Disable-simple-framebuffer-support.patch
+#     patch -p1 < /source-ro/patches/0002-raspberrypi-Disable-simple-framebuffer-support.patch
+    [[ $RPIALL ]] && patch -p1 < /source-ro/patches/RPi-one-binary-for-RPi3-4-and-RPi1-2.patch
+    [[ $RPIALL ]] && echo "CONFIG_USB_DWC2=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo "CONFIG_USB_ETHER_LAN78XX=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo "CONFIG_USB_ETHER_SMSC95XX=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo "CONFIG_DM_ETH=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo "CONFIG_USB=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo "CONFIG_DM_USB=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo "CONFIG_USB_KEYBOARD=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo "CONFIG_USB_HOST_ETHER=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo "CONFIG_OF_EMBED=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo "CONFIG_USE_PREBOOT=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo 'CONFIG_PREBOOT="usb start"' >> "${workdir}"/u-boot/configs/rpi_4_defconfig
+    [[ $RPIALL ]] && echo "CONFIG_MISC_INIT_R=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_LZ4=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_GZIP=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
     echo "CONFIG_BZIP2=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
@@ -1277,10 +1290,10 @@ startfunc
     #echo "CONFIG_USB_STORAGE=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
     #echo "CONFIG_USB_KEYBOARD=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
     #echo "CONFIG_SYS_USB_EVENT_POLL=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_FS_BTRFS=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_FS_EXT4=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    echo "CONFIG_FS_BTRFS=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    echo "CONFIG_FS_EXT4=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
     #echo "CONFIG_EXT4_WRITE=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_FS_FAT=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
+    echo "CONFIG_FS_FAT=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
     #echo "CONFIG_FAT_WRITE=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make rpi_4_defconfig &>> /tmp/"${FUNCNAME[0]}".compile.log
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make -j $(($(nproc) + 1)) &>> /tmp/"${FUNCNAME[0]}".compile.log
