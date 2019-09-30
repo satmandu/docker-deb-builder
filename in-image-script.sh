@@ -315,6 +315,7 @@ git_remote_check () {
     local git_branch="$2"
     [ -n "$2" ] || git_branch="master"
     local git_output=$(git ls-remote "${git_base}" refs/heads/${git_branch})
+    [ -n "${git_output}" ] || git_output=$(git ls-remote "${git_base}" refs/tags/${git_branch})
     [ -n "${git_output}" ] || git_output=$(git ls-remote "${git_base}" "${git_branch}")
     [ -n "${git_output}" ] || git_output="Git Remote Error!"
     local git_hash
