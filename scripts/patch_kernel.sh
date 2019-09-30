@@ -47,7 +47,6 @@ apply_pr() {
 # has already been merged, or some part of it will otherwise
 # not apply
 
-apply_pr 3244 "upstreaming patches"
 #apply_pr 3252 "bcm2708_fb: Fix layout of struct vc4_display_settings_t"
 
 #If any patches are applied then note it since 
