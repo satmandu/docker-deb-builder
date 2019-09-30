@@ -414,7 +414,7 @@ startfunc
             echo -e "${proc_name} git info:\nremote hash: ${remote_git}\n local hash: \
 ${local_git}\n\r${proc_name} getting files from cache volume. 😎\n"
     fi
-    cd "${src_cache}"/"${local_path}" || exit 1
+    mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}" || exit 1
     last_commit=$(git log --graph \
     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
 %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
