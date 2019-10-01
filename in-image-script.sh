@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 [[ $DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
 mkdir -p /flag || echo "Are you sure you didn't mean to run ./build-image ?"
