@@ -847,6 +847,7 @@ startfunc
     "${src_cache}"/rpi-linux/arch/arm64/configs/bcm2711_defconfig | \
     head -1 | awk -F '=' '{print $2}' | sed 's/"//g')
     PKGVER="$majorversion.$patchlevel.$sublevel"
+    [[ -n ${xtraversion} ]] && PKGVER="$majorversion.$patchlevel.$sublevel${extraversion}"
     
     KERNELREV=$(git -C "${src_cache}"/rpi-linux rev-parse --short HEAD) > /dev/null
     echo "$KERNELREV" > /tmp/KERNELREV
