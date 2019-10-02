@@ -1270,7 +1270,7 @@ startfunc
 
     [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/rpi-import-mkknlimg.patch
     [[ $UBOOTONLY ]] && chmod +x tools/mkknlimg
-    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/ rpi2-rpi3-config-tweaks.patch
+    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/rpi2-rpi3-config-tweaks.patch
 
 
 #    [[ $UBOOTONLY ]] && echo "CONFIG_SUPPORT_RAW_INITRD=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
