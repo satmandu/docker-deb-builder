@@ -1276,7 +1276,7 @@ startfunc
     [[ $UBOOTONLY ]] && echo "CONFIG_SUPPORT_RAW_INITRD=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
     [[ $UBOOTONLY ]] && echo "CONFIG_ENV_IS_IN_FAT=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
     [[ $UBOOTONLY ]] && sed -i 's/CONFIG_OF_EMBED/CONFIG_OF_BOARD/' "${workdir}"/u-boot/configs/${ubootdefconfig}
-    [[ $UBOOTONLY ]] && sed -i 's/fdt_addr_r=0x02600000/fdt_addr_r=0x03000000' "${workdir}"/u-boot/include/configs/rpi.h
+    [[ $UBOOTONLY ]] && sed -i 's/fdt_addr_r=0x02600000/fdt_addr_r=0x03000000/' "${workdir}"/u-boot/include/configs/rpi.h
     
     echo "CONFIG_LZ4=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
     echo "CONFIG_GZIP=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
