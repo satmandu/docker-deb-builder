@@ -859,12 +859,12 @@ startfunc
 
     mkdir -p "${workdir}"/kernel-build
     cd "${workdir}"/rpi-linux || exit 1
-    [[ ! $UBOOTONLY ]] && KERNELDEF="${KERNELDEF:-bcm2711_defconfig}"
-    [[ ! $UBOOTONLY ]] && defconfig="${KERNELEF}"
+    defconfig="${KERNELDEF:-bcm2711_defconfig}"
+    # [[ ! $KERNELDEF ]] && defconfig="${defconfig:-bcm2711_defconfig}"
     #[ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
     #wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.3.y/arch/arm64/configs/bcm2711_defconfig \
     #-O arch/arm64/configs/bcm2711_defconfig
-    [ ! -f arch/arm64/configs/bcm2711_defconfig ] && defconfig=defconfig
+    [[ ${defconfig} = "bcm2711_defconfig" ]] && ( [ ! -f arch/arm64/configs/bcm2711_defconfig ] && defconfig=defconfig )
     [[ -n "${defconfig}" ]] || defconfig=defconfig
     echo "defconfig=${defconfig}" >> /tmp/env.txt
     # Use kernel patch script from sakaki- found at 
