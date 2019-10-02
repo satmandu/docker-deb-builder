@@ -1270,11 +1270,11 @@ startfunc
 
     [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/rpi-import-mkknlimg.patch
     [[ $UBOOTONLY ]] && chmod +x tools/mkknlimg
-    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/rpi2-rpi3-config-tweaks.patch
+    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/rpi2-rpi3-config-tweaks.patch || true
 
 
-#    [[ $UBOOTONLY ]] && echo "CONFIG_SUPPORT_RAW_INITRD=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
-#    [[ $UBOOTONLY ]] && echo "CONFIG_ENV_IS_IN_FAT=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+    [[ $UBOOTONLY ]] && echo "CONFIG_SUPPORT_RAW_INITRD=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+    [[ $UBOOTONLY ]] && echo "CONFIG_ENV_IS_IN_FAT=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
     [[ $UBOOTONLY ]] && sed -i 's/CONFIG_OF_EMBED/CONFIG_OF_BOARD/' "${workdir}"/u-boot/configs/${ubootdefconfig}
     
     echo "CONFIG_LZ4=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
