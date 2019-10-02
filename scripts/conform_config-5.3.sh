@@ -226,3 +226,13 @@ set_kernel_config CONFIG_PREEMPT_VOLUNTARY y
 #unset_kernel_config CONFIG_MMC_BCM2835
 # This is needed as per https://github.com/raspberrypi/linux/pull/3045/commits/4a14d01965a86370d78d474b486a45e343f28f66
 #set_kernel_config CONFIG_MMC_SDHCI_IPROC
+# PR#3063: enable 3D acceleration with 64-bit kernel on RPi4
+# set the appropriate kernel configs unlocked by this PR
+set_kernel_config CONFIG_ARCH_BCM y
+set_kernel_config CONFIG_ARCH_BCM2835 y
+set_kernel_config CONFIG_DRM_V3D m
+set_kernel_config CONFIG_DRM_VC4 m
+set_kernel_config CONFIG_DRM_VC4_HDMI_CEC y
+
+# needed for vcgdbg
+set_kernel_config BCM2708_VCMEM y

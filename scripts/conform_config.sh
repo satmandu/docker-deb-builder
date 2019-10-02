@@ -205,4 +205,7 @@ set_kernel_config CONFIG_DRM_VC4_HDMI_CEC y
 set_kernel_config CONFIG_PCIE_BRCMSTB y
 set_kernel_config CONFIG_BCM2835_MMC y
 
+# needed for vcgdbg
+set_kernel_config BCM2708_VCMEM y
+
 
