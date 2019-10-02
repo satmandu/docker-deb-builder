@@ -330,6 +330,8 @@ docker_args+="-e BASE_DIST=${BASE_DIST} "
 [ -n "$ZFS" ] && docker_args+="-e ZFS=${ZFS} "
 # Build for all RPI devices.
 [ -n "$RPIALL" ] && docker_args+="-e RPIALL=${RPIALL} "
+# Pass in ubootdef if it exists
+[ -n "$UBOOTDEF" ] && docker_args+="-e UBOOTDEF=${UBOOTDEF} "
 
 # Make some tmpfs mounts for obvious temp folders
 docker_args+="--tmpfs /flag --tmpfs /tmp "

@@ -1242,6 +1242,8 @@ endfunc
 
 patched_uboot () {
 startfunc
+    UBOOTDEF="${UBOOTDEF:-rpi_4}"
+    ubootdefconfig="${UBOOTDEF}_defconfig"
     [[ ! $RPIALL ]] && git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"
     [[ $RPIALL ]] && git_get "https://github.com/u-boot/u-boot.git" "u-boot" "master"
 . /tmp/env.txt
@@ -1250,59 +1252,63 @@ startfunc
 #    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #     patch -p1 < /source-ro/patches/0002-raspberrypi-Disable-simple-framebuffer-support.patch
 #     patch -p1 < /source-ro/patches/U-Boot-board-rpi4-fix-instantiating-PL011-driver.patch
-    [[ $RPIALL ]] && patch -p1 < /source-ro/patches/RPi-one-binary-for-RPi3-4-and-RPi1-2.patch
-    [[ $RPIALL ]] && echo "CONFIG_USB_DWC2=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo "CONFIG_USB_ETHER_LAN78XX=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo "CONFIG_USB_ETHER_SMSC95XX=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo "CONFIG_DM_ETH=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo "CONFIG_USB=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo "CONFIG_DM_USB=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo "CONFIG_USB_KEYBOARD=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo "CONFIG_USB_HOST_ETHER=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo "CONFIG_OF_BOARD=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo "CONFIG_USE_PREBOOT=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo 'CONFIG_PREBOOT="usb start"' >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo "CONFIG_MISC_INIT_R=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    [[ $RPIALL ]] && echo "CONFIG_ARM64" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_LZ4=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_GZIP=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_BZIP2=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_SYS_LONGHELP=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_REGEX=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_CMD_ZFS=y" >> "${workdir}"/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_PART=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_PCI=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_USB=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_BTRFS=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_EXT4=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_EXT4_WRITE=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_FAT=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_CMD_FS_GENERIC=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_PARTITION_TYPE_GUID=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_ENV_IS_IN_EXT4=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_PCI=y   " >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_DM_PCI=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_PCI_PNP=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_PCIE_ECAM_GENERIC=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_DM_USB=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_HOST=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_XHCI_HCD=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_XHCI_PCI=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_UHCI_HCD=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_DWC2=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_STORAGE=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_USB_KEYBOARD=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_SYS_USB_EVENT_POLL=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_FS_BTRFS=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_FS_EXT4=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_EXT4_WRITE=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    echo "CONFIG_FS_FAT=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    #echo "CONFIG_FAT_WRITE=y" >> ${workdir}/u-boot/configs/rpi_4_defconfig
-    ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make rpi_4_defconfig &>> /tmp/"${FUNCNAME[0]}".compile.log
+
+#     [[ $RPIALL ]] && patch -p1 < /source-ro/patches/RPi-one-binary-for-RPi3-4-and-RPi1-2.patch    
+#     [[ $RPIALL ]] && echo "CONFIG_USB_DWC2=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+#     [[ $RPIALL ]] && echo "CONFIG_USB_ETHER_LAN78XX=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+#     [[ $RPIALL ]] && echo "CONFIG_USB_ETHER_SMSC95XX=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+#     [[ $RPIALL ]] && echo "CONFIG_DM_ETH=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+#     [[ $RPIALL ]] && echo "CONFIG_USB=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+#     [[ $RPIALL ]] && echo "CONFIG_DM_USB=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+#     [[ $RPIALL ]] && echo "CONFIG_USB_KEYBOARD=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+#     [[ $RPIALL ]] && echo "CONFIG_USB_HOST_ETHER=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+#     [[ $RPIALL ]] && echo "CONFIG_OF_BOARD=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+#     [[ $RPIALL ]] && echo "CONFIG_USE_PREBOOT=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+#     [[ $RPIALL ]] && echo 'CONFIG_PREBOOT="usb start"' >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+#     [[ $RPIALL ]] && echo "CONFIG_MISC_INIT_R=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+#     [[ $RPIALL ]] && echo "CONFIG_ARM64" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+    
+    echo "CONFIG_LZ4=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+    echo "CONFIG_GZIP=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+    echo "CONFIG_BZIP2=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+    echo "CONFIG_SYS_LONGHELP=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+    echo "CONFIG_REGEX=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+    echo "CONFIG_CMD_ZFS=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+    echo "CONFIG_FS_BTRFS=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    echo "CONFIG_FS_EXT4=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    echo "CONFIG_FS_FAT=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_CMD_PART=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_CMD_PCI=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_CMD_USB=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_CMD_BTRFS=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_CMD_EXT4=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_CMD_EXT4_WRITE=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_CMD_FAT=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_CMD_FS_GENERIC=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_PARTITION_TYPE_GUID=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_ENV_IS_IN_EXT4=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_PCI=y   " >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_DM_PCI=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_PCI_PNP=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_PCIE_ECAM_GENERIC=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_USB=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_DM_USB=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_USB_HOST=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_USB_XHCI_HCD=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_USB_XHCI_PCI=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_USB_UHCI_HCD=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_USB_DWC2=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_USB_STORAGE=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_USB_KEYBOARD=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_SYS_USB_EVENT_POLL=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_EXT4_WRITE=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    #echo "CONFIG_FAT_WRITE=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
+    
+    ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make ${ubootdefconfig} &>> /tmp/"${FUNCNAME[0]}".compile.log
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make -j $(($(nproc) + 1)) &>> /tmp/"${FUNCNAME[0]}".compile.log
+    [[ $RPIALL ]] && cp "${workdir}"/u-boot/u-boot.bin /output/${now}.${UBOOTDEF}.uboot.bin
     waitfor "image_mount"
-    echo "* Installing Andrei Gherzan's RPI uboot fork to image."
+    echo "* Installing u-boot to image."
     cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/uboot.bin
     #cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.bin
     #cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.img
