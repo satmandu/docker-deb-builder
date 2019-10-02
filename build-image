@@ -328,8 +328,8 @@ docker_args+="-e BASE_DIST=${BASE_DIST} "
 [ -n "$XZ" ] && docker_args+="-e XZ=${XZ} "
 # Build zfs modules if asked.
 [ -n "$ZFS" ] && docker_args+="-e ZFS=${ZFS} "
-# Build for all RPI devices.
-[ -n "$RPIALL" ] && docker_args+="-e RPIALL=${RPIALL} "
+# Build only UBOOT
+[ -n "$UBOOTONLY" ] && docker_args+="-e UBOOTONLY=${UBOOTONLY} "
 # Pass in ubootdef if it exists
 [ -n "$UBOOTDEF" ] && docker_args+="-e UBOOTDEF=${UBOOTDEF} "
 
