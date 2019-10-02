@@ -318,6 +318,8 @@ docker_args+="-e BASE_DIST=${BASE_DIST} "
 # Just make kerneldebs?
 [ -n "$JUSTDEBS" ] && docker_args+="-e JUSTDEBS=${JUSTDEBS} "
 [ ! -n "$JUSTDEBS" ] && docker_args+="-v $(abspath ${srcdir})/$base_image:/$base_image "
+# Pass in kerneldef if it exists
+[ -n "$KERNELDEF" ] && docker_args+="-e KERNELDEF=${KERNELDEF} "
 # If lucky
 [ -n "$MOAR_RAM" ] && docker_args+="--tmpfs /build/source/rpi-linux:exec --tmpfs /build/source/kernel-build:exec "
 # copy out uncompressed images

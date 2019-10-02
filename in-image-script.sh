@@ -859,8 +859,8 @@ startfunc
 
     mkdir -p "${workdir}"/kernel-build
     cd "${workdir}"/rpi-linux || exit 1
-    
-    [[ ! $UBOOTONLY ]] && defconfig=bcm2711_defconfig
+    [[ ! $UBOOTONLY ]] && KERNELDEF="${KERNELDEF:-bcm2711_defconfig}"
+    [[ ! $UBOOTONLY ]] && defconfig="${KERNELEF}"
     #[ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
     #wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.3.y/arch/arm64/configs/bcm2711_defconfig \
     #-O arch/arm64/configs/bcm2711_defconfig
