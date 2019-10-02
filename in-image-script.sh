@@ -1275,6 +1275,7 @@ startfunc
 
 #    [[ $UBOOTONLY ]] && echo "CONFIG_SUPPORT_RAW_INITRD=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
 #    [[ $UBOOTONLY ]] && echo "CONFIG_ENV_IS_IN_FAT=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+    [[ $UBOOTONLY ]] && sed -i 's/CONFIG_OF_EMBED/CONFIG_OF_BOARD/' "${workdir}"/u-boot/configs/${ubootdefconfig}
     
     echo "CONFIG_LZ4=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
     echo "CONFIG_GZIP=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
