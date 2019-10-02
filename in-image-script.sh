@@ -1253,10 +1253,10 @@ startfunc
 #     patch -p1 < /source-ro/patches/0002-raspberrypi-Disable-simple-framebuffer-support.patch
 #     patch -p1 < /source-ro/patches/U-Boot-board-rpi4-fix-instantiating-PL011-driver.patch
 
-#     [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/RPi-one-binary-for-RPi3-4-and-RPi1-2.patch    
-#     [[ $UBOOTONLY ]] && echo "CONFIG_USB_DWC2=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
-#     [[ $UBOOTONLY ]] && echo "CONFIG_USB_ETHER_LAN78XX=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
-#     [[ $UBOOTONLY ]] && echo "CONFIG_USB_ETHER_SMSC95XX=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+     [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/RPi-one-binary-for-RPi3-4-and-RPi1-2.patch    
+     [[ $UBOOTONLY ]] && echo "CONFIG_USB_DWC2=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+     [[ $UBOOTONLY ]] && echo "CONFIG_USB_ETHER_LAN78XX=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+     [[ $UBOOTONLY ]] && echo "CONFIG_USB_ETHER_SMSC95XX=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
 #     [[ $UBOOTONLY ]] && echo "CONFIG_DM_ETH=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
 #     [[ $UBOOTONLY ]] && echo "CONFIG_USB=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
 #     [[ $UBOOTONLY ]] && echo "CONFIG_DM_USB=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
