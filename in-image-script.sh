@@ -1024,7 +1024,6 @@ startfunc
     waitfor "kernel_debs"
     waitfor "image_mount"
     waitfor "added_scripts"
-    waitfor "added_scripts"
     waitfor "arm64_chroot_setup"
     waitfor "image_apt_installs"
 . /tmp/env.txt
@@ -1498,8 +1497,6 @@ EOF
 	U-Boot-Script-Name: bootscr.rpi
 	Required-Packages: u-boot-tools
 	# XXX we should copy the entire overlay dtbs dir too
-	# Note as of July 31, 2019 the Ubuntu u-boot-rpi does 
-	# not have the required u-boot for the RPI4 yet.
 EOF
 
     # Keep wifi up despite tendency to drop out.
