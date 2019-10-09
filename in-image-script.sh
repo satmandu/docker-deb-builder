@@ -1097,6 +1097,15 @@ EOF
     if ! grep -qs 'arm_64bit=1' /mnt/boot/firmware/config.txt
         then echo "arm_64bit=1" >> /mnt/boot/firmware/config.txt
     fi
+
+# Workaround for firmware issue at https://github.com/raspberrypi/firmware/issues/1259
+    if ! grep -qs 'device_tree_end' /mnt/boot/firmware/config.txt; then
+        if grep -qs 'device_tree_address' /mnt/boot/firmware/config.txt; then
+        device_tree_address=$(grep device_tree_address /mnt/boot/firmware/config.txt | head -1 | awk -F '=0x' '{print $2}')
+        device_tree_end=$(echo "obase=16;ibase=16;$device_tree_address+000FFFFF" | bc)
+        sed -i "s/device_tree_address=0x${device_tree_address}/device_tree_address=0x${device_tree_address}\ndevice_tree_end=0x${device_tree_end}/" /mnt/boot/firmware/config.txt
+        fi
+    fi
     
     if ! grep -qs 'dtoverlay=vc4-fkms-v3d' /mnt/boot/firmware/config.txt
         then echo "dtoverlay=vc4-fkms-v3d" >> /mnt/boot/firmware/config.txt
@@ -1520,7 +1529,7 @@ startfunc
     waitfor "armstub8-gic" 1
     waitfor "non-free_firmware" 1
     waitfor "rpi_userland" 1
-    waitfor "patched_uboot" 1
+#    waitfor "patched_uboot" 1
     waitfor "kernel_debs" 1
     waitfor "rpi_config_txt_configuration" 1
     waitfor "rpi_cmdline_txt_configuration" 1
@@ -1682,7 +1691,7 @@ compiler_setup &
 #[[ ! $JUSTDEBS ]] && armstub8-gic &
 [[ ! $JUSTDEBS ]] && non-free_firmware & 
 [[ ! $JUSTDEBS ]] && rpi_userland &
-[[ ! $JUSTDEBS ]] && patched_uboot &
+# [[ ! $JUSTDEBS ]] && patched_uboot &
 kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && rpi_config_txt_configuration &
 [[ ! $JUSTDEBS ]] && rpi_cmdline_txt_configuration &
