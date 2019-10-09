@@ -48,6 +48,7 @@ RUN set -ex \
                ncurses-dev \
                patch \
                piuparts \
+               pkg-config \
                psmisc \
                pv \
                qemu-user-static \

@@ -46,6 +46,7 @@ RUN set -ex \
                moreutils \
                ncurses-dev \
                patch \
+               pkg-config \
                psmisc \
                pv \
                qemu-user-static \

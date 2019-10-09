@@ -73,10 +73,10 @@ BASE_DIST="${BASE_DIST:-${default_BASE_DIST}}"
 
 if [ "$BASE_DIST" == "bionic" ]; then
     base_url="http://cdimage.ubuntu.com/ubuntu-server/bionic/daily-preinstalled/current/"
-    defaultimage="docker-rpi4-imagebuilder-v1:bionic"
+    defaultimage="docker-rpi4-imagebuilder-v2:bionic"
     else
     base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
-    defaultimage="docker-rpi4-imagebuilder-v1:rolling"
+    defaultimage="docker-rpi4-imagebuilder-v2:rolling"
     # There is no rolling/disco daily-preinstalled image
     BASE_DIST=eoan
 fi
@@ -143,7 +143,8 @@ old_containers=("docker-rpi4-imagebuilder-v4:19.04" "docker-rpi4-imagebuilder-v4
 "docker-rpi4-imagebuilder-v3:19.04" "docker-rpi4-imagebuilder-v3:18.04" \
 "docker-rpi4-imagebuilder-v2:19.04" "docker-rpi4-imagebuilder-v2:18.04" \
 "docker-rpi4-imagebuilder:19.04" "docker-rpi4-imagebuilder:18.04" \
-"docker-rpi4-imagebuilder:19.10" )
+"docker-rpi4-imagebuilder:19.10" "docker-rpi4-imagebuilder-v1:bionic" \
+"docker-rpi4-imagebuilder-v1:rolling" "docker-rpi4-imagebuilder-v1:19.10")
 for container in ${old_containers[*]};
 do
     if [ ! "${container}" = "${image}" ]
