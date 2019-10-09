@@ -1354,21 +1354,35 @@ startfunc
     cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/uboot.bin
     #cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.bin
     #cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.img
-    mkdir -p  ${MNTLIBPATH}/u-boot/rpi_4/
-    cp "${workdir}"/u-boot/u-boot.bin  ${MNTLIBPATH}/u-boot/rpi_4/
+    #mkdir -p  ${MNTLIBPATH}/u-boot/rpi_4/
+    #cp "${workdir}"/u-boot/u-boot.bin  ${MNTLIBPATH}/u-boot/rpi_4/
     # This can be done without chroot by just having u-boot-tools on the build
     # container
     #chroot /mnt /bin/bash -c "mkimage -A arm64 -O linux -T script \
     #-d /etc/flash-kernel/bootscript/bootscr.rpi \
     #/boot/firmware/boot.scr" &>> /tmp/${FUNCNAME[0]}.compile.log
+#     [[ !  -f /mnt/etc/flash-kernel/bootscript/bootscr.rpi ]] && \
+#     cp /source-ro/scripts/bootscr.rpi /mnt/etc/flash-kernel/bootscript/bootscr.rpi
+#     mkimage -A arm64 -O linux -T script \
+#     -d /mnt/etc/flash-kernel/bootscript/bootscr.rpi \
+#     /mnt/boot/firmware/boot.scr &>> /tmp/"${FUNCNAME[0]}".compile.log
+
+uboot_script
+
+endfunc
+}
+
+uboot_script () {
+startfunc
+    [[ !  -f /usr/bin/mkimage ]] && apt install u-boot-tools -y
     [[ !  -f /mnt/etc/flash-kernel/bootscript/bootscr.rpi ]] && \
     cp /source-ro/scripts/bootscr.rpi /mnt/etc/flash-kernel/bootscript/bootscr.rpi
     mkimage -A arm64 -O linux -T script \
     -d /mnt/etc/flash-kernel/bootscript/bootscr.rpi \
     /mnt/boot/firmware/boot.scr &>> /tmp/"${FUNCNAME[0]}".compile.log
-
 endfunc
 }
+
 
 first_boot_scripts_setup () {
 startfunc  
@@ -1589,6 +1603,8 @@ startfunc
     echo "* Copying compiled kernel debs to image for proper install"
     echo "* at first boot and also so we have a copy locally."
     cp "${workdir}"/*.deb /mnt/var/cache/apt/archives/
+    #Install better u-boot script
+    uboot-script
     sync
     # To stop here "rm /flag/done.ok_to_unmount_image_after_build".
     if [ ! -f /flag/done.ok_to_unmount_image_after_build ]; then
