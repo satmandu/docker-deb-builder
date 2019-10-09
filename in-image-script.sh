@@ -779,16 +779,16 @@ startfunc
     echo "* Apt upgrading image using native qemu chroot."
     #echo "* There may be some errors here..." 
     [[ ! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
-    #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
-    #linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 \
-    #linux-headers*-raspi2 linux-raspi2-headers* -y --purge" \
-    #&>> /tmp/"${FUNCNAME[0]}".install.log || true
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
+    linux-image-raspi2 linux-image*-raspi2 linux-modules*-raspi2 \
+    linux-headers*-raspi2 linux-raspi2-headers* -y --purge" \
+    &>> /tmp/"${FUNCNAME[0]}".install.log || true
     [[ ! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
-    #chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
-    #linux-image-4.15* linux-modules-4.15* linux-headers-4.15* \
-    #linux-image-5.0* linux-image-5.3* linux-modules-5.0* linux-modules-5.3.* \
-    #linux-headers-5.0* linux-headers-5.3.*-y --purge" \
-    #&>> /tmp/"${FUNCNAME[0]}".install.log || true
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper remove \
+    linux-image-4.15* linux-modules-4.15* linux-headers-4.15* \
+    linux-image-5.0* linux-image-5.3* linux-modules-5.0* linux-modules-5.3.* \
+    linux-headers-5.0* linux-headers-5.3.*-y --purge" \
+    &>> /tmp/"${FUNCNAME[0]}".install.log || true
     [[ ! $(file /mnt/etc/apt/apt.conf.d/01autoremove-kernels | awk '{print $2}') = "ASCII" ]] && (chroot /mnt /bin/bash -c "/etc/kernel/postinst.d/apt-auto-removal" || true )
     [[ $ZFS ]] && chroot /mnt /bin/bash -c "echo zfs-dkms zfs-dkms/note-incompatible-licenses note | debconf-set-selections" || true
     [[ $ZFS ]] && chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install --no-install-recommends -y zfs-dkms" || true
