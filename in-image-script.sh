@@ -1352,7 +1352,7 @@ startfunc
     waitfor "image_mount"
     echo "* Installing u-boot to image."
     cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/uboot.bin
-    #cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.bin
+    cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/uboot_rpi_4.bin
     #cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.img
     #mkdir -p  ${MNTLIBPATH}/u-boot/rpi_4/
     #cp "${workdir}"/u-boot/u-boot.bin  ${MNTLIBPATH}/u-boot/rpi_4/
@@ -1367,7 +1367,7 @@ startfunc
 #     -d /mnt/etc/flash-kernel/bootscript/bootscr.rpi \
 #     /mnt/boot/firmware/boot.scr &>> /tmp/"${FUNCNAME[0]}".compile.log
 
-uboot_script
+#uboot_script
 
 endfunc
 }
@@ -1576,7 +1576,7 @@ startfunc
 #    waitfor "armstub8-gic" 1
     waitfor "non-free_firmware" 1
     waitfor "rpi_userland" 1
-#    waitfor "patched_uboot" 1
+    waitfor "patched_uboot" 1
     waitfor "kernel_debs" 1
     waitfor "rpi_config_txt_configuration" 1
     waitfor "rpi_cmdline_txt_configuration" 1
@@ -1606,7 +1606,7 @@ startfunc
     echo "* at first boot and also so we have a copy locally."
     cp "${workdir}"/*.deb /mnt/var/cache/apt/archives/
     #Install better u-boot script
-    uboot-script
+    uboot_script
     sync
     # To stop here "rm /flag/done.ok_to_unmount_image_after_build".
     if [ ! -f /flag/done.ok_to_unmount_image_after_build ]; then
@@ -1740,7 +1740,7 @@ compiler_setup &
 #[[ ! $JUSTDEBS ]] && armstub8-gic &
 [[ ! $JUSTDEBS ]] && non-free_firmware & 
 [[ ! $JUSTDEBS ]] && rpi_userland &
-# [[ ! $JUSTDEBS ]] && patched_uboot &
+[[ ! $JUSTDEBS ]] && patched_uboot &
 kernelbuild_setup && kernel_debs &
 [[ ! $JUSTDEBS ]] && rpi_config_txt_configuration &
 [[ ! $JUSTDEBS ]] && rpi_cmdline_txt_configuration &
