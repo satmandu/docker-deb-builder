@@ -743,7 +743,8 @@ startfunc
 . /tmp/env.txt
         # Following removed since calling from arm64_chroot_setup
         #waitfor "arm64_chroot_setup"
-  
+    echo "deb http://ports.ubuntu.com/ubuntu-ports eoan-proposed restricted main multiverse universe" >> /mnt/etc/apt/sources.list
+    echo "deb-src http://ports.ubuntu.com/ubuntu-ports eoan-proposed restricted main multiverse universe" >> /mnt/etc/apt/sources.list
     echo "* Starting apt update."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     update &>> /tmp/"${FUNCNAME[0]}".install.log | grep packages | cut -d '.' -f 1  || true
