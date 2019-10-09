@@ -1275,7 +1275,8 @@ startfunc
     UBOOTDEF="${UBOOTDEF:-rpi_4}"
     ubootdefconfig="${UBOOTDEF}_defconfig"
     [[ ! $UBOOTONLY ]] && git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"
-    [[ $UBOOTONLY ]] && git_get "https://github.com/u-boot/u-boot.git" "u-boot" "master"
+    [[ $UBOOTONLY ]] && git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"
+#    [[ $UBOOTONLY ]] && git_get "https://github.com/u-boot/u-boot.git" "u-boot" "master"
 . /tmp/env.txt
     cd "${workdir}"/u-boot || exit 1
 #    curl -O https://github.com/satmandu/u-boot/commit/b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
@@ -1300,7 +1301,7 @@ startfunc
 
     [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/rpi-import-mkknlimg.patch
     [[ $UBOOTONLY ]] && chmod +x tools/mkknlimg
-    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/rpi2-rpi3-config-tweaks.patch || true
+#    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/rpi2-rpi3-config-tweaks.patch || true
 
 
     [[ $UBOOTONLY ]] && echo "CONFIG_SUPPORT_RAW_INITRD=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
