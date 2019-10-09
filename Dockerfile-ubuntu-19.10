@@ -5,6 +5,8 @@ FROM ubuntu:${VERSION_ID} as base
 SHELL ["/bin/bash","-c"]
 RUN set -ex \
     && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
+    && echo "deb http://ports.ubuntu.com/ubuntu-ports eoan-proposed restricted main multiverse universe" >> /etc/apt/sources.list \
+    && echo "deb-src http://ports.ubuntu.com/ubuntu-ports eoan-proposed restricted main multiverse universe" >> /etc/apt/sources.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
                apt-transport-https \
@@ -69,6 +71,8 @@ RUN set -ex \
     && apt-get upgrade -y \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
 COPY --from=stageforcopy /etc/apt/sources.list /etc/apt/sources.list.d/arm64.list
+RUN echo "deb http://ports.ubuntu.com/ubuntu-ports eoan-proposed restricted main multiverse universe" >> /etc/apt/sources.list.d/arm64.list  \
+&& echo "deb-src http://ports.ubuntu.com/ubuntu-ports eoan-proposed restricted main multiverse universe" >> /etc/apt/sources.list.d/arm64.list
 RUN [[ ! $(uname -m) = aarch64 ]] \
     && (sed -i 's/deb http/deb [arch=arm64] http/' \
     /etc/apt/sources.list.d/arm64.list \
