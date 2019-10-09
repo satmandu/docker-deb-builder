@@ -1501,7 +1501,7 @@ EOF
 
     # Keep wifi up despite tendency to drop out.
     echo "* Creating /usr/local/bin/wpaping.sh ."
-    cat <<-EOF >> /usr/local/bin/wpaping.sh
+    cat <<-EOF >> /mnt/usr/local/bin/wpaping.sh
 	#!/bin/bash
 	#
 	# Loop forever doing wpa_cli SCAN commands
@@ -1516,7 +1516,7 @@ EOF
 	    done
 EOF
 
-chroot /mnt /bin/bash -c "(crontab -l ; echo "*/5 * * * * /usr/local/bin/wpaping.sh") | crontab -"
+chroot /mnt /bin/bash -c "(crontab -l ; echo '*/5 * * * * /usr/local/bin/wpaping.sh') | crontab -"
 
 endfunc
 }
