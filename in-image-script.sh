@@ -1193,6 +1193,8 @@ startfunc
     cd "${workdir}" || exit 1
     mkdir -p /mnt/opt/vc
     cd "${workdir}"/rpi-userland/ || exit 1
+    sed -i 's/__bitwise/FDT_BITWISE/' "${workdir}"/rpi-userland/opensrc/helpers/libfdt/libfdt_env.h
+    sed -i 's/__force/FDT_FORCE/' "${workdir}"/rpi-userland/opensrc/helpers/libfdt/libfdt_env.h
     CROSS_COMPILE=aarch64-linux-gnu- ./buildme --aarch64 /mnt &>> /tmp/"${FUNCNAME[0]}".compile.log
     echo '/opt/vc/lib' > /mnt/etc/ld.so.conf.d/vc.conf 
     
