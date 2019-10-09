@@ -1231,7 +1231,13 @@ endfunc
 }
 
 rpi_eeprom_firmware () {
-mkdir -p /lib/firmware/raspberrypi/bootloader
+mkdir -p /mnt/lib/firmware/raspberrypi/
+cd /mnt/lib/firmware/raspberrypi
+git clone --depth=1 https://github.com/raspberrypi/rpi-eeprom.git
+mv rpi-eeprom/firmware bootloader
+mv rpi-eeprom/rpi-eeprom-update /mnt/usr/local/bin/
+mv rpi-eeprom/rpi-eeprom-config /mnt/usr/local/bin/
+
 }
 
 
@@ -1413,6 +1419,7 @@ EOF
 	sed -i 's/\/etc\/rc.local.temp\ \&//' /etc/rc.local 
 	touch /etc/cloud/cloud-init.disabled
 	ldconfig
+	SKIP_WARNING=1 /usr/local/bin/rpi-update
 	rm -- "$0"
 	exit 0
 EOF
@@ -1519,7 +1526,18 @@ EOF
 	    done
 EOF
 
-chroot /mnt /bin/bash -c "(crontab -l ; echo '*/5 * * * * /usr/local/bin/wpaping.sh') | crontab -"
+    chroot /mnt /bin/bash -c "(crontab -l ; echo '*/5 * * * * /usr/local/bin/wpaping.sh') | crontab -"
+
+    rpi_eeprom_firmware
+    cd /mnt/usr/local/bin
+    curl -OL https://raw.githubusercontent.com/Hexxeh/rpi-update/master/rpi-update
+    chmod +x /mnt/usr/local/bin/rpi-update
+    sed -i 's/UPDATE_SELF:-1/UPDATE_SELF:-0/' /mnt/usr/local/bin/rpi-update
+    sed -i 's/BOOT_PATH:-"\/boot"/BOOT_PATH:-"\/boot\/firmware"/' /mnt/usr/local/bin/rpi-update
+    sed -i 's/SKIP_KERNEL:-0/SKIP_KERNEL:-1/' /mnt/usr/local/bin/rpi-update
+    sed -i 's/SKIP_SDK:-0/SKIP_SDK:-1/' /mnt/usr/local/bin/rpi-update
+    sed -i 's/\tupdate_vc_libs/\t#update_vc_libs/' /mnt/usr/local/bin/rpi-update
+    sed -i 's/\tupdate_sdk/\t#update_sdk/' /mnt/usr/local/bin/rpi-update
 
 endfunc
 }
@@ -1527,7 +1545,7 @@ endfunc
 image_and_chroot_cleanup () {
 startfunc  
     waitfor "rpi_firmware" 1
-    waitfor "armstub8-gic" 1
+#    waitfor "armstub8-gic" 1
     waitfor "non-free_firmware" 1
     waitfor "rpi_userland" 1
 #    waitfor "patched_uboot" 1
