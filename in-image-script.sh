@@ -1042,15 +1042,15 @@ startfunc
 #     &>> /tmp/"${FUNCNAME[0]}".install.log || true
     cp /mnt/boot/initrd.img-"${KERNEL_VERS}" /mnt/boot/firmware/initrd.img
     cp /mnt/boot/vmlinuz-"${KERNEL_VERS}" /mnt/boot/firmware/vmlinuz
-    vmlinuz_type=$(file -bn /mnt/boot/firmware/vmlinuz)
-    if [ "$vmlinuz_type" == "MS-DOS executable" ]
-        then
-        cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
-    else
-        cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
-        cd /mnt/boot/firmware/ || exit 1 ; gunzip -f /mnt/boot/firmware/kernel8.img.nouboot.gz \
-        &>> /tmp/"${FUNCNAME[0]}".install.log
-    fi
+#     vmlinuz_type=$(file -bn /mnt/boot/firmware/vmlinuz)
+#     if [ "$vmlinuz_type" == "MS-DOS executable" ]
+#         then
+#         cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot
+#     else
+#         cp /mnt/boot/firmware/vmlinuz /mnt/boot/firmware/kernel8.img.nouboot.gz
+#         cd /mnt/boot/firmware/ || exit 1 ; gunzip -f /mnt/boot/firmware/kernel8.img.nouboot.gz \
+#         &>> /tmp/"${FUNCNAME[0]}".install.log
+#     fi
 endfunc
 }
 
@@ -1478,12 +1478,14 @@ startfunc
 	# If kernel8.img does not look like u-boot, then assume u-boot
 	# is not being used.
 	if [ ! $(file /boot/firmware/kernel8.img | grep -vq "PCX") ]; then
+	    if [ ! $(file /boot/firmware/uboot_rpi_4.bin | grep -vq "PCX") ]
 	    # Assume uboot is not being used, save kernel as kernel8.img
 	    gunzip -c -f ${KERNEL_INSTALLED_PATH} > /boot/firmware/kernel8.img && \
 	cp /boot/firmware/kernel8.img /boot/firmware/kernel8.img.nouboot
 	    else
 	    # uboot found, do not overwrite it.
 	    gunzip -c -f ${KERNEL_INSTALLED_PATH} > /boot/firmware/kernel8.img.nouboot
+	    fi
 	fi
 	
 	exit 0
