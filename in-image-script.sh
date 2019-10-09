@@ -816,6 +816,7 @@ rpi_firmware () {
 startfunc  
     git_get "https://github.com/Hexxeh/rpi-firmware" "rpi-firmware"
     waitfor "image_mount"
+    waitfor "image_apt_installs"
 . /tmp/env.txt  
     cd "${workdir}"/rpi-firmware || exit 1
     echo "* Installing current RPI firmware."
@@ -1080,10 +1081,11 @@ endfunc
 rpi_config_txt_configuration () {
 startfunc 
     waitfor "image_mount"
+    waitfor "image_apt_installs"
  . /tmp/env.txt  
-    echo "* Making /boot/firmware/config.txt modifications."
+    echo "* Making /boot/firmware/ config file modifications."
     
-    cat <<-EOF >> /mnt/boot/firmware/config.txt
+    cat <<-EOF >> /mnt/boot/firmware/usercfg.txt
 	#
 	# This image was built on ${now} using software at
 	# https://github.com/satmandu/docker-rpi4-imagebuilder/
@@ -1097,9 +1099,9 @@ EOF
 #        then echo "enable_gic=1" >> /mnt/boot/firmware/config.txt
 #    fi
     
-    if ! grep -qs 'arm_64bit=1' /mnt/boot/firmware/config.txt
-        then echo "arm_64bit=1" >> /mnt/boot/firmware/config.txt
-    fi
+#    if ! grep -qs 'arm_64bit=1' /mnt/boot/firmware/config.txt
+#        then echo "arm_64bit=1" >> /mnt/boot/firmware/config.txt
+#    fi
 
 # Workaround for firmware issue at https://github.com/raspberrypi/firmware/issues/1259
     if ! grep -qs 'device_tree_end' /mnt/boot/firmware/config.txt; then
@@ -1110,31 +1112,32 @@ EOF
         fi
     fi
     
-    if ! grep -qs 'dtoverlay=vc4-fkms-v3d' /mnt/boot/firmware/config.txt
-        then echo "dtoverlay=vc4-fkms-v3d" >> /mnt/boot/firmware/config.txt
-    fi
+#    if ! grep -qs 'dtoverlay=vc4-fkms-v3d' /mnt/boot/firmware/config.txt
+#        then echo "dtoverlay=vc4-fkms-v3d" >> /mnt/boot/firmware/config.txt
+#    fi
     
-    if grep -qs 'kernel8.bin' /mnt/boot/firmware/config.txt
-        then sed -i 's/kernel8.bin/kernel8.img/' /mnt/boot/firmware/config.txt
-    fi
+#    if grep -qs 'kernel8.bin' /mnt/boot/firmware/config.txt
+#        then sed -i 's/kernel8.bin/kernel8.img/' /mnt/boot/firmware/config.txt
+#    fi
     
-    if ! grep -qs 'initramfs' /mnt/boot/firmware/config.txt
-        then echo "initramfs initrd.img followkernel" >> /mnt/boot/firmware/config.txt
-    fi
+#    if ! grep -qs 'initramfs' /mnt/boot/firmware/config.txt
+#        then echo "initramfs initrd.img followkernel" >> /mnt/boot/firmware/config.txt
+#    fi
     
-    if ! grep -qs 'enable_uart=1' /mnt/boot/firmware/config.txt
-        then echo "enable_uart=1" >> /mnt/boot/firmware/config.txt
-    fi
+#    if ! grep -qs 'enable_uart=1' /mnt/boot/firmware/config.txt
+#        then echo "enable_uart=1" >> /mnt/boot/firmware/config.txt
+#    fi
     
-    if ! grep -qs 'dtparam=eth_led0' /mnt/boot/firmware/config.txt
+    if ! grep -qs 'dtparam=eth_led0' /mnt/boot/firmware/usercfg.txt
         then cat <<-EOF >> /mnt/boot/firmware/config.txt
 		# Disable Ethernet LEDs
+		# Not yert functional on RPI4
 		#dtparam=eth_led0=14
 		#dtparam=eth_led1=14
 EOF
     fi
     
-    if ! grep -qs 'dtparam=pwr_led_trigger' /mnt/boot/firmware/config.txt
+    if ! grep -qs 'dtparam=pwr_led_trigger' /mnt/boot/firmware/usercfg.txt
         then cat <<-EOF >> /mnt/boot/firmware/config.txt
 		# Disable the PWR LED
 		#dtparam=pwr_led_trigger=none
@@ -1142,7 +1145,7 @@ EOF
 EOF
     fi
     
-    if ! grep -qs 'dtparam=act_led_trigger' /mnt/boot/firmware/config.txt
+    if ! grep -qs 'dtparam=act_led_trigger' /mnt/boot/firmware/usercfg.txt
         then cat <<-EOF >> /mnt/boot/firmware/config.txt
 		# Disable the Activity LED
 		#dtparam=act_led_trigger=none
@@ -1157,18 +1160,25 @@ endfunc
 rpi_cmdline_txt_configuration () {
 startfunc 
     waitfor "image_mount"
+    waitfor "image_apt_installs"
  . /tmp/env.txt  
-    echo "* Making /boot/firmware/cmdline.txt modifications."
+    echo "* Making /boot/firmware cmdline file modifications."
     
     # Seeing possible sdcard issues, so be safe for now.
-    if ! grep -qs 'fsck.repair=yes' /mnt/boot/firmware/cmdline.txt
-        then sed -i 's/rootwait/rootwait fsck.repair=yes/' /mnt/boot/firmware/cmdline.txt
+    if ! grep -qs 'fsck.repair=yes' /mnt/boot/firmware/nobtcmd.txt 
+        then sed -i 's/rootwait/rootwait fsck.repair=yes/' /mnt/boot/firmware/nobtcmd.txt
     fi
     
-    if ! grep -qs 'fsck.mode=force' /mnt/boot/firmware/cmdline.txt
-        then sed -i 's/rootwait/rootwait fsck.mode=force/' /mnt/boot/firmware/cmdline.txt
+    if ! grep -qs 'fsck.mode=force' /mnt/boot/firmware/nobtcmd.txt
+        then sed -i 's/rootwait/rootwait fsck.mode=force/' /mnt/boot/firmware/nobtcmd.txt
     fi
-  
+    if ! grep -qs 'fsck.repair=yes' /mnt/boot/firmware/btcmd.txt 
+        then sed -i 's/rootwait/rootwait fsck.repair=yes/' /mnt/boot/firmware/btcmd.txt
+    fi
+    
+    if ! grep -qs 'fsck.mode=force' /mnt/boot/firmware/btcmd.txt
+        then sed -i 's/rootwait/rootwait fsck.mode=force/' /mnt/boot/firmware/btcmd.txt
+    fi
     
 endfunc
 }
