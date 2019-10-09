@@ -729,6 +729,8 @@ startfunc
     
     mkdir -p /mnt/build
     mount -o bind /build /mnt/build
+    echo "deb http://ports.ubuntu.com/ubuntu-ports eoan-proposed restricted main multiverse universe" >> /mnt/etc/apt/sources.list
+    echo "deb-src http://ports.ubuntu.com/ubuntu-ports eoan-proposed restricted main multiverse universe" >> /mnt/etc/apt/sources.list
     echo "* ARM64 chroot setup is complete."  
     image_apt_installs &
 [[ $DEBUG ]] && spinnerwait image_apt_installs
@@ -739,12 +741,9 @@ image_apt_installs () {
 startfunc  
         waitfor "utility_scripts"
         waitfor "added_scripts"
-        waitfor "kernel_debs"
 . /tmp/env.txt
         # Following removed since calling from arm64_chroot_setup
         #waitfor "arm64_chroot_setup"
-    echo "deb http://ports.ubuntu.com/ubuntu-ports eoan-proposed restricted main multiverse universe" >> /mnt/etc/apt/sources.list
-    echo "deb-src http://ports.ubuntu.com/ubuntu-ports eoan-proposed restricted main multiverse universe" >> /mnt/etc/apt/sources.list
     echo "* Starting apt update."
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     update &>> /tmp/"${FUNCNAME[0]}".install.log | grep packages | cut -d '.' -f 1  || true
@@ -775,12 +774,7 @@ startfunc
     # These steps needed to allow x86_64 kernel programs to allow module installation.
     chroot /mnt /bin/bash -c "ln -rsf /usr/x86_64-linux-gnu/lib64 /lib64 || true"
     chroot /mnt /bin/bash -c "ln -rsf /usr/x86_64-linux-gnu/lib /lib/x86_64-linux-gnu || true"
-    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
-    echo "* Installing ${KERNEL_VERS} debs to image."
-    cp "${workdir}"/*.deb /mnt/tmp/
-    # Try installing the generated debs in chroot before we do anything else.
-    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" \
-    &>> /tmp/"${FUNCNAME[0]}".install.log || true
+    
 
     echo "* Apt upgrading image using native qemu chroot."
     #echo "* There may be some errors here..." 
@@ -800,6 +794,15 @@ startfunc
     [[ $ZFS ]] && chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper install --no-install-recommends -y zfs-dkms" || true
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper upgrade -qq || (/usr/local/bin/chroot-dpkg-wrapper --configure -a ; /usr/local/bin/chroot-apt-wrapper upgrade -qq)" || true &>> /tmp/"${FUNCNAME[0]}".install.log || true
     echo "* Image apt upgrade done."
+    
+     waitfor "kernel_debs"
+    KERNEL_VERS=$(< /tmp/KERNEL_VERS)
+    echo "* Installing ${KERNEL_VERS} debs to image."
+    cp "${workdir}"/*.deb /mnt/tmp/
+    # Try installing the generated debs in chroot before we do anything else.
+    chroot /mnt /bin/bash -c "/usr/local/bin/chroot-dpkg-wrapper -i /tmp/*.deb" \
+    &>> /tmp/"${FUNCNAME[0]}".install.log || true
+    
     echo "* Installing wifi & networking tools to image."
     chroot /mnt /bin/bash -c "/usr/local/bin/chroot-apt-wrapper \
     install network-manager wireless-tools wireless-regdb crda \
