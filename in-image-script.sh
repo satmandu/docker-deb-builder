@@ -1299,8 +1299,8 @@ startfunc
 #     [[ $UBOOTONLY ]] && echo "CONFIG_MISC_INIT_R=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
 #     [[ $UBOOTONLY ]] && echo "CONFIG_ARM64" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
 
-    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/rpi-import-mkknlimg.patch
-    [[ $UBOOTONLY ]] && chmod +x tools/mkknlimg
+#    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/rpi-import-mkknlimg.patch
+#    [[ $UBOOTONLY ]] && chmod +x tools/mkknlimg
 #    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/rpi2-rpi3-config-tweaks.patch || true
 
 
@@ -1347,8 +1347,8 @@ startfunc
     
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make ${ubootdefconfig} &>> /tmp/"${FUNCNAME[0]}".compile.log
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make -j $(($(nproc) + 1)) &>> /tmp/"${FUNCNAME[0]}".compile.log
-    [[ $UBOOTONLY ]] && tools/mkknlimg --dtok --270x --283x "${workdir}"/u-boot/u-boot.bin /output/${now}.${UBOOTDEF}.uboot.bin
-#   [[ $UBOOTONLY ]] && cp "${workdir}"/u-boot/u-boot.bin /output/${now}.${UBOOTDEF}.uboot.bin
+#    [[ $UBOOTONLY ]] && tools/mkknlimg --dtok --270x --283x "${workdir}"/u-boot/u-boot.bin /output/${now}.${UBOOTDEF}.uboot.bin
+   [[ $UBOOTONLY ]] && cp "${workdir}"/u-boot/u-boot.bin /output/${now}.${UBOOTDEF}.uboot.bin
     [[ $UBOOTONLY ]] && return
     waitfor "image_mount"
     echo "* Installing u-boot to image."
