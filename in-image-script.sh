@@ -1091,9 +1091,9 @@ startfunc
 	# https://github.com/satmandu/docker-rpi4-imagebuilder/
 	# 
 EOF
-#    if ! grep -qs 'armstub=armstub8-gic.bin' /mnt/boot/firmware/config.txt
-#        then echo "armstub=armstub8-gic.bin" >> /mnt/boot/firmware/config.txt
-#    fi
+    if ! grep -qs 'armstub=armstub8-gic.bin' /mnt/boot/firmware/config.txt
+        then echo "armstub=armstub8-gic.bin" >> /mnt/boot/firmware/config.txt
+    fi
     
 #    if ! grep -qs 'enable_gic=1' /mnt/boot/firmware/config.txt
 #        then echo "enable_gic=1" >> /mnt/boot/firmware/config.txt
@@ -1574,7 +1574,7 @@ endfunc
 image_and_chroot_cleanup () {
 startfunc  
     waitfor "rpi_firmware" 1
-#    waitfor "armstub8-gic" 1
+    waitfor "armstub8-gic" 1
     waitfor "non-free_firmware" 1
     waitfor "rpi_userland" 1
     waitfor "patched_uboot" 1
@@ -1738,7 +1738,7 @@ compiler_setup &
 [[ ! $JUSTDEBS  ]] && image_extract &
 [[ ! $JUSTDEBS  ]] && image_mount &
 [[ ! $JUSTDEBS ]] && rpi_firmware &
-#[[ ! $JUSTDEBS ]] && armstub8-gic &
+[[ ! $JUSTDEBS ]] && armstub8-gic &
 [[ ! $JUSTDEBS ]] && non-free_firmware & 
 [[ ! $JUSTDEBS ]] && rpi_userland &
 [[ ! $JUSTDEBS ]] && patched_uboot &
