@@ -132,14 +132,18 @@ apt-get -o dir::cache::archives="${apt_cache}" autoclean -y -qq &>> /tmp/main.in
 
 # Utility Functions
 
+function ragequit {
+    pkill -F /flag/main
+}
+
 function abspath {
     cd "${1}" && pwd
 }
 
 # via https://serverfault.com/a/905345
 PrintLog(){
-  information="${1}"
-  logFile="${2}"
+  local information="${1}"
+  local logFile="${2}"
 #[[ $DEBUG ]] && echo "Log: ${logFile} ${FUNCNAME[0]} ${FUNCNAME[1]} ${FUNCNAME[2]} ${FUNCNAME[3]}"
   [[ ! -e "${logFile}" ]] && (mkdir -p "$(dirname ${logFile})" &>/dev/null || true) && \
   (touch "${logFile}" &> /tmp/PrintLog || true)
@@ -393,7 +397,7 @@ startfunc
                 then 
                     echo "Kernel git branch mismatch!"
                     printf "%${COLUMNS}s\n" "${proc_name} refreshing cache files from git."
-                    mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}" || exit 1
+                    mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}" || ragequit
                     # Just recreate_git always
                     # git checkout ${git_branch} || recreate_git ${git_repo} \
                     #${local_path} ${git_branch}
@@ -406,7 +410,7 @@ startfunc
             
             
             # sync to local branch
-            mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}" || exit 1
+            mkdir -p "${src_cache}/${local_path}" && cd "${src_cache}/${local_path}" || ragequit
             # Recreate in lieu of syncing git.
             #git fetch --all ${git_flags} &>> /tmp/${proc_name}.git.log || true
             #git reset --hard $pull_flags --quiet 2>> /tmp/${proc_name}.git.log
@@ -415,7 +419,7 @@ startfunc
             echo -e "${proc_name} git info:\nremote hash: ${remote_git}\n local hash: \
 ${local_git}\n\r${proc_name} getting files from cache volume. 😎\n"
     fi
-    cd "${src_cache}"/"${local_path}" || exit 1
+    cd "${src_cache}"/"${local_path}" || ragequit
     last_commit=$(git log --graph \
     --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) \
 %C(bold blue)<%an>%Creset' --abbrev-commit -2 \
@@ -436,7 +440,7 @@ PrintLog "recreate: ${FUNCNAME[2]}, git_repo: ${git_repo}, local_path: ${local_p
     local git_extra_flags=" -b ${git_branch} "
     local clone_flags=" ${git_repo} $git_extra_flags "
     rm -rf "${src_cache:?}/${local_path}" &>> /tmp/"${FUNCNAME[2]}".git.log
-    cd "${src_cache}" &>> /tmp/"${FUNCNAME[2]}".git.log || exit 1
+    cd "${src_cache}" &>> /tmp/"${FUNCNAME[2]}".git.log || ragequit
     git clone ${git_flags} $clone_flags ${local_path} \
     &>> /tmp/"${FUNCNAME[2]}".git.log 
 endfunc
@@ -450,7 +454,7 @@ startfunc
         local host_arch_prefix="${BUILDHOST_ARCH}-linux-gnu-"
         local file_out=$(file /usr/bin/"${1}")
         # Exit if dest arch file isn't available.
-        [[ ! -f /usr/bin/${dest_arch_prefix}${1} ]] && PrintLog "Missing dest arch ${dest_arch_prefix}${1}" /tmp/compiler_setup.install.log && exit 1
+        [[ ! -f /usr/bin/${dest_arch_prefix}${1} ]] && PrintLog "Missing dest arch ${dest_arch_prefix}${1}" /tmp/compiler_setup.install.log && ragequit
         # If host arch backup file isn't available make backup.
         # This doesn't dereference symlinks!
         [[ ! -f /usr/bin/${host_arch_prefix}${1} && $(echo "${file_out}" | grep -m1 "${BUILDHOST_ARCH}") ]] && (
@@ -620,7 +624,7 @@ endfunc
 base_image_check () {
 startfunc
     echo "* Checking for downloaded ${base_image} ."
-    cd "${workdir}" || exit 1
+    cd "${workdir}" || ragequit
     if [ ! -f /"${base_image}" ]; then
         download_base_image
     else
@@ -669,7 +673,7 @@ startfunc
     #dmsetup remove_all
     dmsetup info
     losetup -a
-    cd "${workdir}" || exit 1
+    cd "${workdir}" || ragequit
     echo "* Mounting: ${new_image}.img"
     
     loop_device=$(kpartx -avs "${new_image}".img \
@@ -818,7 +822,7 @@ startfunc
     waitfor "image_mount"
     waitfor "image_apt_installs"
 . /tmp/env.txt  
-    cd "${workdir}"/rpi-firmware || exit 1
+    cd "${workdir}"/rpi-firmware || ragequit
     echo "* Installing current RPI firmware."
     # Note that this is overkill and much of these aren't needed for rpi4.
     cp bootcode.bin /mnt/boot/firmware/
@@ -857,13 +861,13 @@ startfunc
     KERNELREV=$(git -C "${src_cache}"/rpi-linux rev-parse --short HEAD) > /dev/null
     echo "$KERNELREV" > /tmp/KERNELREV
     echo "KERNELREV=${KERNELREV}" >> /tmp/env.txt
-    cd "${workdir}"/rpi-linux || exit 1
+    cd "${workdir}"/rpi-linux || ragequit
     git update-index --refresh &>> /tmp/"${FUNCNAME[0]}".compile.log || true
     git diff-index --quiet HEAD &>> /tmp/"${FUNCNAME[0]}".compile.log || true
     
 
     mkdir -p "${workdir}"/kernel-build
-    cd "${workdir}"/rpi-linux || exit 1
+    cd "${workdir}"/rpi-linux || ragequit
     defconfig="${KERNELDEF:-bcm2711_defconfig}"
     # [[ ! $KERNELDEF ]] && defconfig="${defconfig:-bcm2711_defconfig}"
     #[ ! -f arch/arm64/configs/bcm2711_defconfig ] && \
@@ -931,7 +935,7 @@ startfunc
     olddefconfig &>> /tmp/"${FUNCNAME[0]}".compile.log  || true
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     echo "* Making ${KERNEL_VERS} kernel debs."
-    cd "${workdir}"/rpi-linux || exit 1
+    cd "${workdir}"/rpi-linux || ragequit
 
 cat <<-EOF> "${workdir}"/kernel_compile.sh
 	#!/bin/bash
