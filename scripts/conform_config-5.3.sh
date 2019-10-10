@@ -251,3 +251,6 @@ set_kernel_config CONFIG_DMA_BCM2835 y
 set_kernel_config CONFIG_BCM2835_MBOX y
 set_kernel_config CONFIG_RASPBERRYPI_POWER y
 set_kernel_config CONFIG_RASPBERRYPI_FIRMWARE y
+
+# eoan default for multipath
+set_kernel_config CONFIG_DM_MULTIPATH y

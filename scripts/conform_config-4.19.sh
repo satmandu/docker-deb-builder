@@ -205,4 +205,6 @@ set_kernel_config CONFIG_DRM_VC4_HDMI_CEC y
 set_kernel_config CONFIG_PCIE_BRCMSTB y
 set_kernel_config CONFIG_BCM2835_MMC y
 
+# eoan default for multipath
+set_kernel_config CONFIG_DM_MULTIPATH y
 

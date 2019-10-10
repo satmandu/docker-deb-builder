@@ -208,6 +208,9 @@ set_kernel_config CONFIG_BCM2835_MMC y
 # needed for vcgdbg
 set_kernel_config BCM2708_VCMEM y
 
+# eoan default for multipath
+set_kernel_config CONFIG_DM_MULTIPATH y
+
 # Default mainline additions as per https://github.com/raspberrypi/linux/wiki/Upstreaming
 set_kernel_config CONFIG_ARCH_BCM2835 y
 set_kernel_config CONFIG_SERIAL_8250_BCM2835AUX y
