@@ -1265,11 +1265,15 @@ startfunc
 . /tmp/env.txt
     #echo "* Modifying wireless firmware if necessary."
     # as per https://andrei.gherzan.ro/linux/raspbian-rpi4-64/
-        
+
+    if [ ! -e "${MNTLIBPATH}/firmware/brcm/brcmfmac43455-sdio.raspberrypi,4-model-b.txt" ]
+    then
+    cp ${MNTLIBPATH}/firmware/brcm/brcmfmac43455-sdio.txt ${MNTLIBPATH}/firmware/brcm/brcmfmac43455-sdio.raspberrypi,4-model-b.txt
+    fi
     if ! grep -qs 'boardflags3=0x44200100' \
-        ${MNTLIBPATH}/firmware/brcm/brcmfmac43455-sdio.txt
+        ${MNTLIBPATH}/firmware/brcm/brcmfmac43455-sdio.raspberrypi,4-model-b.txt
     then sed -i -r 's/0x48200100/0x44200100/' \
-        ${MNTLIBPATH}/firmware/brcm/brcmfmac43455-sdio.txt
+        ${MNTLIBPATH}/firmware/brcm/brcmfmac43455-sdio.raspberrypi,4-model-b.txt
     fi
 endfunc
 }
@@ -1412,10 +1416,14 @@ startfunc
 		set +o noclobber
 		curl https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43455-sdio.clm_blob > /lib/firmware/brcm/brcmfmac43455-sdio.clm_blob
 	fi
-	if [ ! -e "/lib/firmware/brcm/brcmfmac43455-sdio.txt" ]
+	if [ ! -e "/lib/firmware/brcm/brcmfmac43455-sdio.raspberrypi,4-model-b.txt" ]
 	then
 		set +o noclobber
-		curl https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43455-sdio.txt > /lib/firmware/brcm/brcmfmac43455-sdio.txt
+		( curl https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43455-sdio.raspberrypi,4-model-b.txt > /lib/firmware/brcm/brcmfmac43455-sdio.raspberrypi,4-model-b.txt) || \
+		curl https://raw.githubusercontent.com/RPi-Distro/firmware-nonfree/master/brcm/brcmfmac43455-sdio.txt > /lib/firmware/brcm/brcmfmac43455-sdio.raspberrypi,4-model-b.txt
+	cp /lib/firmware/brcm/brcmfmac43455-sdio.raspberrypi,4-model-b.txt /lib/firmware/brcm/brcmfmac43455-sdio.txt
+	sed -i -r 's/0x48200100/0x44200100/' \
+        /lib/firmware/brcm/brcmfmac43455-sdio.raspberrypi,4-model-b.txt
 	fi 
 	if [ ! -e "/lib/firmware/brcm/brcmfmac43455-sdio.bin" ]
 	then
