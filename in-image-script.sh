@@ -41,7 +41,7 @@ image_compressors=("lz4")
 # Quick build shell exit script
 cat <<-EOF> /usr/bin/killme
 	#!/bin/bash
-	pkill -F /flag/main
+	pkill -9 -F /flag/main
 EOF
 chmod +x /usr/bin/killme
 
