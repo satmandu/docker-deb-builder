@@ -2,7 +2,8 @@
 mkdir -p /flag || echo "Are you sure you didn't mean to run ./build-image ?"
 echo $BASHPID > /flag/main
 # The above is used for, amongst other things, the tail log process.
-[[ $DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+#[[ $DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+[[ $DEBUG ]] && export PS4='+(${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 mainPID=$BASHPID
 
 echo "mainPID=${BASHPID}" >> /tmp/env.txt
