@@ -48,6 +48,7 @@ apply_pr() {
 # not apply
 
 #apply_pr 3252 "bcm2708_fb: Fix layout of struct vc4_display_settings_t"
+#apply_pr 3280 "disable RPI4 ethernet LEDs"
 
 #If any patches are applied then note it since 
 #compiled kernel version will be marked as dirty.
