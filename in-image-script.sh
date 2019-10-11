@@ -1250,6 +1250,7 @@ endfunc
 
 rpi_eeprom_firmware () {
 startfunc
+    rm -rf /mnt/lib/firmware/raspberrypi/rpi-eeprom
     mkdir -p /mnt/lib/firmware/raspberrypi/
     cd /mnt/lib/firmware/raspberrypi
     git clone --depth=1 https://github.com/raspberrypi/rpi-eeprom.git
