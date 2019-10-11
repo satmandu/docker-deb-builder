@@ -133,7 +133,9 @@ apt-get -o dir::cache::archives="${apt_cache}" autoclean -y -qq &>> /tmp/main.in
 # Utility Functions
 
 function ragequit {
-    pkill -F /flag/main
+    export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+    echo "ragequit:  1.${FUNCNAME[1]} 2.${FUNCNAME[2]} 3.${FUNCNAME[3]} 4.${FUNCNAME[4]}" >> /tmp/build.log
+    echo pkill -F /flag/main
 }
 
 function abspath {
@@ -942,11 +944,11 @@ cat <<-EOF> "${workdir}"/kernel_compile.sh
 	cd ${workdir}/rpi-linux || exit 1
 	make -j${nprocs} CFLAGS=${CFLAGS} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=${workdir}/kernel-build/ bindeb-pkg
 EOF
-    cd "${workdir}"/rpi-linux || exit 1
+    cd "${workdir}"/rpi-linux || ragequit
     [[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
     grep --line-buffered -v libfakeroot-sysv.so
      #[[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& grep --line-buffered -v libfakeroot-sysv.so >> /tmp/"${FUNCNAME[0]}".compile.log 
-    cd "${workdir}"/kernel-build || exit 1
+    cd "${workdir}"/kernel-build || ragequit
     # This file should be EMPTY if all goes well.
     find . -executable ! -type d -exec file {} \; | grep x86-64 \
      >> /tmp/"${FUNCNAME[0]}".compile.log
@@ -1063,7 +1065,7 @@ armstub8-gic () {
 startfunc 
     git_get "https://github.com/raspberrypi/tools.git" "rpi-tools"
 . /tmp/env.txt   
-    cd "${workdir}"/rpi-tools/armstubs || exit 1
+    cd "${workdir}"/rpi-tools/armstubs || ragequit
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make armstub8-gic.bin &>> /tmp/"${FUNCNAME[0]}".compile.log
     waitfor "image_mount"
     cp "${workdir}"/rpi-tools/armstubs/armstub8-gic.bin /mnt/boot/firmware/armstub8-gic.bin
@@ -1194,11 +1196,10 @@ startfunc
     waitfor "image_mount"
 . /tmp/env.txt
     echo "* Installing Raspberry Pi userland source."
-    cd "${workdir}" || exit 1
-    mkdir -p /mnt/opt/vc
-    cd "${workdir}"/rpi-userland/ || exit 1
+    cd "${workdir}"/rpi-userland/ || ragequit
     sed -i 's/__bitwise/FDT_BITWISE/' "${workdir}"/rpi-userland/opensrc/helpers/libfdt/libfdt_env.h
     sed -i 's/__force/FDT_FORCE/' "${workdir}"/rpi-userland/opensrc/helpers/libfdt/libfdt_env.h
+    mkdir -p /mnt/opt/vc
     CROSS_COMPILE=aarch64-linux-gnu- ./buildme --aarch64 /mnt &>> /tmp/"${FUNCNAME[0]}".compile.log
     echo '/opt/vc/lib' > /mnt/etc/ld.so.conf.d/vc.conf 
     
@@ -1232,28 +1233,29 @@ EOF
     cat <<-EOF >> /mnt/etc/sudoers.d/rpi
 	Defaults secure_path=$SUDOPATH
 EOF
-	chmod 0440 /mnt/etc/sudoers.d/rpi
+    chmod 0440 /mnt/etc/sudoers.d/rpi
     # Add display forwarding to sudo as per https://askubuntu.com/a/414810/844422
     echo "* Adding X Display forwarding to sudo."
     cat <<-EOF >> /mnt/etc/sudoers.d/display
 	Defaults env_keep+="XAUTHORIZATION XAUTHORITY TZ PS2 PS1 PATH LS_COLORS KRB5CCNAME HOSTNAME HOME DISPLAY COLORS"
 EOF
-	chmod 0440 /mnt/etc/sudoers.d/display
-[[ $DEBUG ]] && cd "${workdir}"/rpi-userland/build/arm-linux/release/ || exit 1
+    chmod 0440 /mnt/etc/sudoers.d/display
+[[ $DEBUG ]] && ( cd "${workdir}"/rpi-userland/build/arm-linux/release/ || ragequit )
 [[ $DEBUG ]] && ARM64=on checkinstall -D --install=no --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d%H%M)-git" --fstrans=yes -y 
 [[ $DEBUG ]] && cp *.deb /output/
-
+echo "rpi_userland done" >> /tmp/build.log
 endfunc
 }
 
 rpi_eeprom_firmware () {
-mkdir -p /mnt/lib/firmware/raspberrypi/
-cd /mnt/lib/firmware/raspberrypi
-git clone --depth=1 https://github.com/raspberrypi/rpi-eeprom.git
-mv rpi-eeprom/firmware bootloader
-mv rpi-eeprom/rpi-eeprom-update /mnt/usr/local/bin/
-mv rpi-eeprom/rpi-eeprom-config /mnt/usr/local/bin/
-
+startfunc
+    mkdir -p /mnt/lib/firmware/raspberrypi/
+    cd /mnt/lib/firmware/raspberrypi
+    git clone --depth=1 https://github.com/raspberrypi/rpi-eeprom.git
+    mv rpi-eeprom/firmware bootloader
+    mv rpi-eeprom/rpi-eeprom-update /mnt/usr/local/bin/
+    mv rpi-eeprom/rpi-eeprom-config /mnt/usr/local/bin/
+endfunc
 }
 
 
