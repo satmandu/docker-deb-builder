@@ -1,11 +1,12 @@
 #!/bin/bash -e
-[[ $DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
-
 mkdir -p /flag || echo "Are you sure you didn't mean to run ./build-image ?"
 echo $BASHPID > /flag/main
-mainPID=$BASHPID
-echo "mainPID=${BASHPID}" >> /tmp/env.txt
 # The above is used for, amongst other things, the tail log process.
+[[ $DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+mainPID=$BASHPID
+
+echo "mainPID=${BASHPID}" >> /tmp/env.txt
+
 
 # Set to "/bin/bash -e" only when debugging.
 # This script is executed within the container as root. The resulting image &

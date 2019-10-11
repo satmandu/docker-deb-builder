@@ -398,7 +398,8 @@ echo -e "docker exec -it ${build_cid} /bin/bash\n"
 echo -e "Or run ./shellbuild from this directory.\n"
 
 echo "Tailing build log:"
-tail_log_cmd="docker exec -it $build_cid /bin/bash -c 'tail -F /tmp/build.log --pid=\$(cat /flag/main)'"
+#tail_log_cmd="docker exec -it $build_cid /bin/bash -c 'tail -F /tmp/build.log --pid=\$(cat /flag/main)'"
+tail_log_cmd="docker exec -it $build_cid /source-ro/scripts/taillog"
 
 echo ""
 exec /bin/bash -c "${tail_log_cmd}; [ -e ${outdir}/build_fail.log ] && echo -e '🤔 Build failed. Tailing ${outdir}/build_fail.log :   😬\n\r' && tail ${outdir}/build_fail.log"
