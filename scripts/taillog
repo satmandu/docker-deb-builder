@@ -1,2 +1,0 @@
-#!/bin/bash
-tail -F /tmp/build.log --pid=$(cat /flag/main)| grep --line-buffered -v "waitfor(): sleep"
