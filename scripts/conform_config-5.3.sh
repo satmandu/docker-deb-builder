@@ -43,7 +43,7 @@ unset_kernel_config() {
 set_kernel_config CONFIG_SQUASHFS y
 
 # Add git tag to version
-set_kernel_config CONFIG_LOCALVERSION_AUTO y
+#set_kernel_config CONFIG_LOCALVERSION_AUTO y
 
 # enable basic KVM support; see e.g.
 # https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
