@@ -9,4 +9,13 @@ grep --line-buffered -v \
 -e "wait_file(): grep -q -m1 ''" \
 -e "PrintLog(): local logFile=/tmp/wait.log" \
 -e "PrintLog(): [[ ! -e /tmp/wait.log ]]" \
--e "PrintLog(): [[ -e /tmp/wait.log ]]"
+-e "PrintLog(): [[ -e /tmp/wait.log ]]" \
+-e "+ sleep" \
+-e "+ wait_proc" \
+-e "+ echo 'scale" \
+-e "+ bc" \
+-e "+ ts" \
+-e "+ grep -q -m1 ''" \
+-e "+ local logFile=/tmp/wait.log" \
+-e "+ [[ ! -e /tmp/wait.log ]]" \
+-e "+ [[ -e /tmp/wait.log ]]"
