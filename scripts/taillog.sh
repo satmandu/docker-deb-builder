@@ -10,12 +10,17 @@ grep --line-buffered -v \
 -e "PrintLog(): local logFile=/tmp/wait.log" \
 -e "PrintLog(): [[ ! -e /tmp/wait.log ]]" \
 -e "PrintLog(): [[ -e /tmp/wait.log ]]" \
--e "+ sleep" \
--e "+ wait_proc" \
--e "+ echo 'scale" \
--e "+ bc" \
--e "+ ts" \
--e "+ grep -q -m1 ''" \
--e "+ local logFile=/tmp/wait.log" \
--e "+ [[ ! -e /tmp/wait.log ]]" \
--e "+ [[ -e /tmp/wait.log ]]"
+-e ": sleep" \
+-e ": wait_proc" \
+-e ": echo 'scale" \
+-e ": bc" \
+-e ": ts" \
+-e ": grep -q -m1 ''" \
+-e ": local logFile=/tmp/wait.log" \
+-e ": [[ ! -e /tmp/wait.log ]]" \
+-e ": [[ -e /tmp/wait.log ]]" \
+-e ": spinnerwait(): for" \
+-e ": spinnerwait(): tput " \
+-e ": spinnerwait(): sleep" \
+-e ": spinnerwait(): pgrep" \
+-e ": spinnerwait(): printf"
