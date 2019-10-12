@@ -254,3 +254,5 @@ set_kernel_config CONFIG_RASPBERRYPI_FIRMWARE y
 
 # eoan default for multipath
 set_kernel_config CONFIG_DM_MULTIPATH y
+# enable RPI added driver.
+set_kernel_config CONFIG_BCM2835_DEVGPIOMEM y
