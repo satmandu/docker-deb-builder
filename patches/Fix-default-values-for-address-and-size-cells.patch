@@ -1,0 +1,575 @@
+From patchwork Thu Sep  5 08:48:46 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Matthias Brugger <matthias.bgg@kernel.org>
+X-Patchwork-Id: 1158305
+X-Patchwork-Delegate: sjg@chromium.org
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org
+ header.b="isWeR4+Z"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 46PDsC3z6hz9sDQ
+ for <incoming@patchwork.ozlabs.org>;
+ Thu,  5 Sep 2019 18:49:51 +1000 (AEST)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id E8B06C21DFA; Thu,  5 Sep 2019 08:49:18 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=T_DKIM_INVALID
+ autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 79417C21DF3;
+ Thu,  5 Sep 2019 08:49:07 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id A84A5C21D8E; Thu,  5 Sep 2019 08:49:06 +0000 (UTC)
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ by lists.denx.de (Postfix) with ESMTPS id 0E488C21C50
+ for <u-boot@lists.denx.de>; Thu,  5 Sep 2019 08:49:06 +0000 (UTC)
+Received: from ziggy.de (unknown [37.223.145.23])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6A46620820;
+ Thu,  5 Sep 2019 08:49:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1567673344;
+ bh=NasfJCOqWMBArRo1lQViTrCmRePvTFPFXiqnGe5E4M0=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=isWeR4+ZGTAPnUSVy6u+i/Ui1wfnpifonOvHFQfEVrPr68UbWYnTOyRPYoYdERDWs
+ Bie0F0YRysMqh9p1QD2u4K8HsdVx5Tx5JUOL1gtH43BrGmLOTalQwLIH7R4VUJ/C2A
+ KMpJyTnVSgqoX+cIs19tys+/xBIsTux8wEHMSa1g=
+From: matthias.bgg@kernel.org
+To: treding@nvidia.com,
+	sjg@chromium.org,
+	swarren@nvidia.com
+Date: Thu,  5 Sep 2019 10:48:46 +0200
+Message-Id: <20190905084849.20596-2-matthias.bgg@kernel.org>
+X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20190905084849.20596-1-matthias.bgg@kernel.org>
+References: <20190905084849.20596-1-matthias.bgg@kernel.org>
+MIME-Version: 1.0
+Cc: u-boot@lists.denx.de, Matthias Brugger <mbrugger@suse.com>,
+ matthias.bgg@kernel.org
+Subject: [U-Boot] [PATCH v2 1/4] libfdt: fdt_address_cells() and
+ fdt_size_cells()
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+From: Matthias Brugger <mbrugger@suse.com>
+
+Add internal fdt_cells() to avoid copy and paste. Fix typo in
+fdt_size_cells() documentation comment.
+
+This is based in upstream commit:
+c12b2b0 ("libfdt: fdt_address_cells() and fdt_size_cells()")
+but misses the test cases, as we don't implement them in U-Boot.
+
+Signed-off-by: Matthias Brugger <mbrugger@suse.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Signed-off-by: Matthias Brugger <mbrugger@suse.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+
+ scripts/dtc/libfdt/fdt_addresses.c | 35 +++++++++++-------------------
+ scripts/dtc/libfdt/libfdt.h        |  2 +-
+ 2 files changed, 14 insertions(+), 23 deletions(-)
+
+diff --git a/scripts/dtc/libfdt/fdt_addresses.c b/scripts/dtc/libfdt/fdt_addresses.c
+index eff4dbcc72..49537b578d 100644
+--- a/scripts/dtc/libfdt/fdt_addresses.c
++++ b/scripts/dtc/libfdt/fdt_addresses.c
+@@ -1,6 +1,7 @@
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2014 David Gibson <david@gibson.dropbear.id.au>
++ * Copyright (C) 2018 embedded brains GmbH
+  *
+  * libfdt is dual licensed: you can use it either under the terms of
+  * the GPL, or the BSD license, at your option.
+@@ -55,42 +56,32 @@
+ 
+ #include "libfdt_internal.h"
+ 
+-int fdt_address_cells(const void *fdt, int nodeoffset)
++static int fdt_cells(const void *fdt, int nodeoffset, const char *name)
+ {
+-	const fdt32_t *ac;
++	const fdt32_t *c;
+ 	int val;
+ 	int len;
+ 
+-	ac = fdt_getprop(fdt, nodeoffset, "#address-cells", &len);
+-	if (!ac)
++	c = fdt_getprop(fdt, nodeoffset, name, &len);
++	if (!c)
+ 		return 2;
+ 
+-	if (len != sizeof(*ac))
++	if (len != sizeof(*c))
+ 		return -FDT_ERR_BADNCELLS;
+ 
+-	val = fdt32_to_cpu(*ac);
++	val = fdt32_to_cpu(*c);
+ 	if ((val <= 0) || (val > FDT_MAX_NCELLS))
+ 		return -FDT_ERR_BADNCELLS;
+ 
+ 	return val;
+ }
+ 
+-int fdt_size_cells(const void *fdt, int nodeoffset)
++int fdt_address_cells(const void *fdt, int nodeoffset)
+ {
+-	const fdt32_t *sc;
+-	int val;
+-	int len;
+-
+-	sc = fdt_getprop(fdt, nodeoffset, "#size-cells", &len);
+-	if (!sc)
+-		return 2;
+-
+-	if (len != sizeof(*sc))
+-		return -FDT_ERR_BADNCELLS;
+-
+-	val = fdt32_to_cpu(*sc);
+-	if ((val < 0) || (val > FDT_MAX_NCELLS))
+-		return -FDT_ERR_BADNCELLS;
++	return fdt_cells(fdt, nodeoffset, "#address-cells");
++}
+ 
+-	return val;
++int fdt_size_cells(const void *fdt, int nodeoffset)
++{
++	return fdt_cells(fdt, nodeoffset, "#size-cells");
+ }
+diff --git a/scripts/dtc/libfdt/libfdt.h b/scripts/dtc/libfdt/libfdt.h
+index cf86ddba88..66f01fec53 100644
+--- a/scripts/dtc/libfdt/libfdt.h
++++ b/scripts/dtc/libfdt/libfdt.h
+@@ -1109,7 +1109,7 @@ int fdt_address_cells(const void *fdt, int nodeoffset);
+  *
+  * returns:
+  *	0 <= n < FDT_MAX_NCELLS, on success
+- *      2, if the node has no #address-cells property
++ *      2, if the node has no #size-cells property
+  *      -FDT_ERR_BADNCELLS, if the node has a badly formatted or invalid
+  *		#size-cells property
+  *	-FDT_ERR_BADMAGIC,
+
+From patchwork Thu Sep  5 08:48:47 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Matthias Brugger <matthias.bgg@kernel.org>
+X-Patchwork-Id: 1158308
+X-Patchwork-Delegate: sjg@chromium.org
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org
+ header.b="JFHgqHOR"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 46PDtp1YqNz9sDQ
+ for <incoming@patchwork.ozlabs.org>;
+ Thu,  5 Sep 2019 18:51:14 +1000 (AEST)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id E3245C21DAF; Thu,  5 Sep 2019 08:49:31 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=T_DKIM_INVALID
+ autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 34663C21DFA;
+ Thu,  5 Sep 2019 08:49:14 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id E1040C21E29; Thu,  5 Sep 2019 08:49:10 +0000 (UTC)
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ by lists.denx.de (Postfix) with ESMTPS id EFE8DC21C50
+ for <u-boot@lists.denx.de>; Thu,  5 Sep 2019 08:49:07 +0000 (UTC)
+Received: from ziggy.de (unknown [37.223.145.23])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 59F9A22BEF;
+ Thu,  5 Sep 2019 08:49:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1567673346;
+ bh=iHKmJ6Qqsz3fCxnmKY/t0jczJs4EhR3ov65ZRjiaIjE=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=JFHgqHORxNczdPpOGl4ok3CU1GJOuIo1mtI+sIfRG3zivVphV8yAyqwCLQciWH1F+
+ Mr03JTzHPXaPhFwmf6+m6aqqYTIgnbX45ZrYNo78GwUoqYBNU1J5HXycSHYcVTmukG
+ vzwlvS5/m9t3/zFkUUL035hFFYLn0r9vGtGwSodE=
+From: matthias.bgg@kernel.org
+To: treding@nvidia.com,
+	sjg@chromium.org,
+	swarren@nvidia.com
+Date: Thu,  5 Sep 2019 10:48:47 +0200
+Message-Id: <20190905084849.20596-3-matthias.bgg@kernel.org>
+X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20190905084849.20596-1-matthias.bgg@kernel.org>
+References: <20190905084849.20596-1-matthias.bgg@kernel.org>
+MIME-Version: 1.0
+Cc: u-boot@lists.denx.de, Matthias Brugger <mbrugger@suse.com>,
+ matthias.bgg@kernel.org
+Subject: [U-Boot] [PATCH v2 2/4] libfdt: return correct value if #size-cells
+ property is not present
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+From: Matthias Brugger <mbrugger@suse.com>
+
+According to the device tree specification, the default value for
+was not present.
+
+This patch also makes fdt_address_cells() and fdt_size_cells() conform
+to the behaviour documented in libfdt.h. The defaults are only returned
+if fdt_getprop() returns -FDT_ERR_NOTFOUND, otherwise the actual error
+is returned.
+
+This is based on upstream commit:
+aa7254d ("libfdt: return correct value if #size-cells property is not present")
+but misses the test case part, as we don't implement them in U-Boot.
+
+Signed-off-by: Matthias Brugger <mbrugger@suse.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+
+ scripts/dtc/libfdt/fdt_addresses.c | 16 +++++++++++++---
+ scripts/dtc/libfdt/libfdt.h        |  2 +-
+ 2 files changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/scripts/dtc/libfdt/fdt_addresses.c b/scripts/dtc/libfdt/fdt_addresses.c
+index 49537b578d..f13a87dfa0 100644
+--- a/scripts/dtc/libfdt/fdt_addresses.c
++++ b/scripts/dtc/libfdt/fdt_addresses.c
+@@ -64,7 +64,7 @@ static int fdt_cells(const void *fdt, int nodeoffset, const char *name)
+ 
+ 	c = fdt_getprop(fdt, nodeoffset, name, &len);
+ 	if (!c)
+-		return 2;
++		return len;
+ 
+ 	if (len != sizeof(*c))
+ 		return -FDT_ERR_BADNCELLS;
+@@ -78,10 +78,20 @@ static int fdt_cells(const void *fdt, int nodeoffset, const char *name)
+ 
+ int fdt_address_cells(const void *fdt, int nodeoffset)
+ {
+-	return fdt_cells(fdt, nodeoffset, "#address-cells");
++	int val;
++
++	val = fdt_cells(fdt, nodeoffset, "#address-cells");
++	if (val == -FDT_ERR_NOTFOUND)
++		return 2;
++	return val;
+ }
+ 
+ int fdt_size_cells(const void *fdt, int nodeoffset)
+ {
+-	return fdt_cells(fdt, nodeoffset, "#size-cells");
++	int val;
++
++	val = fdt_cells(fdt, nodeoffset, "#size-cells");
++	if (val == -FDT_ERR_NOTFOUND)
++		return 1;
++	return val;
+ }
+diff --git a/scripts/dtc/libfdt/libfdt.h b/scripts/dtc/libfdt/libfdt.h
+index 66f01fec53..5c778b115b 100644
+--- a/scripts/dtc/libfdt/libfdt.h
++++ b/scripts/dtc/libfdt/libfdt.h
+@@ -1109,7 +1109,7 @@ int fdt_address_cells(const void *fdt, int nodeoffset);
+  *
+  * returns:
+  *	0 <= n < FDT_MAX_NCELLS, on success
+- *      2, if the node has no #size-cells property
++ *      1, if the node has no #size-cells property
+  *      -FDT_ERR_BADNCELLS, if the node has a badly formatted or invalid
+  *		#size-cells property
+  *	-FDT_ERR_BADMAGIC,
+
+From patchwork Thu Sep  5 08:48:48 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Matthias Brugger <matthias.bgg@kernel.org>
+X-Patchwork-Id: 1158306
+X-Patchwork-Delegate: sjg@chromium.org
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org
+ header.b="BXnzI/bb"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 46PDsz48K4z9sDQ
+ for <incoming@patchwork.ozlabs.org>;
+ Thu,  5 Sep 2019 18:50:31 +1000 (AEST)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 43139C21DA6; Thu,  5 Sep 2019 08:49:50 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=T_DKIM_INVALID
+ autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 69F30C21E49;
+ Thu,  5 Sep 2019 08:49:49 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 3C9B5C21E3A; Thu,  5 Sep 2019 08:49:12 +0000 (UTC)
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ by lists.denx.de (Postfix) with ESMTPS id 1B535C21DD7
+ for <u-boot@lists.denx.de>; Thu,  5 Sep 2019 08:49:10 +0000 (UTC)
+Received: from ziggy.de (unknown [37.223.145.23])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 4BB7321743;
+ Thu,  5 Sep 2019 08:49:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1567673348;
+ bh=QhwT8R9VrQa6kJ67/KLwrgZrin6ePPEIdgejph54S8k=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=BXnzI/bbgoNyDz3AvIeanIrY4aCCWisnQBZKu0g38lDFg5RYo3rT34Uqr9Z0wDHng
+ wHOm4gi9H0Uwt44leKJSn3icbdH2WX9k8xM2OWcKz7HXOtlK/qa06bM4iNRSVvx9kV
+ 0qEo/Mq1WqgGy8wz3Y1+PiBxU7Su3a2vDyIAmsZw=
+From: matthias.bgg@kernel.org
+To: treding@nvidia.com,
+	sjg@chromium.org,
+	swarren@nvidia.com
+Date: Thu,  5 Sep 2019 10:48:48 +0200
+Message-Id: <20190905084849.20596-4-matthias.bgg@kernel.org>
+X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20190905084849.20596-1-matthias.bgg@kernel.org>
+References: <20190905084849.20596-1-matthias.bgg@kernel.org>
+MIME-Version: 1.0
+Cc: u-boot@lists.denx.de, Matthias Brugger <mbrugger@suse.com>,
+ matthias.bgg@kernel.org
+Subject: [U-Boot] [PATCH v2 3/4] libfdt: Allow #size-cells of 0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+From: Matthias Brugger <mbrugger@suse.com>
+
+The commit "libfdt: fdt_address_cells() and fdt_size_cells()" introduced
+a bug as it consolidated code between the helpers for getting
+be 0, and is frequently found so in practice for /cpus.  IEEE1275 only
+requires implementations to handle 1..4 for #address-cells, although one
+could make a case for #address-cells == #size-cells == 0 being used to
+represent a bridge with a single port.
+
+While we're there, it's not totally obvious that the existing implicit
+cast of a u32 to int will give the correct results according to strict C,
+although it does work in practice.  Straighten that up to cast only after
+we've made our range checks.
+
+This is based on upstream commit:
+b8d6eca ("libfdt: Allow #size-cells of 0")
+but misses the test cases,as we don't implement them in U-Boot.
+
+Signed-off-by: Matthias Brugger <mbrugger@suse.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+
+ scripts/dtc/libfdt/fdt_addresses.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/scripts/dtc/libfdt/fdt_addresses.c b/scripts/dtc/libfdt/fdt_addresses.c
+index f13a87dfa0..788c143113 100644
+--- a/scripts/dtc/libfdt/fdt_addresses.c
++++ b/scripts/dtc/libfdt/fdt_addresses.c
+@@ -59,7 +59,7 @@
+ static int fdt_cells(const void *fdt, int nodeoffset, const char *name)
+ {
+ 	const fdt32_t *c;
+-	int val;
++	uint32_t val;
+ 	int len;
+ 
+ 	c = fdt_getprop(fdt, nodeoffset, name, &len);
+@@ -70,10 +70,10 @@ static int fdt_cells(const void *fdt, int nodeoffset, const char *name)
+ 		return -FDT_ERR_BADNCELLS;
+ 
+ 	val = fdt32_to_cpu(*c);
+-	if ((val <= 0) || (val > FDT_MAX_NCELLS))
++	if (val > FDT_MAX_NCELLS)
+ 		return -FDT_ERR_BADNCELLS;
+ 
+-	return val;
++	return (int)val;
+ }
+ 
+ int fdt_address_cells(const void *fdt, int nodeoffset)
+@@ -81,6 +81,8 @@ int fdt_address_cells(const void *fdt, int nodeoffset)
+ 	int val;
+ 
+ 	val = fdt_cells(fdt, nodeoffset, "#address-cells");
++	if (val == 0)
++		return -FDT_ERR_BADNCELLS;
+ 	if (val == -FDT_ERR_NOTFOUND)
+ 		return 2;
+ 	return val;
+
+From patchwork Thu Sep  5 08:48:49 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Matthias Brugger <matthias.bgg@kernel.org>
+X-Patchwork-Id: 1158307
+X-Patchwork-Delegate: sjg@chromium.org
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org
+ header.b="pN0C+DkS"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 46PDt12bXVz9sDQ
+ for <incoming@patchwork.ozlabs.org>;
+ Thu,  5 Sep 2019 18:50:33 +1000 (AEST)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 1426BC21E4E; Thu,  5 Sep 2019 08:49:40 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=T_DKIM_INVALID
+ autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id C5FF7C21E2F;
+ Thu,  5 Sep 2019 08:49:28 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 2CE12C21C50; Thu,  5 Sep 2019 08:49:14 +0000 (UTC)
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ by lists.denx.de (Postfix) with ESMTPS id D8604C21E1E
+ for <u-boot@lists.denx.de>; Thu,  5 Sep 2019 08:49:11 +0000 (UTC)
+Received: from ziggy.de (unknown [37.223.145.23])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 3DCFF22CEC;
+ Thu,  5 Sep 2019 08:49:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1567673350;
+ bh=XePBGScLyjUR9snPL4QlLbGyNnj+Hd5IDX8eznBe4Fk=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=pN0C+DkSBR9zE7mWBn4X5FGPis0kQgdIzNQC+EoJMIU02VhXx/iyVQcMsinYjNqGy
+ xb9iE5bgRIp/LbBfYlTa+7wakK99X87RHbdwzbuK9X8gAYpIDpnogkFL4w3nk4nY2t
+ tdOLWSWv24N+TqX9/77Rqj3l5NUlkSDjHG/vQ0iI=
+From: matthias.bgg@kernel.org
+To: treding@nvidia.com,
+	sjg@chromium.org,
+	swarren@nvidia.com
+Date: Thu,  5 Sep 2019 10:48:49 +0200
+Message-Id: <20190905084849.20596-5-matthias.bgg@kernel.org>
+X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20190905084849.20596-1-matthias.bgg@kernel.org>
+References: <20190905084849.20596-1-matthias.bgg@kernel.org>
+MIME-Version: 1.0
+Cc: u-boot@lists.denx.de, Matthias Brugger <mbrugger@suse.com>,
+ matthias.bgg@kernel.org
+Subject: [U-Boot] [PATCH v2 4/4] dm: Fix default address cells return value
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+From: Matthias Brugger <mbrugger@suse.com>
+
+Default address cells value on the livetree access function
+returns the wrong value. Fix this so that the value returned
+corresponds to the device tree specification.
+
+Signed-off-by: Matthias Brugger <mbrugger@suse.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+
+ include/dm/of.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/dm/of.h b/include/dm/of.h
+index 461e25aa19..6bef73b441 100644
+--- a/include/dm/of.h
++++ b/include/dm/of.h
+@@ -111,7 +111,7 @@ static inline const char *of_node_full_name(const struct device_node *np)
+ 
+ /* Default #address and #size cells */
+ #if !defined(OF_ROOT_NODE_ADDR_CELLS_DEFAULT)
+-#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT 1
++#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT 2
+ #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT 1
+ #endif
+ 

@@ -1301,15 +1301,16 @@ startfunc
     UBOOTDEF="${UBOOTDEF:-rpi_4}"
     ubootdefconfig="${UBOOTDEF}_defconfig"
     [[ ! $UBOOTONLY ]] && git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"
-    [[ $UBOOTONLY ]] && git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"
-#    [[ $UBOOTONLY ]] && git_get "https://github.com/u-boot/u-boot.git" "u-boot" "master"
+#    [[ $UBOOTONLY ]] && git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"
+    [[ $UBOOTONLY ]] && git_get "https://github.com/u-boot/u-boot.git" "u-boot" "master"
 . /tmp/env.txt
     cd "${workdir}"/u-boot || exit 1
 #    curl -O https://github.com/satmandu/u-boot/commit/b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #     patch -p1 < /source-ro/patches/0002-raspberrypi-Disable-simple-framebuffer-support.patch
 #     patch -p1 < /source-ro/patches/U-Boot-board-rpi4-fix-instantiating-PL011-driver.patch
-
+    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/U-Boot-v2-rpi4-enable-dram-bank-initialization.patch
+    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/Fix-default-values-for-address-and-size-cells.patch
 #    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/RPi-one-binary-for-RPi3-4-and-RPi1-2.patch    
      [[ $UBOOTONLY ]] && echo "CONFIG_USB_DWC2=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
      [[ $UBOOTONLY ]] && echo "CONFIG_USB_ETHER_LAN78XX=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
@@ -1333,7 +1334,7 @@ startfunc
     [[ $UBOOTONLY ]] && echo "CONFIG_SUPPORT_RAW_INITRD=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
     [[ $UBOOTONLY ]] && echo "CONFIG_ENV_IS_IN_FAT=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
     [[ $UBOOTONLY ]] && sed -i 's/CONFIG_OF_EMBED/CONFIG_OF_BOARD/' "${workdir}"/u-boot/configs/${ubootdefconfig}
-    [[ $UBOOTONLY ]] && sed -i 's/fdt_addr_r=0x02600000/fdt_addr_r=0x03000000/' "${workdir}"/u-boot/include/configs/rpi.h
+#    [[ $UBOOTONLY ]] && sed -i 's/fdt_addr_r=0x02600000/fdt_addr_r=0x03000000/' "${workdir}"/u-boot/include/configs/rpi.h
     
     echo "CONFIG_LZ4=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
     echo "CONFIG_GZIP=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}

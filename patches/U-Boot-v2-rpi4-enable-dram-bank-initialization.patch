@@ -1,0 +1,133 @@
+From patchwork Mon Sep  9 16:31:56 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Matthias Brugger <matthias.bgg@kernel.org>
+X-Patchwork-Id: 1159868
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org
+ header.b="t/iT0b43"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 46Rtwz13qMz9s7T
+ for <incoming@patchwork.ozlabs.org>;
+ Tue, 10 Sep 2019 02:32:18 +1000 (AEST)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 7FF1BC21DD4; Mon,  9 Sep 2019 16:32:07 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=T_DKIM_INVALID
+ autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 974CCC21C27;
+ Mon,  9 Sep 2019 16:32:05 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 092E8C21C27; Mon,  9 Sep 2019 16:32:03 +0000 (UTC)
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ by lists.denx.de (Postfix) with ESMTPS id 88E07C21BE5
+ for <u-boot@lists.denx.de>; Mon,  9 Sep 2019 16:32:03 +0000 (UTC)
+Received: from ziggy.de (unknown [37.223.145.23])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id AFC7021920;
+ Mon,  9 Sep 2019 16:32:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1568046721;
+ bh=v/fNnYoR+9qmIf90jc7nejPygMJxou69JaqW+glNgiY=;
+ h=From:To:Cc:Subject:Date:From;
+ b=t/iT0b431/JBDP33hL7uwIVRYk2aVmYgutV1an8KrESkwpwR965eJan1kpNUP2230
+ jjYYrWgCU4A5V09UqFb+ztd1gd7QH+niljGFsQX/qJnTC3HXmtj0HXztbZgrpzgTZm
+ PHGomEgq7v+bVq3T6JlnkWc3X+jLZkyK91d6Z5BQ=
+From: matthias.bgg@kernel.org
+To: Fred Bloggs <f.blogs@napier.co.nz>,
+	u-boot@lists.denx.de
+Date: Mon,  9 Sep 2019 18:31:56 +0200
+Message-Id: <20190909163156.22998-1-matthias.bgg@kernel.org>
+X-Mailer: git-send-email 2.22.0
+MIME-Version: 1.0
+Cc: Alexander Graf <agraf@csgraf.de>, andrei@balena.io,
+ Matthias Brugger <mbrugger@suse.com>
+Subject: [U-Boot] [PATCH v2] rpi4: enable dram bank initialization
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+From: Matthias Brugger <mbrugger@suse.com>
+
+When booting through the efi stub, the memory map get's created by
+reading the dram bank information. Depending on the version of the RPi4
+this information changes. Read the device tree to initialize the dram
+bank data structure. This way the kernel is able to access the whole
+range of available memory.
+
+Signed-off-by: Matthias Brugger <mbrugger@suse.com>
+---
+This patch is based on basic RPi4 support implemented by series:
+https://www.mail-archive.com/u-boot@lists.denx.de/msg335667.html
+which is part of v2019.10-rc4
+
+To actually work correctly we need the series that fixes the libftd:
+https://patchwork.ozlabs.org/cover/1158304/
+
+Changes in v2:
+- don't call dram_init_banksize if OF_BOARD is not used
+
+ board/raspberrypi/rpi/rpi.c | 10 ++++++++++
+ configs/rpi_4_defconfig     |  2 +-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/board/raspberrypi/rpi/rpi.c b/board/raspberrypi/rpi/rpi.c
+index fa57d50c95..9e0abdda31 100644
+--- a/board/raspberrypi/rpi/rpi.c
++++ b/board/raspberrypi/rpi/rpi.c
+@@ -312,6 +312,16 @@ int dram_init(void)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_OF_BOARD
++#ifdef CONFIG_BCM2711
++int dram_init_banksize(void)
++{
++	return fdtdec_decode_ram_size(gd->fdt_blob, NULL, 0, NULL,
++				     (phys_size_t *)&gd->ram_size, gd->bd);
++}
++#endif
++#endif
++
+ static void set_fdtfile(void)
+ {
+ 	const char *fdtfile;
+diff --git a/configs/rpi_4_defconfig b/configs/rpi_4_defconfig
+index da8c960a2a..c639ac93de 100644
+--- a/configs/rpi_4_defconfig
++++ b/configs/rpi_4_defconfig
+@@ -4,7 +4,7 @@ CONFIG_SYS_TEXT_BASE=0x00080000
+ CONFIG_TARGET_RPI_4=y
+ CONFIG_SYS_MALLOC_F_LEN=0x2000
+ CONFIG_DISTRO_DEFAULTS=y
+-CONFIG_NR_DRAM_BANKS=1
++CONFIG_NR_DRAM_BANKS=2
+ # CONFIG_ARCH_FIXUP_FDT_MEMORY is not set
+ CONFIG_OF_BOARD=y
+ CONFIG_OF_BOARD_SETUP=y
