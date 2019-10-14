@@ -1195,6 +1195,7 @@ endfunc
 rpi_userland () {
 startfunc
     git_get "https://github.com/raspberrypi/userland" "rpi-userland"
+    USERLANDREV=$(git -C "${src_cache}"/rpi-userland rev-parse --short HEAD) > /dev/null
     waitfor "image_mount"
 . /tmp/env.txt
     echo "* Installing Raspberry Pi userland source."
@@ -1249,12 +1250,12 @@ EOF
 EOF
     chmod 0440 extracted/etc/sudoers.d/display
     cd "${workdir}"/rpi-userland/build/arm-linux/release/
-    ARM64=on checkinstall -D --install=no --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d%H%M)-git" --fstrans=yes -y &>> /tmp/"${FUNCNAME[0]}".compile.log
+    ARM64=on checkinstall -D --install=no --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d)-${USERLANDREV}" --fstrans=yes -y &>> /tmp/"${FUNCNAME[0]}".compile.log
     dpkg-deb -R rpiuserland_*.deb extracted/ &>> /tmp/"${FUNCNAME[0]}".compile.log
     dpkg-deb -b extracted &>> /tmp/"${FUNCNAME[0]}".compile.log
-    mv extracted.deb rpiuserland_$(date +%Y%m%d%H%M)-git_arm64.deb &>> /tmp/"${FUNCNAME[0]}".compile.log
-[[ $PKGUSERLAND ]] && cp rpiuserland_$(date +%Y%m%d%H%M)-git_arm64.deb /output/ &>> /tmp/"${FUNCNAME[0]}".compile.log
-    cp rpiuserland_$(date +%Y%m%d%H%M)-git_arm64.deb /mnt/var/cache/apt/archives/ &>> /tmp/"${FUNCNAME[0]}".compile.log
+    mv extracted.deb rpiuserland_$(date +%Y%m%d)-${USERLANDREV}_arm64.deb &>> /tmp/"${FUNCNAME[0]}".compile.log
+[[ $PKGUSERLAND ]] && cp rpiuserland_$(date +%Y%m%d)-${USERLANDREV}_arm64.deb /output/ &>> /tmp/"${FUNCNAME[0]}".compile.log
+    cp rpiuserland_$(date +%Y%m%d)-${USERLANDREV}_arm64.deb /mnt/var/cache/apt/archives/ &>> /tmp/"${FUNCNAME[0]}".compile.log
     
 echo "rpi_userland done" >> /tmp/build.log
 arbitrary_wait_here
