@@ -1205,9 +1205,7 @@ startfunc
     CROSS_COMPILE=aarch64-linux-gnu- ./buildme --aarch64 /mnt &>> /tmp/"${FUNCNAME[0]}".compile.log
 
     ( cd "${workdir}"/rpi-userland/build/arm-linux/release/ || ragequit )
-    ARM64=on checkinstall -D --install=no --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d%H%M)-git" --fstrans=yes -y &>> /tmp/"${FUNCNAME[0]}".compile.log
     mkdir -p "${workdir}"/rpi-userland/build/arm-linux/release/extracted
-    dpkg-deb -R rpiuserland_*.deb extracted/ &>> /tmp/"${FUNCNAME[0]}".compile.log
     
     mkdir -p extracted/etc/ld.so.conf.d/
     echo '/opt/vc/lib' > extracted/etc/ld.so.conf.d/vc.conf 
@@ -1250,10 +1248,12 @@ EOF
 	Defaults env_keep+="XAUTHORIZATION XAUTHORITY TZ PS2 PS1 PATH LS_COLORS KRB5CCNAME HOSTNAME HOME DISPLAY COLORS"
 EOF
     chmod 0440 extracted/etc/sudoers.d/display
+    ARM64=on checkinstall -D --install=no --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d%H%M)-git" --fstrans=yes -y &>> /tmp/"${FUNCNAME[0]}".compile.log
+    dpkg-deb -R rpiuserland_*.deb extracted/ &>> /tmp/"${FUNCNAME[0]}".compile.log
     dpkg-deb -b extracted &>> /tmp/"${FUNCNAME[0]}".compile.log
-    mv extracted.deb rpiuserland_$(date +%Y%m%d%H%M)-git.deb &>> /tmp/"${FUNCNAME[0]}".compile.log
-[[ $PKGUSERLAND ]] && cp rpiuserland_$(date +%Y%m%d%H%M)-git.deb /output/ &>> /tmp/"${FUNCNAME[0]}".compile.log
-    cp rpiuserland_$(date +%Y%m%d%H%M)-git.deb /mnt/var/cache/apt/archives/ &>> /tmp/"${FUNCNAME[0]}".compile.log
+    mv extracted.deb rpiuserland_$(date +%Y%m%d%H%M)-git_arm64.deb &>> /tmp/"${FUNCNAME[0]}".compile.log
+[[ $PKGUSERLAND ]] && cp rpiuserland_$(date +%Y%m%d%H%M)-git_arm64.deb /output/ &>> /tmp/"${FUNCNAME[0]}".compile.log
+    cp rpiuserland_$(date +%Y%m%d%H%M)-git_arm64.deb /mnt/var/cache/apt/archives/ &>> /tmp/"${FUNCNAME[0]}".compile.log
     
 echo "rpi_userland done" >> /tmp/build.log
 arbitrary_wait_here
