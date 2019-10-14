@@ -1309,8 +1309,24 @@ startfunc
 #    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #     patch -p1 < /source-ro/patches/0002-raspberrypi-Disable-simple-framebuffer-support.patch
 #     patch -p1 < /source-ro/patches/U-Boot-board-rpi4-fix-instantiating-PL011-driver.patch
-    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/U-Boot-v2-rpi4-enable-dram-bank-initialization.patch
-    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/Fix-default-values-for-address-and-size-cells.patch
+
+    [[ $UBOOTONLY ]] && (if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
+           < /source-ro/patches/U-Boot-v2-rpi4-enable-dram-bank-initialization.patch; then
+        >&2 echo "  Failed to apply U-Boot-v2-rpi4-enable-dram-bank-initialization in dry run - already merged?"
+    elif ! patch -p1 --forward --force < /source-ro/patches/U-Boot-v2-rpi4-enable-dram-bank-initialization.patch; then
+        >&2 echo "  U-Boot-v2-rpi4-enable-dram-bank-initialization failed to apply - source tree may be corrupt!"
+    else
+        echo "  U-Boot-v2-rpi4-enable-dram-bank-initialization applied successfully!"
+    fi)
+    [[ $UBOOTONLY ]] && (if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
+           < /source-ro/patches/Fix-default-values-for-address-and-size-cells.patch; then
+        >&2 echo "  Failed to apply Fix-default-values-for-address-and-size-cells in dry run - already merged?"
+    elif ! patch -p1 --forward --force < /source-ro/patches/Fix-default-values-for-address-and-size-cells.patch; then
+        >&2 echo "  Fix-default-values-for-address-and-size-cells failed to apply - source tree may be corrupt!"
+    else
+        echo "  Fix-default-values-for-address-and-size-cells applied successfully!"
+    fi)
+    
 #    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/RPi-one-binary-for-RPi3-4-and-RPi1-2.patch    
      [[ $UBOOTONLY ]] && echo "CONFIG_USB_DWC2=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
      [[ $UBOOTONLY ]] && echo "CONFIG_USB_ETHER_LAN78XX=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
