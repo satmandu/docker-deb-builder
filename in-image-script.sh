@@ -1204,7 +1204,7 @@ startfunc
     mkdir -p /mnt/opt/vc
     CROSS_COMPILE=aarch64-linux-gnu- ./buildme --aarch64 /mnt &>> /tmp/"${FUNCNAME[0]}".compile.log
 
-    ( cd "${workdir}"/rpi-userland/build/arm-linux/release/ || ragequit )
+    cd "${workdir}"/rpi-userland/build/arm-linux/release/ || ragequit
     mkdir -p "${workdir}"/rpi-userland/build/arm-linux/release/extracted
     
     mkdir -p extracted/etc/ld.so.conf.d/
@@ -1248,6 +1248,7 @@ EOF
 	Defaults env_keep+="XAUTHORIZATION XAUTHORITY TZ PS2 PS1 PATH LS_COLORS KRB5CCNAME HOSTNAME HOME DISPLAY COLORS"
 EOF
     chmod 0440 extracted/etc/sudoers.d/display
+    cd "${workdir}"/rpi-userland/build/arm-linux/release/
     ARM64=on checkinstall -D --install=no --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d%H%M)-git" --fstrans=yes -y &>> /tmp/"${FUNCNAME[0]}".compile.log
     dpkg-deb -R rpiuserland_*.deb extracted/ &>> /tmp/"${FUNCNAME[0]}".compile.log
     dpkg-deb -b extracted &>> /tmp/"${FUNCNAME[0]}".compile.log
