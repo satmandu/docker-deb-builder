@@ -237,6 +237,19 @@ set_kernel_config CONFIG_DRM_VC4_HDMI_CEC y
 # needed for vcgdbg
 set_kernel_config BCM2708_VCMEM y
 
+# Ceph support for Block Device (RBD) and Filesystem (FS)
+# https://docs.ceph.com/docs/master/
+set_kernel_config CONFIG_CEPH_LIB m
+set_kernel_config CONFIG_CEPH_LIB_USE_DNS_RESOLVER y
+set_kernel_config CONFIG_CEPH_FS m
+set_kernel_config CONFIG_CEPH_FSCACHE y
+set_kernel_config CONFIG_CEPH_FS_POSIX_ACL y
+set_kernel_config CONFIG_BLK_DEV_RBD m
+
+# Diffie-Hellman operations on retained keys
+# (required for >keyutils-1.6)
+set_kernel_config CONFIG_KEY_DH_OPERATIONS y
+
 # Default mainline additions as per https://github.com/raspberrypi/linux/wiki/Upstreaming
 set_kernel_config CONFIG_ARCH_BCM2835 y
 set_kernel_config CONFIG_SERIAL_8250_BCM2835AUX y

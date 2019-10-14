@@ -205,6 +205,37 @@ set_kernel_config CONFIG_DRM_VC4_HDMI_CEC y
 set_kernel_config CONFIG_PCIE_BRCMSTB y
 set_kernel_config CONFIG_BCM2835_MMC y
 
+# Ceph support for Block Device (RBD) and Filesystem (FS)
+# https://docs.ceph.com/docs/master/
+set_kernel_config CONFIG_CEPH_LIB m
+set_kernel_config CONFIG_CEPH_LIB_USE_DNS_RESOLVER y
+set_kernel_config CONFIG_CEPH_FS m
+set_kernel_config CONFIG_CEPH_FSCACHE y
+set_kernel_config CONFIG_CEPH_FS_POSIX_ACL y
+set_kernel_config CONFIG_BLK_DEV_RBD m
+
+# Diffie-Hellman operations on retained keys
+# (required for >keyutils-1.6)
+set_kernel_config CONFIG_KEY_DH_OPERATIONS y
+
 # eoan default for multipath
 set_kernel_config CONFIG_DM_MULTIPATH y
+
+# needed for vcgdbg
+set_kernel_config BCM2708_VCMEM y
+
+# Default mainline additions as per https://github.com/raspberrypi/linux/wiki/Upstreaming
+set_kernel_config CONFIG_ARCH_BCM2835 y
+set_kernel_config CONFIG_SERIAL_8250_BCM2835AUX y
+set_kernel_config CONFIG_I2C_BCM2835 y
+set_kernel_config CONFIG_BCM2835_WDT y
+set_kernel_config CONFIG_SPI_BCM2835 y
+set_kernel_config CONFIG_SPI_BCM2835AUX y
+set_kernel_config CONFIG_DRM_VC4 y
+set_kernel_config CONFIG_SND_BCM2835_SOC_I2S y
+set_kernel_config CONFIG_USB_DWC2_HOST y
+set_kernel_config CONFIG_DMA_BCM2835 y
+set_kernel_config CONFIG_BCM2835_MBOX y
+set_kernel_config CONFIG_RASPBERRYPI_POWER y
+set_kernel_config CONFIG_RASPBERRYPI_FIRMWARE y
 
