@@ -1572,7 +1572,7 @@ EOF
 	    done
 EOF
 
-    chroot /mnt /bin/bash -c "(crontab -l ; echo '*/5 * * * * /usr/local/bin/wpaping.sh') | crontab -"
+    chroot /mnt /bin/bash -c "(crontab -l ; echo \"*/5 * * * * /usr/local/bin/wpaping.sh\") | crontab -"
 
     rpi_eeprom_firmware
     cd /mnt/usr/local/bin
