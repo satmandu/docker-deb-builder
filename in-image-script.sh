@@ -1392,18 +1392,19 @@ startfunc
     #echo "CONFIG_EXT4_WRITE=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
     #echo "CONFIG_FAT_WRITE=y" >> ${workdir}/u-boot/configs/${ubootdefconfig}
     
+    echo "* Compiling u-boot."
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make ${ubootdefconfig} &>> /tmp/"${FUNCNAME[0]}".compile.log
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make -j $(($(nproc) + 1)) &>> /tmp/"${FUNCNAME[0]}".compile.log
 #    [[ $UBOOTONLY ]] && tools/mkknlimg --dtok --270x --283x "${workdir}"/u-boot/u-boot.bin /output/${now}.${UBOOTDEF}.uboot.bin
    [[ $UBOOTONLY ]] && cp "${workdir}"/u-boot/u-boot.bin /output/${now}.${UBOOTDEF}.uboot-${UBOOTREV}.bin
-    [[ $UBOOTONLY ]] && return
+    #[[ $UBOOTONLY ]] && return
     waitfor "image_mount"
     echo "* Installing u-boot to image."
     cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/uboot.bin
     cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/uboot_rpi_4.bin
     #cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.img
     #mkdir -p  ${MNTLIBPATH}/u-boot/rpi_4/
-    #cp "${workdir}"/u-boot/u-boot.bin  ${MNTLIBPATH}/u-boot/rpi_4/
+    cp "${workdir}"/u-boot/u-boot.bin  ${MNTLIBPATH}/u-boot/rpi_4/
     # This can be done without chroot by just having u-boot-tools on the build
     # container
     #chroot /mnt /bin/bash -c "mkimage -A arm64 -O linux -T script \
