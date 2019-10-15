@@ -1300,17 +1300,21 @@ patched_uboot () {
 startfunc
     UBOOTDEF="${UBOOTDEF:-rpi_4}"
     ubootdefconfig="${UBOOTDEF}_defconfig"
-    [[ ! $UBOOTONLY ]] && git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"
+#    [[ ! $UBOOTONLY ]] && git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"
 #    [[ $UBOOTONLY ]] && git_get "https://github.com/agherzan/u-boot.git" "u-boot" "ag/v2019.07-rpi4-wip"
-    [[ $UBOOTONLY ]] && git_get "https://github.com/u-boot/u-boot.git" "u-boot" "master"
+    #git_get "https://github.com/u-boot/u-boot.git" "u-boot" "master"
+    git_get "https://github.com/u-boot/u-boot.git" "u-boot" "v2019.10"
 . /tmp/env.txt
     cd "${workdir}"/u-boot || exit 1
+    # Working git tag
+    # git reset --hard cd5ffc5de5a26f5b785e25654977fee25779b3e4
+    UBOOTREV=$(git -C "${src_cache}"/u-boot rev-parse --short HEAD) > /dev/null
 #    curl -O https://github.com/satmandu/u-boot/commit/b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #    patch -p1 < b514f892bc3d6ecbc75f80d0096055a6a8afbf75.patch
 #     patch -p1 < /source-ro/patches/0002-raspberrypi-Disable-simple-framebuffer-support.patch
 #     patch -p1 < /source-ro/patches/U-Boot-board-rpi4-fix-instantiating-PL011-driver.patch
 
-    [[ $UBOOTONLY ]] && (if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
+    (if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
            < /source-ro/patches/U-Boot-v2-rpi4-enable-dram-bank-initialization.patch; then
         >&2 echo "  Failed to apply U-Boot-v2-rpi4-enable-dram-bank-initialization in dry run - already merged?"
     elif ! patch -p1 --forward --force < /source-ro/patches/U-Boot-v2-rpi4-enable-dram-bank-initialization.patch; then
@@ -1318,7 +1322,7 @@ startfunc
     else
         echo "  U-Boot-v2-rpi4-enable-dram-bank-initialization applied successfully!"
     fi)
-    [[ $UBOOTONLY ]] && (if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
+    (if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
            < /source-ro/patches/Fix-default-values-for-address-and-size-cells.patch; then
         >&2 echo "  Failed to apply Fix-default-values-for-address-and-size-cells in dry run - already merged?"
     elif ! patch -p1 --forward --force < /source-ro/patches/Fix-default-values-for-address-and-size-cells.patch; then
@@ -1347,9 +1351,9 @@ startfunc
 #    [[ $UBOOTONLY ]] && patch -p1 < /source-ro/patches/rpi2-rpi3-config-tweaks.patch || true
 
 
-    [[ $UBOOTONLY ]] && echo "CONFIG_SUPPORT_RAW_INITRD=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
-    [[ $UBOOTONLY ]] && echo "CONFIG_ENV_IS_IN_FAT=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
-    [[ $UBOOTONLY ]] && sed -i 's/CONFIG_OF_EMBED/CONFIG_OF_BOARD/' "${workdir}"/u-boot/configs/${ubootdefconfig}
+    echo "CONFIG_SUPPORT_RAW_INITRD=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+    echo "CONFIG_ENV_IS_IN_FAT=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
+    sed -i 's/CONFIG_OF_EMBED/CONFIG_OF_BOARD/' "${workdir}"/u-boot/configs/${ubootdefconfig}
 #    [[ $UBOOTONLY ]] && sed -i 's/fdt_addr_r=0x02600000/fdt_addr_r=0x03000000/' "${workdir}"/u-boot/include/configs/rpi.h
     
     echo "CONFIG_LZ4=y" >> "${workdir}"/u-boot/configs/${ubootdefconfig}
@@ -1391,7 +1395,7 @@ startfunc
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make ${ubootdefconfig} &>> /tmp/"${FUNCNAME[0]}".compile.log
     ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make -j $(($(nproc) + 1)) &>> /tmp/"${FUNCNAME[0]}".compile.log
 #    [[ $UBOOTONLY ]] && tools/mkknlimg --dtok --270x --283x "${workdir}"/u-boot/u-boot.bin /output/${now}.${UBOOTDEF}.uboot.bin
-   [[ $UBOOTONLY ]] && cp "${workdir}"/u-boot/u-boot.bin /output/${now}.${UBOOTDEF}.uboot.bin
+   [[ $UBOOTONLY ]] && cp "${workdir}"/u-boot/u-boot.bin /output/${now}.${UBOOTDEF}.uboot-${UBOOTREV}.bin
     [[ $UBOOTONLY ]] && return
     waitfor "image_mount"
     echo "* Installing u-boot to image."
