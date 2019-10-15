@@ -1403,8 +1403,9 @@ startfunc
     cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/uboot.bin
     cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/uboot_rpi_4.bin
     #cp "${workdir}"/u-boot/u-boot.bin /mnt/boot/firmware/kernel8.img
-    #mkdir -p  ${MNTLIBPATH}/u-boot/rpi_4/
+    mkdir -p  ${MNTLIBPATH}/u-boot/rpi_4/
     cp "${workdir}"/u-boot/u-boot.bin  ${MNTLIBPATH}/u-boot/rpi_4/
+    cp "${workdir}"/u-boot/u-boot.bin ${MNTLIBPATH}/u-boot/rpi_4/${UBOOTDEF}.uboot-${UBOOTREV}.bin
     # This can be done without chroot by just having u-boot-tools on the build
     # container
     #chroot /mnt /bin/bash -c "mkimage -A arm64 -O linux -T script \
