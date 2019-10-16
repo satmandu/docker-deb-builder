@@ -765,7 +765,8 @@ startfunc
     chroot-apt-wrapper -o Dir=/mnt -o APT::Architecture=arm64 \
     -o dir::cache::archives="${apt_cache}" \
     -d install network-manager wireless-tools wireless-regdb crda \
-    net-tools rng-tools -qq &>> /tmp/"${FUNCNAME[0]}".install.log || true
+    net-tools rng-tools apt-transport-https \
+    -qq &>> /tmp/"${FUNCNAME[0]}".install.log || true
     # This setup DOES get around the issues with kernel
     # module support binaries built in amd64 instead of arm64.
     # This happend for instance with Ubuntu Mainline kernel builds.
