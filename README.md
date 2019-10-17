@@ -1,3 +1,4 @@
+There are now official ubuntu server RPI4 images at http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/
 
 # Creating an ARM64 boot image for a Raspberry Pi 4B in a Ubuntu Docker container from a either a Ubuntu Bionic or Ubuntu Disco (current/dev) RPI3 boot image
 
