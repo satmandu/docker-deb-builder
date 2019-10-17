@@ -1,6 +1,6 @@
-There are now official ubuntu server RPI4 images at http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/
+# There are now official ubuntu 19.10 server RPI4 images at http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/
 
-# Creating an ARM64 boot image for a Raspberry Pi 4B in a Ubuntu Docker container from a either a Ubuntu Bionic or Ubuntu Disco (current/dev) RPI3 boot image
+## Creating an ARM64 boot image for a Raspberry Pi 4B in a Ubuntu Docker container from a either a Ubuntu Bionic or Ubuntu Disco (current/dev) RPI3 boot image
 
 (Initially adapted from project at https://github.com/tsaarni/docker-deb-builder )
 
@@ -36,9 +36,9 @@ Clone the [docker-rpi4-imagebuilder](https://github.com/satmandu/docker-rpi4-ima
     
 | Ubuntu Image Built | Buid Container OS | command | comments |
 | --- | --- | --- | --- |
-| eoan | rolling/disco/19.04 | ```git pull ; time ./build-image``` | **DEFAULT**
+| eoan | disco/19.04 | ```git pull ; time ./build-image``` | old
 | bionic | bionic/18.04 | ```git pull ; time BASE_DIST=bionic ./build-image``` | old stable|
-| eoan | eoan/dev/19.10 | ```git pull ; time ./build-image -i docker-rpi4-imagebuilder-v1:19.10``` | dev/dev|
+| eoan | rolling/eoan/19.10 | ```git pull ; time ./build-image -i docker-rpi4-imagebuilder-v1:19.10``` | **DEFAULT**|
 
 1st Build takes ~ 30 min.
 2nd Build with cached kernel compile debs takes ~ 5 min.
