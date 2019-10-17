@@ -323,6 +323,8 @@ docker_args+="-e BASE_DIST=${BASE_DIST} "
 [ -n "$KERNELDEF" ] && docker_args+="-e KERNELDEF=${KERNELDEF} "
 # If lucky
 [ -n "$MOAR_RAM" ] && docker_args+="--tmpfs /build/source/rpi-linux:exec --tmpfs /build/source/kernel-build:exec "
+# No Ethernet LEDs?
+[ -n "$NOETHLED" ] && docker_args+="-e NOETHLED=${NOETHLED} "
 # package RPI USERLAND
 [ -n "$PKGUSERLAND" ] && docker_args+="-e PKGUSERLAND=${PKGUSERLAND} "
 # copy out uncompressed images

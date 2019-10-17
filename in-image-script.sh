@@ -885,6 +885,22 @@ startfunc
     # https://github.com/sakaki-/bcm2711-kernel-bis
     [[ -e /source-ro/scripts/patch_kernel-${MAJORVERSION}.${PATCHLEVEL}.sh ]] && { /source-ro/scripts/patch_kernel-${MAJORVERSION}.${PATCHLEVEL}.sh ;true; } || \
     { /source-ro/scripts/patch_kernel.sh ; true; }
+    [[ $NOETHLED ]] && (if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
+           < /source-ro/patches/no_eth_led_5.3.patch; then
+        >&2 echo "  Failed to apply eth led 5.3 patch in dry run - already merged?"
+    elif ! patch -p1 --forward --force < /source-ro/patches/no_eth_led_5.3.patch; then
+        >&2 echo " Failed to apply no eth led 5.3 patch - source tree may be corrupt!"
+    else
+        echo "  eth led 5.3 patch applied successfully!"
+    fi)
+    [[ $NOETHLED ]] && (if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
+           < /source-ro/patches/no_eth_led_4.19.patch; then
+        >&2 echo "  Failed to apply eth led 4.19 patch in dry run - already merged?"
+    elif ! patch -p1 --forward --force < /source-ro/patches/no_eth_led_4.19.patch; then
+        >&2 echo " Failed to apply no eth led - source tree may be corrupt!"
+    else
+        echo "  eth led 4.19 patch applied successfully!"
+    fi)
     if [[ -e /tmp/APPLIED_KERNEL_PATCHES ]]
         then
             KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${KERNELREV}$(< /tmp/APPLIED_KERNEL_PATCHES)"
