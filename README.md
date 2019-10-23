@@ -36,9 +36,9 @@ Clone the [docker-rpi4-imagebuilder](https://github.com/satmandu/docker-rpi4-ima
     
 | Ubuntu Image Built | Buid Container OS | command | comments |
 | --- | --- | --- | --- |
-| eoan | disco/19.04 | ```git pull ; time ./build-image``` | old
+| eoan | disco/rolling/19.04 | ```git pull ; time ./build-image``` | **DEFAULT**
 | bionic | bionic/18.04 | ```git pull ; time BASE_DIST=bionic ./build-image``` | old stable|
-| eoan | rolling/eoan/19.10 | ```git pull ; time ./build-image -i docker-rpi4-imagebuilder-v1:19.10``` | **DEFAULT**|
+| eoan | eoan/dev/19.10 | ```git pull ; time ./build-image -i docker-rpi4-imagebuilder-v1:19.10``` |  (DEFAULT soon)|
 
 1st Build takes ~ 30 min.
 2nd Build with cached kernel compile debs takes ~ 5 min.
