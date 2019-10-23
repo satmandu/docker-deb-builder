@@ -901,6 +901,7 @@ startfunc
     else
         echo "  eth led 4.19 patch applied successfully!"
     fi)
+     [[ $NOETHLED ]] && ( sed -i 's/BCM_LED_MULTICOLOR_LINK_ACT/BCM_LED_MULTICOLOR_OFF/' "${workdir}"/rpi-linux/drivers/net/phy/broadcom.c || true ) 
     if [[ -e /tmp/APPLIED_KERNEL_PATCHES ]]
         then
             KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${KERNELREV}$(< /tmp/APPLIED_KERNEL_PATCHES)"
