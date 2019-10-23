@@ -107,6 +107,16 @@ docker_args="-dt "
 
 # Are we mac or are we linux?
 SYSTEM=$(uname)
+
+if [ "$SYSTEM" == "Linux" ]; then
+    if grep Ubuntu /etc/issue > /dev/null; then
+        if ! (dpkg -l | grep qemu-user-static > /dev/null) ; then
+            echo "need to install qemu-user-static"
+            sudo apt install qemu-user-static -y
+        fi
+    fi
+fi
+
 BUILDHOST_ARCH=$(uname -m)
 docker_args+="-e BUILDHOST_ARCH=${BUILDHOST_ARCH} "
 if [ "${BUILDHOST_ARCH}" = "aarch64" ]
