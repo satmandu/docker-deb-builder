@@ -1,0 +1,23 @@
+--- a/drivers/net/phy/broadcom.c	2019-10-17 17:59:31.000000000 -0400
++++ b/drivers/net/phy/broadcom.c	2019-10-17 18:09:46.000000000 -0400
+@@ -323,12 +323,18 @@
+ 
+ 	bcm54xx_phydsp_config(phydev);
+ 
++	/* Disable until dt toggle for LEDs is wired up.
++	 * Set ACTIVITY on LED "1" output, LINKSPD[1] on LED "3" output
++	 * val = BCM5482_SHD_LEDS1_LED1(BCM_LED_SRC_ACTIVITYLED) |
++	 *	BCM5482_SHD_LEDS1_LED3(BCM_LED_SRC_LINKSPD1);
++	 */
++	/* Turn off LED "1" and LED "3" unconditionally */		
+ 	/* Encode link speed into LED1 and LED3 pair (green/amber).
+ 	 * Also flash these two LEDs on activity. This means configuring
+ 	 * them for MULTICOLOR and encoding link/activity into them.
+ 	 */
+-	val = BCM5482_SHD_LEDS1_LED1(BCM_LED_SRC_MULTICOLOR1) |
+-		BCM5482_SHD_LEDS1_LED3(BCM_LED_SRC_MULTICOLOR1);
++	val = BCM5482_SHD_LEDS1_LED1(BCM_LED_MULTICOLOR_OFF) |
++		BCM5482_SHD_LEDS1_LED3(BCM_LED_MULTICOLOR_OFF);
+ 	bcm_phy_write_shadow(phydev, BCM5482_SHD_LEDS1, val);
+ 
+ 	val = BCM_LED_MULTICOLOR_IN_PHASE |
