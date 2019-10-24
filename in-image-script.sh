@@ -5,6 +5,9 @@ echo $BASHPID > /flag/main
 #[[ $DEBUG ]] && export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 [[ $DEBUG ]] && export PS4='+(${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 mainPID=$BASHPID
+# Try to make deterministic builds to help ccache as per 
+# http://nickdesaulniers.github.io/blog/2018/06/02/speeding-up-linux-kernel-builds-with-ccache/
+export KBUILD_BUILD_TIMESTAMP=''
 
 echo "mainPID=${BASHPID}" >> /tmp/env.txt
 
