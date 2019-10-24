@@ -8,6 +8,11 @@ mainPID=$BASHPID
 # Try to make deterministic builds to help ccache as per 
 # http://nickdesaulniers.github.io/blog/2018/06/02/speeding-up-linux-kernel-builds-with-ccache/
 export KBUILD_BUILD_TIMESTAMP=''
+if ! (dpkg -l | grep tzdata > /dev/null) ; then
+    sudo DEBIAN_FRONTEND=noninteractive apt install tzdata libxml2-utils -y
+fi
+TZ=`curl -s 'geoip.ubuntu.com/lookup' | xmllint --xpath '/Response/TimeZone/text()' -`
+ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 echo "mainPID=${BASHPID}" >> /tmp/env.txt
 

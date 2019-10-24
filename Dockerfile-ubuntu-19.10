@@ -3,12 +3,13 @@ FROM arm64v8/ubuntu:${VERSION_ID} as stageforcopy
 ARG VERSION_ID
 FROM ubuntu:${VERSION_ID} as base
 SHELL ["/bin/bash","-c"]
+RUN echo "UTC" > /etc/timezone
 RUN set -ex \
     && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
     && echo "deb http://security.ubuntu.com/ubuntu eoan-proposed main restricted universe multiverse universe" >> /etc/apt/sources.list \
     && echo "deb-src http://security.ubuntu.com/ubuntu eoan-proposed main restricted universe multiverse universe" >> /etc/apt/sources.list \
     && apt-get update \
-    && apt-get install -y --no-install-recommends \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
                apt-transport-https \
                apt-utils \
                build-essential \
@@ -44,9 +45,10 @@ RUN set -ex \
                libc6-arm64-cross \
                libelf-dev \
                libncurses-dev \
+               libpython3.7 \
                libssl-dev \
                libxdelta2 \
-               libpython3.7 \
+               libxml2-utils \
                moreutils \
                ncurses-dev \
                patch \
@@ -58,6 +60,7 @@ RUN set -ex \
                rsync \
                sbuild \
                sudo \
+               tzdata \
                ubuntu-dev-tools \
                u-boot-tools \
                vim \
