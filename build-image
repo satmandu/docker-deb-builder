@@ -50,11 +50,11 @@ done
 shift $(($OPTIND - 1))
 
 #  This should be the image we want to modify. Note that the only options here are 
-#  Ubuntu Bionic & Ubuntu Eoan since Canonical only provides daily build images of
+#  Ubuntu Bionic & Focal Fossa since Canonical only provides daily build images of
 #  those distributions.
-default_BASE_DIST="eoan"
-#  This is the default build host image. 18.04 (bionic), 19.04 (disco/rolling)
-# and 19.10 (dev/eoan) builds
+default_BASE_DIST="fossa"
+#  This is the default build host image. 18.04 (bionic), 19.10 (eoan/rolling)
+# and 20.04 (dev/focal) builds
 #  have been tested. However, non-19.04 images may need to be built separately and 
 #  invoked through. e.g.:
 # BASE_DIST=bionic ./build-image 
@@ -77,8 +77,8 @@ if [ "$BASE_DIST" == "bionic" ]; then
     else
     base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
     defaultimage="docker-rpi4-imagebuilder-v2:rolling"
-    # There is no rolling/disco daily-preinstalled image
-    BASE_DIST=eoan
+    # There is no rolling/eoan daily-preinstalled image
+    BASE_DIST=focal
 fi
 
 base_image="${BASE_DIST}-preinstalled-server-arm64+raspi3.img.xz"
