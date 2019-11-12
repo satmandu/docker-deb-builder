@@ -208,7 +208,7 @@ startfunc
         flock 201 
         echo "spinner_proc_file: ${spinner_proc_file}" >> /tmp/spinnerwait.log
         echo "job_id: ${job_id}" >> /tmp/spinnerwait.log
-        echo "${job_id}" > "${spinner_proc_file}" |& tee -a /tmp/spinnerwait.log
+        ((echo "${job_id}" > "${spinner_proc_file}" >> /tmp/spinnerwait.log) &> /dev/null) || true
         PrintLog "Start wait for ${1}:${job_id} end." /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP "${job_id}" &>/dev/null)
