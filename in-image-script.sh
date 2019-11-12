@@ -1277,7 +1277,7 @@ EOF
 	Defaults env_keep+="XAUTHORIZATION XAUTHORITY TZ PS2 PS1 PATH LS_COLORS KRB5CCNAME HOSTNAME HOME DISPLAY COLORS"
 EOF
     chmod 0440 extracted/etc/sudoers.d/display
-    cd "${workdir}"/rpi-userland/build/raspberry/release/
+    cd "${workdir}"/rpi-userland/build/arm-linux/release/
     ARM64=on checkinstall -D --install=no --exclude="${workdir}" --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d)-${USERLANDREV}" --fstrans=yes -y &>> /tmp/"${FUNCNAME[0]}".compile.log
     dpkg-deb -R rpiuserland_*.deb "${workdir}"/rpi-userland/build/arm-linux/release/extracted/ &>> /tmp/"${FUNCNAME[0]}".compile.log
     dpkg-deb -b "${workdir}"/rpi-userland/build/arm-linux/release/extracted &>> /tmp/"${FUNCNAME[0]}".compile.log
