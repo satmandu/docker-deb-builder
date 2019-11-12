@@ -1227,6 +1227,7 @@ startfunc
 . /tmp/env.txt
     echo "* Installing Raspberry Pi userland source."
     cd "${workdir}"/rpi-userland/ || ragequit
+    [[ -e /source-ro/scripts/patch_rpi-userland.sh ]] && { /source-ro/scripts/patch_rpi-userland.sh ;true; }
     sed -i 's/__bitwise/FDT_BITWISE/' "${workdir}"/rpi-userland/opensrc/helpers/libfdt/libfdt_env.h
     sed -i 's/__force/FDT_FORCE/' "${workdir}"/rpi-userland/opensrc/helpers/libfdt/libfdt_env.h
     mkdir -p /mnt/opt/vc
@@ -1276,10 +1277,10 @@ EOF
 	Defaults env_keep+="XAUTHORIZATION XAUTHORITY TZ PS2 PS1 PATH LS_COLORS KRB5CCNAME HOSTNAME HOME DISPLAY COLORS"
 EOF
     chmod 0440 extracted/etc/sudoers.d/display
-    cd "${workdir}"/rpi-userland/build/arm-linux/release/
-    ARM64=on checkinstall -D --install=no --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d)-${USERLANDREV}" --fstrans=yes -y &>> /tmp/"${FUNCNAME[0]}".compile.log
-    dpkg-deb -R rpiuserland_*.deb extracted/ &>> /tmp/"${FUNCNAME[0]}".compile.log
-    dpkg-deb -b extracted &>> /tmp/"${FUNCNAME[0]}".compile.log
+    cd "${workdir}"/rpi-userland/build/raspberry/release/
+    ARM64=on checkinstall -D --install=no --exclude="${workdir}" --pkgname=rpiuserland --pkgversion="$(date +%Y%m):$(date +%Y%m%d)-${USERLANDREV}" --fstrans=yes -y &>> /tmp/"${FUNCNAME[0]}".compile.log
+    dpkg-deb -R rpiuserland_*.deb "${workdir}"/rpi-userland/build/arm-linux/release/extracted/ &>> /tmp/"${FUNCNAME[0]}".compile.log
+    dpkg-deb -b "${workdir}"/rpi-userland/build/arm-linux/release/extracted &>> /tmp/"${FUNCNAME[0]}".compile.log
     mv extracted.deb rpiuserland_$(date +%Y%m%d)-${USERLANDREV}_arm64.deb &>> /tmp/"${FUNCNAME[0]}".compile.log
 [[ $PKGUSERLAND ]] && cp rpiuserland_$(date +%Y%m%d)-${USERLANDREV}_arm64.deb /output/ &>> /tmp/"${FUNCNAME[0]}".compile.log
     cp rpiuserland_$(date +%Y%m%d)-${USERLANDREV}_arm64.deb /mnt/var/cache/apt/archives/ &>> /tmp/"${FUNCNAME[0]}".compile.log
