@@ -11,7 +11,7 @@ export KBUILD_BUILD_TIMESTAMP=''
 if ! (dpkg -l | grep tzdata > /dev/null) ; then
     sudo DEBIAN_FRONTEND=noninteractive apt install tzdata libxml2-utils -y
 fi
-TZ=`curl -s 'geoip.ubuntu.com/lookup' | xmllint --xpath '/Response/TimeZone/text()' -`
+TZ=`curl -s 'https://geoip.ubuntu.com/lookup' | xmllint --xpath '/Response/TimeZone/text()' -`
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 echo "mainPID=${BASHPID}" >> /tmp/env.txt
