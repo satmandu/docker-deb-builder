@@ -41,7 +41,7 @@ apply_pr() {
 
 # Custom kernel patches follow
 
-apply_pr 586 "RFC: 64bit MMAL support"
+# apply_pr 586 "RFC: 64bit MMAL support"
 
 # Submit PRs with edits targeting the _bottom_ of this file
 # Please provide a short rationale comment for the changes made
