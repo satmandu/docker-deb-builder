@@ -208,7 +208,7 @@ startfunc
         flock 201 
         echo "spinner_proc_file: ${spinner_proc_file}" >> /tmp/spinnerwait.log
         echo "job_id: ${job_id}" >> /tmp/spinnerwait.log
-        echo "${job_id}" > "${spinner_proc_file}" >> /tmp/spinnerwait.log &> /dev/null || true
+        (echo "${job_id}" > "${spinner_proc_file}" >> /tmp/spinnerwait.log ) &> /dev/null || true
         PrintLog "Start wait for ${1}:${job_id} end." /tmp/spinnerwait.log
         tput sc
         while (pgrep -cxP "${job_id}" &>/dev/null)
@@ -870,6 +870,8 @@ startfunc
     extraversion=$(grep EXTRAVERSION "${src_cache}"/rpi-linux/Makefile | \
     head -1 | awk -F ' = ' '{print $2}')
     extraversion_nohyphen="${extraversion//-}"
+    # Change "-v8' to "-raspi" for ubuntu
+    sed -i 's/^CONFIG_LOCALVERSION="-v8"/CONFIG_LOCALVERSION="-raspi"/' arch/arm64/configs/bcm2711_defconfig
     CONFIG_LOCALVERSION=$(grep CONFIG_LOCALVERSION \
     "${src_cache}"/rpi-linux/arch/arm64/configs/bcm2711_defconfig | \
     head -1 | awk -F '=' '{print $2}' | sed 's/"//g')
@@ -880,8 +882,8 @@ startfunc
     echo "$KERNELREV" > /tmp/KERNELREV
     echo "KERNELREV=${KERNELREV}" >> /tmp/env.txt
     cd "${workdir}"/rpi-linux || ragequit
-    git update-index --refresh &>> /tmp/"${FUNCNAME[0]}".compile.log || true
-    git diff-index --quiet HEAD &>> /tmp/"${FUNCNAME[0]}".compile.log || true
+    #git update-index --refresh &>> /tmp/"${FUNCNAME[0]}".compile.log || true
+    #git diff-index --quiet HEAD &>> /tmp/"${FUNCNAME[0]}".compile.log || true
     
 
     mkdir -p "${workdir}"/kernel-build
@@ -893,29 +895,38 @@ startfunc
     #-O arch/arm64/configs/bcm2711_defconfig
     [[ ${defconfig} = "bcm2711_defconfig" ]] && ( [ ! -f arch/arm64/configs/bcm2711_defconfig ] && defconfig=defconfig )
     [[ -n "${defconfig}" ]] || defconfig=defconfig
+    
     echo "defconfig=${defconfig}" >> /tmp/env.txt
     # Use kernel patch script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
-    [[ -e /source-ro/scripts/patch_kernel-${MAJORVERSION}.${PATCHLEVEL}.sh ]] && { /source-ro/scripts/patch_kernel-${MAJORVERSION}.${PATCHLEVEL}.sh ;true; } || \
-    { /source-ro/scripts/patch_kernel.sh ; true; }
-    [[ $NOETHLED ]] && (if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
-           < /source-ro/patches/no_eth_led_5.3.patch; then
-        >&2 echo "  Failed to apply eth led 5.3 patch in dry run - already merged?"
-    elif ! patch -p1 --forward --force < /source-ro/patches/no_eth_led_5.3.patch; then
-        >&2 echo " Failed to apply no eth led 5.3 patch - source tree may be corrupt!"
-    else
-        echo "  eth led 5.3 patch applied successfully!"
-    fi)
-    [[ $NOETHLED ]] && (if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
-           < /source-ro/patches/no_eth_led_4.19.patch; then
-        >&2 echo "  Failed to apply eth led 4.19 patch in dry run - already merged?"
-    elif ! patch -p1 --forward --force < /source-ro/patches/no_eth_led_4.19.patch; then
-        >&2 echo " Failed to apply no eth led - source tree may be corrupt!"
-    else
-        echo "  eth led 4.19 patch applied successfully!"
-    fi)
-     [[ $NOETHLED ]] && ( sed -i 's/BCM5482_SHD_SSD_LEDM/~BCM5482_SHD_SSD_LEDM/' "${workdir}"/rpi-linux/drivers/net/phy/broadcom.c || true ) 
+    #[[ -e /source-ro/scripts/patch_kernel-${MAJORVERSION}.${PATCHLEVEL}.sh ]] && { /source-ro/scripts/patch_kernel-${MAJORVERSION}.${PATCHLEVEL}.sh ;true; } || \
+    #{ /source-ro/scripts/patch_kernel.sh ; true; }
+    #[[ $NOETHLED ]] && (if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
+           #< /source-ro/patches/no_eth_led_5.3.patch; then
+        #>&2 echo "  Failed to apply eth led 5.3 patch in dry run - already merged?"
+    #elif ! patch -p1 --forward --force < /source-ro/patches/no_eth_led_5.3.patch; then
+        #>&2 echo " Failed to apply no eth led 5.3 patch - source tree may be corrupt!"
+    #else
+        #echo "  eth led 5.3 patch applied successfully!"
+    #fi)
+    #[[ $NOETHLED ]] && (if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
+           #< /source-ro/patches/no_eth_led_4.19.patch; then
+        #>&2 echo "  Failed to apply eth led 4.19 patch in dry run - already merged?"
+    #elif ! patch -p1 --forward --force < /source-ro/patches/no_eth_led_4.19.patch; then
+        #>&2 echo " Failed to apply no eth led - source tree may be corrupt!"
+    #else
+        #echo "  eth led 4.19 patch applied successfully!"
+    #fi)
+     #[[ $NOETHLED ]] && ( sed -i 's/BCM5482_SHD_SSD_LEDM/~BCM5482_SHD_SSD_LEDM/' "${workdir}"/rpi-linux/drivers/net/phy/broadcom.c || true ) 
 #     [[ $NOETHLED ]] && ( sed -i '/^BCM5482_SHD_SSD_LEDM/d' "${workdir}"/rpi-linux/drivers/net/phy/broadcom.c || true ) 
+   if ! patch -p1 --forward --silent --force --dry-run &>/dev/null \
+           < /source-ro/patches/cross.patch; then
+        >&2 echo "  Failed to apply cross patch in dry run - already merged?"
+    elif ! patch -p1 --forward --force < /source-ro/patches/cross.patch; then
+        >&2 echo " Failed to apply cross patch - source tree may be corrupt!"
+    else
+        echo "  cross patch applied successfully!"
+    fi
     if [[ -e /tmp/APPLIED_KERNEL_PATCHES ]]
         then
             KERNEL_VERS="${PKGVER}${CONFIG_LOCALVERSION}-g${KERNELREV}$(< /tmp/APPLIED_KERNEL_PATCHES)"
@@ -937,49 +948,63 @@ endfunc
 kernel_build () {
 startfunc
     waitfor "kernelbuild_setup"
-    waitfor "compiler_setup"
+    #waitfor "compiler_setup"
 . /tmp/env.txt
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     LOCALVERSION=$(< /tmp/LOCALVERSION)
 
+  
 
 
  
     cd "${workdir}"/rpi-linux
+    #unset ARCH
+    #cp ../config.backup .config
+    #git clean -xdf  &>> /tmp/"${FUNCNAME[0]}".compile.log
+    #cp ../config.backup .config
+    make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig O="${workdir}"/kernel-build  &>> /tmp/"${FUNCNAME[0]}".compile.log
     make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O="${workdir}"/kernel-build \
-    LOCALVERSION="${LOCALVERSION}" ${defconfig} &>> /tmp/"${FUNCNAME[0]}".compile.log
+      LOCALVERSION="${LOCALVERSION}" ${defconfig} &>> /tmp/"${FUNCNAME[0]}".compile.log
     
-    [[ $UBOOTONLY ]] && scripts/kconfig/merge_config.sh -y -m -O "${workdir}"/kernel-build arch/arm64/configs/bcmrpi3_defconfig arch/arm64/configs/bcm2711_defconfig &>> /tmp/"${FUNCNAME[0]}".compile.log
+    #[[ $UBOOTONLY ]] && scripts/kconfig/merge_config.sh -y -m -O "${workdir}"/kernel-build arch/arm64/configs/bcmrpi3_defconfig arch/arm64/configs/bcm2711_defconfig &>> /tmp/"${FUNCNAME[0]}".compile.log
 
     cd "${workdir}"/kernel-build
     # Use kernel config modification script from sakaki- found at 
     # https://github.com/sakaki-/bcm2711-kernel-bis
-    if [[ -e /source-ro/scripts/conform_config-${MAJORVERSION}.${PATCHLEVEL}.sh ]]
-        then 
-            cp /source-ro/scripts/conform_config-${MAJORVERSION}.${PATCHLEVEL}.sh \
-            "${workdir}"/kernel-build/conform_config.sh
-    elif [[ -e /source-ro/scripts/conform_config.sh ]]
-        then
-        cp /source-ro/scripts/conform_config.sh "${workdir}"/kernel-build/
-    fi
-    "${workdir}"/kernel-build/conform_config.sh
+    #if [[ -e /source-ro/scripts/conform_config-${MAJORVERSION}.${PATCHLEVEL}.sh ]]
+        #then 
+            #cp /source-ro/scripts/conform_config-${MAJORVERSION}.${PATCHLEVEL}.sh \
+            #"${workdir}"/kernel-build/conform_config.sh
+    #elif [[ -e /source-ro/scripts/conform_config.sh ]]
+        #then
+        #cp /source-ro/scripts/conform_config.sh "${workdir}"/kernel-build/
+    #fi
+    #"${workdir}"/kernel-build/conform_config.sh
 
 
     yes "" | make LOCALVERSION="${LOCALVERSION}" ARCH=arm64 \
-    CROSS_COMPILE=aarch64-linux-gnu- \
-    O="${workdir}"/kernel-build/ \
-    olddefconfig &>> /tmp/"${FUNCNAME[0]}".compile.log  || true
+      CROSS_COMPILE=aarch64-linux-gnu- \
+      O="${workdir}"/kernel-build/ \
+      olddefconfig &>> /tmp/"${FUNCNAME[0]}".compile.log  || true
     KERNEL_VERS=$(< /tmp/KERNEL_VERS)
     echo "* Making ${KERNEL_VERS} kernel debs."
     cd "${workdir}"/rpi-linux || ragequit
-
 cat <<-EOF> "${workdir}"/kernel_compile.sh
 	#!/bin/bash
 	cd ${workdir}/rpi-linux || exit 1
-	make -j${nprocs} CFLAGS=${CFLAGS} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=${workdir}/kernel-build/ bindeb-pkg
+  make  ARCH=arm64 CCPREFIX=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- O=${workdir}/kernel-build/ \
+      LOCALVERSION="${LOCALVERSION}" ${defconfig}
+	#sed -i -e \$'/^build-arch:/a \\\\\tmake INSTALL_KBUILD_PATH=. CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=../kernel-build kbuild_install && \\\\\ ' scripts/package/mkdebian
+	#cat scripts/package/mkdebian
+  #make -j${nprocs} INSTALL_KBUILD_PATH=${workdir}/kernel-build CFLAGS=${CFLAGS} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=${workdir}/kernel-build/ kbuild_install
+  make -j${nprocs} CFLAGS=${CFLAGS} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=${workdir}/kernel-build/ kbuild_install
+	make -j${nprocs} CFLAGS=${CFLAGS} CCPREFIX=aarch64-linux-gnu- ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=${LOCALVERSION} O=${workdir}/kernel-build/ bindeb-pkg
 EOF
+    #cat "${workdir}"/kernel_compile.sh
     cd "${workdir}"/rpi-linux || ragequit
-    [[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
+    [[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh
+    arbitrary_wait_here
+    "${workdir}"/kernel_compile.sh |& tee -a /tmp/"${FUNCNAME[0]}".compile.log | \
     grep --line-buffered -v libfakeroot-sysv.so
      #[[ -f ${workdir}/kernel_compile.sh ]] && chmod +x "${workdir}"/kernel_compile.sh && "${workdir}"/kernel_compile.sh |& grep --line-buffered -v libfakeroot-sysv.so >> /tmp/"${FUNCNAME[0]}".compile.log 
     cd "${workdir}"/kernel-build || ragequit
@@ -1833,7 +1858,7 @@ echo 1 > /flag/done.ok_to_continue_after_mount_image
 echo 1 > /flag/done.ok_to_exit_container_after_build
 
 
-compiler_setup &
+# compiler_setup &
 [[ ! $JUSTDEBS  ]] && utility_scripts &
 [[ ! $JUSTDEBS  ]] && base_image_check
 [[ ! $JUSTDEBS  ]] && image_extract &
