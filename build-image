@@ -52,7 +52,7 @@ shift $(($OPTIND - 1))
 #  This should be the image we want to modify. Note that the only options here are 
 #  Ubuntu Bionic & Focal Fossa since Canonical only provides daily build images of
 #  those distributions.
-default_BASE_DIST="fossa"
+default_BASE_DIST="focal"
 #  This is the default build host image. 18.04 (bionic), 19.10 (eoan/rolling)
 # and 20.04 (dev/focal) builds
 #  have been tested. However, non-19.04 images may need to be built separately and 
@@ -76,18 +76,19 @@ if [ "$BASE_DIST" == "bionic" ]; then
     defaultimage="docker-rpi4-imagebuilder-v2:bionic"
     else
     base_url="http://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/"
-    defaultimage="docker-rpi4-imagebuilder-v2:rolling"
+    defaultimage="docker-rpi4-imagebuilder-v3:focal"
     # There is no rolling/eoan daily-preinstalled image
     BASE_DIST=focal
 fi
 
-base_image="${BASE_DIST}-preinstalled-server-arm64+raspi3.img.xz"
+[ "$BASE_DIST" == "bionic" ] && base_image="${BASE_DIST}-preinstalled-server-arm64+raspi3.img.xz"
+[ "$BASE_DIST" == "bionic" ] || base_image="${BASE_DIST}-preinstalled-server-arm64+raspi.img.xz"
 base_image_url="${base_url}/${base_image}"
 cache_volume=rpi4-imagebuilder-cache
 
 # This is the linux version we want to use:
 #kernel_branch=rpi-4.19.y
-kernel_branch="${kernel_branch:-rpi-5.4.y}"
+kernel_branch="${kernel_branch:-rpi-5.15.y}"
 kernelgitrepo="${kernelgitrepo:-https://github.com/raspberrypi/linux.git}"
 
 srcdir=${PROG_DIR}
@@ -139,9 +140,9 @@ build_container () {
     if [ "$BASE_DIST" == "bionic" ] || [[ "${image}" =~ bionic ]]; then
         echo "Creating Ubuntu Bionic build container."
         docker build -t ${image} -f Dockerfile-ubuntu-bionic .
-    elif [[ "${image}" =~ eoan ]] || [[ "${image}" =~ 19.10 ]]; then
-        echo "Creating Ubuntu Eoan build container."
-        docker build -t ${image} -f Dockerfile-ubuntu-19.10 .
+    elif [[ "${image}" =~ focal ]] || [[ "${image}" =~ 20.04 ]]; then
+        echo "Creating Ubuntu Focal build container."
+        docker build -t ${image} -f Dockerfile-ubuntu-focal .
     else
         echo "Creating Ubuntu Stable (Rolling) build container."
         docker build -t ${image} -f Dockerfile-ubuntu-rolling .
