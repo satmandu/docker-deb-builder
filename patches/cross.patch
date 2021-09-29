@@ -1,0 +1,294 @@
+diff --git a/Documentation/kbuild/kbuild.rst b/Documentation/kbuild/kbuild.rst
+index 2d1fc03d346e..89658b8ce1a7 100644
+--- a/Documentation/kbuild/kbuild.rst
++++ b/Documentation/kbuild/kbuild.rst
+@@ -209,6 +209,15 @@ The output directory is often set using "O=..." on the commandline.
+ 
+ The value can be overridden in which case the default value is ignored.
+ 
++INSTALL_KBUILD_PATH
++-------------------
++INSTALL_KBUILD_PATH specifies where to install a build environment for
++external modules.
++
++The default value is::
++
++    /usr/src/linux-headers-$(KERNELVERSION)
++
+ KBUILD_ABS_SRCTREE
+ --------------------------------------------------
+ Kbuild uses a relative path to point to the tree when possible. For instance,
+diff --git a/Documentation/kbuild/makefiles.rst b/Documentation/kbuild/makefiles.rst
+index b81b8913a5a3..37de539a5b7c 100644
+--- a/Documentation/kbuild/makefiles.rst
++++ b/Documentation/kbuild/makefiles.rst
+@@ -756,6 +756,21 @@ Both possibilities are described in the following.
+ 	This will tell kbuild to build lxdialog even if not referenced in
+ 	any rule.
+ 
++4.6 Host programs necessary to build external modules
++-----------------------------------------------------
++
++	If a host program is necessary to build external modules,
++	it shall be added to extmodprogs in addition to hostprogs.
++
++	Example::
++
++		hostprogs     := fixdep
++		extmodprogs   := fixdep
++
++	This ensures that the host program is installed to a module build
++	environment with "make kbuild_install". It will be cross-compiled
++	for the target architecture if necessary.
++
+ 5 Userspace Program support
+ ===========================
+ 
+diff --git a/Makefile b/Makefile
+index ebf4d3ce492c..6c463be070b6 100644
+--- a/Makefile
++++ b/Makefile
+@@ -644,6 +644,11 @@ endif
+ 
+ export KBUILD_MODULES KBUILD_BUILTIN
+ 
++# Decide whether to install the build environment for external modules.
++ifneq ($(filter kbuild_install,$(MAKECMDGOALS)),)
++  export KBUILD_INSTALL=y
++endif
++
+ ifdef need-config
+ include include/config/auto.conf
+ endif
+@@ -1001,6 +1006,12 @@ export	INSTALL_PATH ?= /boot
+ #
+ export INSTALL_DTBS_PATH ?= $(INSTALL_PATH)/dtbs/$(KERNELRELEASE)
+ 
++#
++# INSTALL_KBUILD_PATH specifies where to install the build environment for
++# external modules.  Can be overridden by passing it as an argument.
++#
++export INSTALL_KBUILD_PATH = /usr/src/linux-headers-$(KERNELVERSION)
++
+ #
+ # INSTALL_MOD_PATH specifies a prefix to MODLIB for module directory
+ # relocations required by build roots.  This is not defined in the
+@@ -1532,7 +1543,9 @@ help:
+ 	@echo  '  kernelversion	  - Output the version stored in Makefile (use with make -s)'
+ 	@echo  '  image_name	  - Output the image name (use with make -s)'
+ 	@echo  '  headers_install - Install sanitised kernel headers to INSTALL_HDR_PATH'; \
+-	 echo  '                    (default: $(INSTALL_HDR_PATH))'; \
++	 echo  '                    (default: $(INSTALL_HDR_PATH))'
++	@echo  '  kbuild_install  - Install module build environment to INSTALL_KBUILD_PATH'; \
++	 echo  '                    (default: $(INSTALL_KBUILD_PATH))'; \
+ 	 echo  ''
+ 	@echo  'Static analysers:'
+ 	@echo  '  checkstack      - Generate a list of stack hogs'
+@@ -1628,6 +1641,14 @@ PHONY += $(DOC_TARGETS)
+ $(DOC_TARGETS):
+ 	$(Q)$(MAKE) $(build)=Documentation $@
+ 
++# Module build environment target
++# ---------------------------------------------------------------------------
++PHONY += kbuild_install
++kbuild_install: asm-generic
++	$(Q)$(MAKE) $(build)=scripts/basic
++	$(Q)$(MAKE) $(build)=scripts/mod
++	$(Q)$(MAKE) $(build)=scripts
++
+ # Misc
+ # ---------------------------------------------------------------------------
+ 
+diff --git a/scripts/Makefile b/scripts/Makefile
+index bc018e4b733e..c888b7dba0a5 100644
+--- a/scripts/Makefile
++++ b/scripts/Makefile
+@@ -29,6 +29,9 @@ endif
+ # The following programs are only built on demand
+ hostprogs += unifdef
+ 
++extmodprogs += recordmcount
++extmodprogs += sign-file
++
+ subdir-$(CONFIG_GCC_PLUGINS) += gcc-plugins
+ subdir-$(CONFIG_MODVERSIONS) += genksyms
+ subdir-$(CONFIG_SECURITY_SELINUX) += selinux
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index a467b9323442..6cfc88331fcb 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -59,6 +59,13 @@ ifneq ($(userprogs),)
+ include scripts/Makefile.userprogs
+ endif
+ 
++# Do not include kbuild install rules unless needed.
++ifneq ($(KBUILD_INSTALL),)
++ifneq ($(extmodprogs),)
++include scripts/Makefile.kbuildinst
++endif
++endif
++
+ ifndef obj
+ $(warning kbuild: Makefile.build is included improperly)
+ endif
+diff --git a/scripts/Makefile.clean b/scripts/Makefile.clean
+index d9e0ceace6a6..46d3141f17d5 100644
+--- a/scripts/Makefile.clean
++++ b/scripts/Makefile.clean
+@@ -37,6 +37,10 @@ __clean-files	:= \
+ # deprecated
+ __clean-files	+= $(always) $(hostprogs-y) $(hostprogs-m) $(hostprogs-)
+ 
++ifneq ($(extmodprogs),)
++__clean-files	+= .cross
++endif
++
+ __clean-files   := $(filter-out $(no-clean-files), $(__clean-files))
+ 
+ # clean-files is given relative to the current directory, unless it
+diff --git a/scripts/Makefile.kbuildinst b/scripts/Makefile.kbuildinst
+new file mode 100644
+index 000000000000..0b5825f9787e
+--- /dev/null
++++ b/scripts/Makefile.kbuildinst
+@@ -0,0 +1,81 @@
++# SPDX-License-Identifier: GPL-2.0
++
++# only install extmodprogs whose hostprogs counterpart is enabled
++extmodprogs := $(sort $(filter $(extmodprogs),$(notdir $(always-y) $(always-m))))
++
++ifneq ($(extmodprogs),)
++
++extmodprogs-install := $(addprefix $(INSTALL_KBUILD_PATH)/$(obj)/, $(extmodprogs))
++
++ifneq ($(CROSS_COMPILE),)
++
++# ==========================================================================
++# Cross-build binaries necessary to build modules on the target
++
++# C executables compiled from a single .c file
++cross-csingle	:= $(foreach m,$(extmodprogs),$(if $($(m)-objs),,$(m)))
++
++# C executables linked from several .o files
++cross-cmulti	:= $(foreach m,$(extmodprogs),$(if $($(m)-objs),$(m)))
++
++# Object .o files compiled from .c files
++cross-cobjs	:= $(sort $(foreach m,$(cross-cmulti),$($(m)-objs)))
++
++cross-csingle	:= $(addprefix $(obj)/.cross/,$(cross-csingle))
++cross-cmulti	:= $(addprefix $(obj)/.cross/,$(cross-cmulti))
++cross-cobjs	:= $(addprefix $(obj)/.cross/,$(cross-cobjs))
++
++# Create executable from a single .c file
++# cross-csingle -> executable
++quiet_cmd_cross-csingle = CC      $@
++      cmd_cross-csingle = $(CC) $(hostc_flags) $(KBUILD_HOSTLDFLAGS) -o $@ $< \
++			  $(KBUILD_HOSTLDLIBS) $(HOSTLDLIBS_$(target-stem))
++$(cross-csingle): $(obj)/.cross/%: $(src)/%.c FORCE
++	$(call if_changed_dep,cross-csingle)
++
++# Link executable based on list of .o files, all plain C
++# cross-cmulti -> executable
++quiet_cmd_cross-cmulti	= LD      $@
++      cmd_cross-cmulti	= $(CC) $(KBUILD_HOSTLDFLAGS) -o $@ \
++			  $(addprefix $(obj)/.cross/, $($(target-stem)-objs)) \
++			  $(KBUILD_HOSTLDLIBS) $(HOSTLDLIBS_$(target-stem))
++$(cross-cmulti): FORCE
++	$(call if_changed,cross-cmulti)
++$(call multi_depend, $(cross-cmulti), , -objs)
++
++# Create .o file from a single .c file
++# cross-cobjs -> .o
++#
++# Some host-cobjs have special prerequisites.  Apply them to cross-cobjs
++# by letting the cross .o file depend on the host .o file.
++quiet_cmd_cross-cobjs	= CC      $@
++      cmd_cross-cobjs	= $(CC) $(hostc_flags) -c -o $@ $<
++$(cross-cobjs): $(obj)/.cross/%.o: $(src)/%.c $(obj)/%.o FORCE
++	$(call if_changed_dep,cross-cobjs)
++
++# ==========================================================================
++# Install module build environment to $(INSTALL_KBUILD_PATH)
++#
++# When cross-compiling, install cross-compiled versions of the hostprogs.
++# Else install the hostprogs directly.
++
++targets  += $(cross-csingle) $(cross-cmulti) $(cross-cobjs)
++always-y += $(cross-csingle) $(cross-cmulti) $(cross-cobjs)
++
++$(extmodprogs-install): $(INSTALL_KBUILD_PATH)/$(obj)/%: $(obj)/.cross/%
++	$(call cmd,extmodprogs_install,$(dir $@))
++
++else  # !CROSS_COMPILE
++
++$(extmodprogs-install): $(INSTALL_KBUILD_PATH)/$(obj)/%: $(obj)/%
++	$(call cmd,extmodprogs_install,$(dir $@))
++
++endif # !CROSS_COMPILE
++
++quiet_cmd_extmodprogs_install = INSTALL $<
++      cmd_extmodprogs_install = mkdir -p $(2); cp $< $(2)
++
++targets  += $(extmodprogs-install)
++always-y += $(extmodprogs-install)
++
++endif # extmodprogs
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 841ac038132b..260fbfbb3854 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -112,7 +112,7 @@ modname = $(subst $(space),:,$(__modname))
+ modfile = $(addprefix $(obj)/,$(__modname))
+ 
+ # target with $(obj)/ and its suffix stripped
+-target-stem = $(basename $(patsubst $(obj)/%,%,$@))
++target-stem = $(basename $(notdir $@))
+ 
+ # These flags are needed for modversions and compiling, so we define them here
+ # $(modname_flags) defines KBUILD_MODNAME as the name of the module it will
+@@ -220,9 +220,9 @@ dtc_cpp_flags  = -Wp,-MMD,$(depfile).pre.tmp -nostdinc                    \
+ # Usage:
+ #   $(call multi_depend, multi_used_targets, suffix_to_remove, suffix_to_add)
+ define multi_depend
+-$(foreach m, $(notdir $1), \
+-	$(eval $(obj)/$m: \
+-	$(addprefix $(obj)/, $(foreach s, $3, $($(m:%$(strip $2)=%$(s)))))))
++$(foreach m, $1, \
++	$(eval $m: \
++	$(addprefix $(dir $m), $(foreach s, $3, $($(patsubst %$(strip $2),%$(s),$(notdir $m)))))))
+ endef
+ 
+ quiet_cmd_copy = COPY    $@
+diff --git a/scripts/basic/Makefile b/scripts/basic/Makefile
+index eeb6a38c5551..5dc33f054332 100644
+--- a/scripts/basic/Makefile
++++ b/scripts/basic/Makefile
+@@ -3,3 +3,4 @@
+ # fixdep: used to generate dependency information during build process
+ 
+ hostprogs-always-y	+= fixdep
++extmodprogs		+= fixdep
+diff --git a/scripts/genksyms/Makefile b/scripts/genksyms/Makefile
+index ce4f99935de5..4910b921e946 100644
+--- a/scripts/genksyms/Makefile
++++ b/scripts/genksyms/Makefile
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+ hostprogs-always-y	+= genksyms
++extmodprogs		+= genksyms
+ 
+ genksyms-objs	:= genksyms.o parse.tab.o lex.lex.o
+ 
+diff --git a/scripts/mod/Makefile b/scripts/mod/Makefile
+index 78071681d924..d50acbdeca61 100644
+--- a/scripts/mod/Makefile
++++ b/scripts/mod/Makefile
+@@ -2,6 +2,7 @@
+ OBJECT_FILES_NON_STANDARD := y
+ 
+ hostprogs-always-y	+= modpost mk_elfconfig
++extmodprogs		+= modpost
+ always-y		+= empty.o
+ 
+ modpost-objs	:= modpost.o file2alias.o sumversion.o
